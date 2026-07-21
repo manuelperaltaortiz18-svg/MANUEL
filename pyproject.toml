@@ -1,0 +1,9 @@
+[project]
+name = "long-term-investment-system"
+version = "1.0.0"
+description = "Long-term compounding-first investment research and portfolio management system"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
