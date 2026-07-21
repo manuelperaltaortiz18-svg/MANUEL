@@ -139,7 +139,7 @@ def cartera_agresiva_consciente() -> Portfolio:
             PortfolioPosition(PICTET_CHINA, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
         ],
         initial_capital=3_000,
-        monthly_contribution=300,
+        monthly_contribution=166.67,
         horizon_years=30,
     )
 
@@ -156,6 +156,6 @@ def cartera_alternativa_nasdaq() -> Portfolio:
             PortfolioPosition(PICTET_CHINA, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
         ],
         initial_capital=3_000,
-        monthly_contribution=300,
+        monthly_contribution=166.67,
         horizon_years=30,
     )
