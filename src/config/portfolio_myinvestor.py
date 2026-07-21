@@ -99,6 +99,24 @@ ASHOKA_INDIA = Asset(
     tags=["satellite", "india", "active", "performance-fee-only", "alpha"],
 )
 
+ISHARES_EM_S = Asset(
+    ticker="IE000QAZP7L2",
+    name="iShares Emerging Markets Index Fund (IE) Class S Acc EUR",
+    isin="IE000QAZP7L2",
+    vehicle_type=VehicleType.FUND,
+    role=AssetRole.SATELLITE,
+    accumulation=AccumulationType.ACCUMULATING,
+    ter_pct=0.16,
+    aum_millions=3000,
+    inception_date="2025-09",  # class S; underlying strategy decades old
+    underlying_index="MSCI Emerging Markets",
+    underlying_index_inception="1987-12-31",
+    history_type=HistoryType.LIVE_INDEX,
+    currency="EUR",
+    is_transferable_spain=True,
+    tags=["satellite", "emerging-markets", "low-cost", "myinvestor-exclusive", "24-countries"],
+)
+
 PICTET_CHINA = Asset(
     ticker="LU0625737910",
     name="Pictet China Index P EUR",
@@ -123,12 +141,13 @@ DESCARTADOS = {
     "Vanguard U.S. 500 (IE0032126645)": "Duplica iShares S&P500 con TER 2x mayor (0.10 vs 0.05)",
     "Allianz China A Shares AT USD (LU1997245177)": "TER 2.30% sin alpha persistente demostrado (§14)",
     "Schroder Greater China (LU0365775922)": "TER 1.84%, microposición 3.5%, en realidad es Greater China no China pura",
+    "Pictet China Index P EUR (LU0625737910)": "TER 0.68% vs iShares EM Class S 0.16%; riesgo geopolítico de un solo país; EM diversificado superior a largo plazo (§66)",
 }
 
 # ─── CARTERAS ─────────────────────────────────────────────────────────
 
 def cartera_agresiva_consciente() -> Portfolio:
-    """Cartera recomendada: 5 fondos, traspasables, TER ponderado ~0.28%."""
+    """Cartera recomendada: 5 fondos, traspasables, TER ponderado ~0.18%."""
     return Portfolio(
         name="Agresiva-Consciente MyInvestor (5 fondos)",
         positions=[
@@ -136,7 +155,7 @@ def cartera_agresiva_consciente() -> Portfolio:
             PortfolioPosition(FIDELITY_EUROPE, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
             PortfolioPosition(POLAR_CAPITAL_TECH, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
             PortfolioPosition(ASHOKA_INDIA, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
-            PortfolioPosition(PICTET_CHINA, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
+            PortfolioPosition(ISHARES_EM_S, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
         ],
         initial_capital=3_000,
         monthly_contribution=166.67,
@@ -153,7 +172,7 @@ def cartera_alternativa_nasdaq() -> Portfolio:
             PortfolioPosition(FIDELITY_EUROPE, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
             PortfolioPosition(MYINVESTOR_NASDAQ100, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
             PortfolioPosition(ASHOKA_INDIA, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
-            PortfolioPosition(PICTET_CHINA, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
+            PortfolioPosition(ISHARES_EM_S, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
         ],
         initial_capital=3_000,
         monthly_contribution=166.67,
