@@ -117,6 +117,42 @@ ISHARES_EM_S = Asset(
     tags=["satellite", "emerging-markets", "low-cost", "myinvestor-exclusive", "24-countries"],
 )
 
+ISHARES_EURO_GOV_BOND = Asset(
+    ticker="IE00BD0NC037",
+    name="iShares Euro Government Bond Index Fund (IE) Acc",
+    isin="IE00BD0NC037",
+    vehicle_type=VehicleType.FUND,
+    role=AssetRole.CORE,
+    accumulation=AccumulationType.ACCUMULATING,
+    ter_pct=0.10,
+    aum_millions=2000,
+    inception_date="2017-09",
+    underlying_index="FTSE Euro Government Bond Index",
+    underlying_index_inception="2000-01-01",
+    history_type=HistoryType.LIVE_INDEX,
+    currency="EUR",
+    is_transferable_spain=True,
+    tags=["core", "bonds", "euro-government", "low-cost", "defensive"],
+)
+
+ISHARES_GLOBAL_AGG_1_5 = Asset(
+    ticker="IE0004ZP1ND3",
+    name="iShares Global Aggregate 1-5Y Bond Index Fund (IE) EUR Hedged Acc",
+    isin="IE0004ZP1ND3",
+    vehicle_type=VehicleType.FUND,
+    role=AssetRole.CORE,
+    accumulation=AccumulationType.ACCUMULATING,
+    ter_pct=0.10,
+    aum_millions=1500,
+    inception_date="2023-06",
+    underlying_index="Bloomberg Global Aggregate 1-5 Year",
+    underlying_index_inception="2000-01-01",
+    history_type=HistoryType.LIVE_INDEX,
+    currency="EUR",
+    is_transferable_spain=True,
+    tags=["core", "bonds", "global-aggregate", "short-duration", "eur-hedged", "low-cost"],
+)
+
 PICTET_CHINA = Asset(
     ticker="LU0625737910",
     name="Pictet China Index P EUR",
@@ -146,10 +182,27 @@ DESCARTADOS = {
 
 # ─── CARTERAS ─────────────────────────────────────────────────────────
 
-def cartera_agresiva_consciente() -> Portfolio:
-    """Cartera recomendada: 5 fondos, traspasables, TER ponderado ~0.18%."""
+def cartera_conservadora() -> Portfolio:
+    """Conservadora: 55% RV + 45% RF. TER ponderado ~0.09%. Menor volatilidad."""
     return Portfolio(
-        name="Agresiva-Consciente MyInvestor (5 fondos)",
+        name="Conservadora MyInvestor (5 fondos)",
+        positions=[
+            PortfolioPosition(ISHARES_US_S, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
+            PortfolioPosition(FIDELITY_EUROPE, weight_pct=20, strategic_weight_pct=20, role=AssetRole.CORE),
+            PortfolioPosition(ISHARES_EM_S, weight_pct=10, strategic_weight_pct=10, role=AssetRole.SATELLITE),
+            PortfolioPosition(ISHARES_EURO_GOV_BOND, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
+            PortfolioPosition(ISHARES_GLOBAL_AGG_1_5, weight_pct=20, strategic_weight_pct=20, role=AssetRole.CORE),
+        ],
+        initial_capital=3_000,
+        monthly_contribution=166.67,
+        horizon_years=30,
+    )
+
+
+def cartera_equilibrada() -> Portfolio:
+    """Equilibrada: 100% RV diversificada. TER ponderado ~0.18%. Nuestra recomendación."""
+    return Portfolio(
+        name="Equilibrada MyInvestor (5 fondos)",
         positions=[
             PortfolioPosition(ISHARES_US_S, weight_pct=35, strategic_weight_pct=35, role=AssetRole.CORE),
             PortfolioPosition(FIDELITY_EUROPE, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
@@ -163,16 +216,16 @@ def cartera_agresiva_consciente() -> Portfolio:
     )
 
 
-def cartera_alternativa_nasdaq() -> Portfolio:
-    """Alternativa: MyInvestor Nasdaq 100 en lugar de Polar Capital (más barata)."""
+def cartera_agresiva() -> Portfolio:
+    """Agresiva: 100% RV concentrada en growth + EM. TER ponderado ~0.22%. Máxima exposición."""
     return Portfolio(
-        name="Alternativa Nasdaq MyInvestor (5 fondos)",
+        name="Agresiva MyInvestor (5 fondos)",
         positions=[
-            PortfolioPosition(ISHARES_US_S, weight_pct=35, strategic_weight_pct=35, role=AssetRole.CORE),
-            PortfolioPosition(FIDELITY_EUROPE, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
-            PortfolioPosition(MYINVESTOR_NASDAQ100, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
-            PortfolioPosition(ASHOKA_INDIA, weight_pct=12.5, strategic_weight_pct=12.5, role=AssetRole.SATELLITE),
-            PortfolioPosition(ISHARES_EM_S, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
+            PortfolioPosition(ISHARES_US_S, weight_pct=25, strategic_weight_pct=25, role=AssetRole.CORE),
+            PortfolioPosition(POLAR_CAPITAL_TECH, weight_pct=20, strategic_weight_pct=20, role=AssetRole.SATELLITE),
+            PortfolioPosition(MYINVESTOR_NASDAQ100, weight_pct=15, strategic_weight_pct=15, role=AssetRole.SATELLITE),
+            PortfolioPosition(ASHOKA_INDIA, weight_pct=20, strategic_weight_pct=20, role=AssetRole.SATELLITE),
+            PortfolioPosition(ISHARES_EM_S, weight_pct=20, strategic_weight_pct=20, role=AssetRole.SATELLITE),
         ],
         initial_capital=3_000,
         monthly_contribution=166.67,
