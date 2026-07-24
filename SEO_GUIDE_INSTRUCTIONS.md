@@ -1,325 +1,384 @@
-# Guía Completa SEO 2026 — Instrucciones para Claude Code
+# Guía SEO Completa 2026 — CUPERINOX.ES (WooCommerce)
 
 ## Objetivo
 
-Este documento contiene todas las instrucciones de SEO actualizadas a 2026 para posicionamiento en Google, ChatGPT Search y buscadores de IA (Perplexity, Gemini, Claude). Debe usarse como referencia al construir o modificar cualquier sitio web, landing page, blog o contenido digital.
+Instrucciones de SEO para posicionar www.cuperinox.es en el top de Google, ChatGPT Search y buscadores de IA (Perplexity, Gemini, Claude). Adaptado específicamente a una tienda WooCommerce de cuchillería, navajas, tijeras, jamoneros y menaje profesional de Albacete.
+
+**CONTEXTO DE LA WEB:**
+- Dominio: www.cuperinox.es
+- Plataforma: WooCommerce (WordPress)
+- Sector: Cuchillería y menaje profesional
+- Sede: Albacete, España (75 años de tradición cuchillera)
+- Categorías principales: Navajas, Cuchillos, Tijeras (Couture Series), Soportes Jamoneros, Menaje
+- Venta también en: Amazon.es, Leroy Merlin, Makro, distribuidores
+- Público: España, B2C + hostelería
 
 ---
 
-# PARTE 1: SEO CLÁSICO — POSICIONAMIENTO EN GOOGLE
+# PARTE 1: PROBLEMAS SEO DETECTADOS EN CUPERINOX.ES
 
-## 1.1 Core Web Vitals (Factores de Ranking Confirmados)
+## 1.1 Problemas Críticos a Resolver
 
-Las tres métricas obligatorias son:
-
-- **LCP (Largest Contentful Paint)**: < 2.5 segundos. Es el tiempo que tarda en renderizarse el elemento visible más grande.
-- **CLS (Cumulative Layout Shift)**: < 0.1. Mide la estabilidad visual (que nada "salte" mientras carga).
-- **INP (Interaction to Next Paint)**: < 200ms. Reemplazó a FID en marzo 2024. Mide la latencia de interacción real del usuario.
-
-### Cómo optimizar Core Web Vitals:
-
-**Para LCP:**
-- Comprimir y servir imágenes en formato WebP/AVIF
-- Usar lazy loading en imágenes below-the-fold
-- Precargar recursos críticos con `<link rel="preload">`
-- Minimizar CSS y JS que bloqueen el renderizado
-- Usar CDN para servir assets estáticos
-
-**Para CLS:**
-- Definir dimensiones explícitas (width/height) en todas las imágenes y videos
-- Reservar espacio para ads y embeds con CSS `aspect-ratio` o contenedores de tamaño fijo
-- Evitar inserción dinámica de contenido sobre contenido ya visible
-- Usar `font-display: swap` para fuentes web
-
-**Para INP:**
-- Dividir tareas JavaScript largas con `requestIdleCallback` o `scheduler.yield()`
-- Minimizar el trabajo del hilo principal
-- Usar `content-visibility: auto` para elementos fuera de pantalla
-- Debounce/throttle en event listeners pesados
-
-### Implementación técnica:
-
-```html
-<!-- Preload del LCP element -->
-<link rel="preload" as="image" href="/hero-image.webp" fetchpriority="high">
-
-<!-- Imágenes con dimensiones explícitas -->
-<img src="foto.webp" width="800" height="600" loading="lazy" alt="Descripción relevante">
-
-<!-- Font display swap -->
-@font-face {
-  font-family: 'MiFuente';
-  src: url('/fonts/mifuente.woff2') format('woff2');
-  font-display: swap;
-}
+### 1. Títulos de producto demasiado largos y no optimizados
+Los títulos actuales son tipo catálogo de Amazon, no SEO:
+```
+MALO: "CUPERINOX Navaja 5 en1 multiusos | Incluye Afilador Navaja| Funcion Abrebotella, rompecristales y corta cuerdas| Navaja Filo Liso y Sierra|"
+BIEN: "Navaja Multiusos 5 en 1 con Afilador | Cuperinox"
 ```
 
+**Regla**: Title tag < 60 caracteres, keyword principal al inicio, marca al final.
+
+### 2. URLs de producto no optimizadas
+Algunas URLs usan IDs numéricos (`/producto/1874/`) en vez de slugs descriptivos.
+```
+MALO: /producto/1874/
+BIEN: /producto/navaja-multiusos-5-en-1-afilador/
+```
+
+### 3. Competencia con Amazon por tus propias keywords
+Amazon rankea por "cuperinox navaja", "cuperinox jamonero", etc. Tu web propia debería ganar esas búsquedas de marca.
+
+**Solución**: Optimizar fichas de producto con contenido único y superior al de Amazon (descripciones más largas, más fotos, más schema, reviews propias).
+
+### 4. Categorías con poco contenido
+Las páginas de categoría (`/categoria-producto/navajas/`) probablemente solo listan productos sin texto. Google necesita contenido propio en las categorías para rankearlas.
+
+### 5. Firewall bloqueando bots
+La web devuelve 403 a peticiones de bots. Verificar que no se esté bloqueando a Googlebot ni a los bots de IA.
+
 ---
 
-## 1.2 E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)
+# PARTE 2: SEO GOOGLE PARA WOOCOMMERCE
 
-Google evalúa ecosistemas completos, no páginas aisladas. Cruza señales de contenido, comportamiento del usuario, reputación de marca, experiencia del autor y consistencia temática.
+## 2.1 Core Web Vitals
 
-### Implementar E-E-A-T:
+WooCommerce es notoriamente lento. Las tres métricas obligatorias:
 
-**Experience (Experiencia):**
-- Incluir evidencia de experiencia directa: fotos propias, capturas, datos de primera mano
-- Testimonios reales con nombre y contexto
-- Casos de estudio basados en trabajo propio
+- **LCP (Largest Contentful Paint)**: < 2.5 segundos
+- **CLS (Cumulative Layout Shift)**: < 0.1
+- **INP (Interaction to Next Paint)**: < 200ms
 
-**Expertise (Expertise):**
-- Biografías de autores con credenciales verificables
-- Enlazar a perfiles profesionales (LinkedIn, publicaciones académicas)
-- Demostrar conocimiento profundo, no superficial
+### Optimizaciones específicas WooCommerce:
 
-**Authoritativeness (Autoridad):**
-- Conseguir menciones y backlinks de sitios reputados del sector
-- Internal linking sólido entre contenidos relacionados
-- Mantener consistencia temática (no escribir de todo)
+**Velocidad:**
+- Instalar plugin de caché: WP Rocket, LiteSpeed Cache o W3 Total Cache
+- CDN para imágenes y assets (Cloudflare, BunnyCDN)
+- Imágenes en WebP con lazy loading (usar Imagify o ShortPixel)
+- Limitar plugins a los esenciales (cada plugin añade JS/CSS)
+- Desactivar scripts de WooCommerce en páginas que no son tienda
+- Usar Object Cache (Redis o Memcached) para las queries de WooCommerce
+- Optimizar base de datos: limpiar revisiones, transients, logs de WooCommerce
 
-**Trustworthiness (Confianza):**
-- HTTPS obligatorio
-- Política de privacidad, aviso legal, datos de contacto visibles
-- Citar fuentes cuando se usan datos o estadísticas
-- Reviews y valoraciones verificables
+**CLS en WooCommerce:**
+- Definir width/height en todas las imágenes de producto
+- Reservar espacio para banners, sliders y botones de "añadir al carrito"
+- No cargar pop-ups que empujen el contenido
 
-### Schema markup para E-E-A-T:
+**INP en WooCommerce:**
+- Minimizar JS: desactivar jQuery migrate si no es necesario
+- Defer scripts no críticos
+- Evitar sliders pesados en home
+
+### Plugins recomendados para velocidad:
+```
+- WP Rocket o LiteSpeed Cache (caché)
+- Imagify o ShortPixel (compresión imágenes WebP)
+- Perfmatters (desactivar scripts innecesarios por página)
+- Asset CleanUp (controlar qué CSS/JS carga en cada página)
+```
+
+## 2.2 E-E-A-T para Cuperinox
+
+### Experience (Experiencia):
+- Fotos propias del taller/fábrica en Albacete
+- Videos del proceso de fabricación
+- Contenido tipo "cómo se hace una navaja artesanal"
+- Testimonios de clientes profesionales (hostelería, carnicerías)
+
+### Expertise (Expertise):
+- Página "Quiénes somos" ampliada: 75 años de historia, evolución desde Cuchillería Peralta
+- Blog con guías especializadas: "Cómo elegir cuchillo jamonero", "Tipos de acero inoxidable"
+- Fichas de producto con información técnica detallada (tipo de acero, dureza Rockwell, ángulo de filo)
+
+### Authoritativeness (Autoridad):
+- Conseguir enlaces desde: asociaciones de cuchillería de Albacete, ADECA, cámaras de comercio
+- Presencia en directorios del sector: QDQ, Empresite, Axesor (ya están)
+- Artículos en medios locales/sectoriales
+
+### Trustworthiness (Confianza):
+- HTTPS (verificar que esté activo en todo el sitio)
+- Política de devoluciones visible
+- Datos de contacto completos (dirección del Polígono Campollano)
+- Certificaciones y sellos de calidad si los hay
+- Reviews verificadas en fichas de producto
+
+## 2.3 Optimización de Fichas de Producto WooCommerce
+
+### Estructura ideal de ficha de producto:
+
+```
+TITLE TAG: Keyword Principal | Cuperinox (< 60 chars)
+META DESC: Descripción compelling con keyword + beneficio + CTA (150-160 chars)
+URL: /producto/keyword-principal/
+
+H1: Nombre del producto con keyword natural
+  Precio visible
+  Botón "Añadir al carrito" above the fold
+  
+  Galería de imágenes (mín. 5 fotos):
+    - Producto completo sobre fondo blanco
+    - Producto en uso
+    - Detalle del filo/material
+    - Packaging
+    - Comparativa de tamaño
+  
+  Descripción corta (extracto WooCommerce):
+    2-3 frases con el beneficio principal y keyword
+  
+  H2: Características técnicas
+    Tabla con: Material, Longitud hoja, Longitud total, Peso, Tipo de filo, Dureza
+  
+  H2: Descripción detallada
+    3-4 párrafos: para qué sirve, por qué es mejor, cómo usarlo
+    Claims autocontenidos (cada párrafo funciona solo para GEO)
+  
+  H2: ¿Para quién es este producto?
+    Casos de uso específicos
+  
+  H2: Preguntas frecuentes
+    H3: ¿Qué tipo de acero usa?
+    H3: ¿Cómo se afila?
+    H3: ¿Incluye funda/estuche?
+    H3: ¿Tiene garantía?
+  
+  Reviews de clientes
+  Productos relacionados (cross-selling)
+  Breadcrumbs: Inicio > Categoría > Producto
+```
+
+### Ejemplo real para Cuperinox:
+
+```html
+<title>Navaja Multiusos 5 en 1 con Afilador | Cuperinox</title>
+<meta name="description" content="Navaja plegable 5 en 1 de acero inoxidable con afilador integrado, abrebotella y cortacuerdas. Fabricada en Albacete. Envío 24-48h. Garantía Cuperinox.">
+
+<h1>Navaja Multiusos 5 en 1 con Afilador Integrado</h1>
+
+<p>La navaja multiusos Cuperinox 5 en 1 combina cinco herramientas en un 
+diseño compacto de acero inoxidable: hoja de filo liso, sierra, abrebotella, 
+rompecristales y cortacuerdas. Incluye afilador integrado en la funda.</p>
+
+<h2>Características técnicas</h2>
+<table>
+  <tr><td>Material</td><td>Acero inoxidable AISI 420</td></tr>
+  <tr><td>Longitud hoja</td><td>8,5 cm</td></tr>
+  <tr><td>Longitud total</td><td>21 cm (abierta) / 12 cm (cerrada)</td></tr>
+  <tr><td>Peso</td><td>185 g</td></tr>
+  <tr><td>Bloqueo</td><td>Liner lock</td></tr>
+  <tr><td>Fabricación</td><td>Albacete, España</td></tr>
+</table>
+```
+
+## 2.4 Optimización de Categorías WooCommerce
+
+Las categorías son las páginas que más potencial SEO tienen en WooCommerce. Por defecto solo muestran un grid de productos — necesitan contenido propio.
+
+### Estructura ideal de página de categoría:
+
+```
+URL: /categoria-producto/navajas/
+TITLE: Navajas de Acero Inoxidable | Comprar Online | Cuperinox
+META DESC: Navajas profesionales fabricadas en Albacete. Acero inoxidable, bloqueo de seguridad, multiusos. Desde 12,95€. Envío 24-48h. Garantía Cuperinox.
+
+H1: Navajas de Acero Inoxidable Cuperinox
+
+[Texto introductorio ANTES del grid de productos — 150-300 palabras]
+  Párrafo 1: Qué ofrece la categoría, keyword principal
+  Párrafo 2: Por qué elegir Cuperinox (E-E-A-T, fabricación Albacete)
+  Párrafo 3: Tipos disponibles (enlace a subcategorías si hay)
+
+[Grid de productos]
+
+[Texto adicional DESPUÉS del grid — 200-400 palabras]
+  H2: ¿Cómo elegir la mejor navaja?
+    Guía breve de compra
+  
+  H2: Preguntas frecuentes sobre navajas
+    H3: ¿Qué tipo de acero es mejor?
+    H3: ¿Son legales las navajas en España?
+    H3: ¿Cómo se mantiene una navaja?
+  
+  Internal links a: blog posts relacionados, otras categorías
+```
+
+### Categorías principales a optimizar:
+
+| Categoría | Keyword principal | Long tail keywords |
+|-----------|------------------|--------------------|
+| Navajas | navajas acero inoxidable | navaja multiusos, navaja camping, navaja albacete |
+| Cuchillos | cuchillos profesionales | cuchillo jamonero, cuchillo cocina, set cuchillos |
+| Tijeras | tijeras profesionales | tijeras costura, tijeras cocina, tijeras peluquería |
+| Jamoneros | soporte jamonero | jamonero profesional, jamonero madera, set jamonero cuchillo |
+| Menaje | menaje cocina profesional | utensilios cocina, menaje hostelería |
+
+## 2.5 Schema Markup para WooCommerce
+
+### Schema Product (CRÍTICO — cada ficha de producto):
 
 ```json
 {
   "@context": "https://schema.org",
-  "@type": "Article",
-  "author": {
-    "@type": "Person",
-    "name": "Nombre del Autor",
-    "url": "https://linkedin.com/in/autor",
-    "jobTitle": "Especialista en [tema]",
-    "description": "15 años de experiencia en [campo]"
+  "@type": "Product",
+  "name": "Navaja Multiusos 5 en 1 con Afilador",
+  "image": [
+    "https://www.cuperinox.es/wp-content/uploads/navaja-5en1-1.webp",
+    "https://www.cuperinox.es/wp-content/uploads/navaja-5en1-2.webp"
+  ],
+  "description": "Navaja plegable 5 en 1 de acero inoxidable con afilador integrado, fabricada en Albacete.",
+  "brand": {
+    "@type": "Brand",
+    "name": "Cuperinox"
   },
-  "publisher": {
+  "manufacturer": {
     "@type": "Organization",
-    "name": "Nombre de la Empresa",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://ejemplo.com/logo.png"
+    "name": "Cuperinox, S.L.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Calle D, 44, Polígono Industrial Campollano",
+      "addressLocality": "Albacete",
+      "postalCode": "02007",
+      "addressCountry": "ES"
     }
   },
-  "datePublished": "2026-01-15",
-  "dateModified": "2026-07-20"
-}
-```
-
----
-
-## 1.3 Contenido Optimizado para Google
-
-### Reglas fundamentales:
-
-1. **Contenido evergreen** que mantenga relevancia a largo plazo + actualización periódica con datos recientes
-2. **Una keyword principal por página** + keywords secundarias semánticamente relacionadas
-3. **Longitud adecuada**: no hay mínimo, pero el contenido debe cubrir el tema en profundidad
-4. **Title tag**: keyword principal al inicio, < 60 caracteres, compelling
-5. **Meta description**: 150-160 caracteres, incluir keyword, call-to-action
-6. **URL limpia**: corta, descriptiva, con keyword, sin parámetros innecesarios
-7. **Headings jerárquicos**: un solo H1, múltiples H2/H3 organizando subtemas
-8. **Imágenes**: alt text descriptivo en TODAS las imágenes, compresión WebP/AVIF
-9. **Internal linking**: enlazar contenido relacionado con anchor text descriptivo
-10. **No duplicar contenido**: canonical tags cuando sea necesario
-
-### Estructura de página ideal:
-
-```
-H1: Keyword principal — Título atractivo
-  Párrafo introductorio (respuesta directa en las primeras 2 frases)
-  
-  H2: Subtema 1
-    Contenido + datos + ejemplos
-    H3: Detalle del subtema
-    
-  H2: Subtema 2
-    Contenido + datos + ejemplos
-    
-  H2: Preguntas frecuentes (FAQ)
-    H3: ¿Pregunta 1?
-    Respuesta directa.
-    H3: ¿Pregunta 2?
-    Respuesta directa.
-```
-
-### Template HTML SEO-optimizado:
-
-```html
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Keyword Principal — Complemento Atractivo | Marca</title>
-  <meta name="description" content="Descripción compelling de 150-160 chars con keyword principal y CTA.">
-  <link rel="canonical" href="https://ejemplo.com/url-limpia">
-  
-  <!-- Open Graph -->
-  <meta property="og:title" content="Título para redes sociales">
-  <meta property="og:description" content="Descripción para compartir en redes">
-  <meta property="og:image" content="https://ejemplo.com/imagen-social.jpg">
-  <meta property="og:url" content="https://ejemplo.com/url-limpia">
-  <meta property="og:type" content="article">
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Título para Twitter">
-  <meta name="twitter:description" content="Descripción para Twitter">
-  
-  <!-- Schema JSON-LD (ver sección Schema) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Título de la página",
-    "description": "Descripción",
-    "url": "https://ejemplo.com/url-limpia"
-  }
-  </script>
-</head>
-<body>
-  <header>
-    <nav aria-label="Navegación principal">
-      <!-- Breadcrumbs con schema -->
-    </nav>
-  </header>
-  <main>
-    <article>
-      <h1>Keyword Principal — Título Atractivo</h1>
-      <!-- Contenido estructurado -->
-    </article>
-  </main>
-  <footer>
-    <!-- Datos de contacto, legal, privacidad -->
-  </footer>
-</body>
-</html>
-```
-
----
-
-## 1.4 SEO Técnico
-
-### Checklist obligatorio:
-
-- [ ] **HTTPS** en todo el sitio
-- [ ] **Mobile-first**: diseño responsive, touch-friendly
-- [ ] **Sitemap XML** enviado a Google Search Console
-- [ ] **robots.txt** correcto (no bloquear recursos necesarios)
-- [ ] **Canonical tags** en páginas con contenido similar
-- [ ] **Hreflang** si hay versiones en varios idiomas
-- [ ] **404 personalizada** que guíe al usuario
-- [ ] **Redirecciones 301** para URLs cambiadas (nunca cadenas de redirecciones)
-- [ ] **Sin contenido duplicado** (www vs no-www, http vs https)
-- [ ] **Structured data** validada con Rich Results Test
-- [ ] **Velocidad de carga** < 3 segundos en móvil
-
-### robots.txt recomendado:
-
-```
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /private/
-
-# IMPORTANTE: Permitir bots de IA para GEO
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-Sitemap: https://ejemplo.com/sitemap.xml
-```
-
----
-
-## 1.5 Schema Markup (Structured Data)
-
-### Schemas prioritarios por tipo de contenido:
-
-**Para todas las webs:**
-- `Organization` — identidad de la empresa/marca
-- `WebSite` — con SearchAction para sitelinks
-- `BreadcrumbList` — navegación jerárquica
-
-**Para blogs/artículos:**
-- `Article` o `BlogPosting` — con author, datePublished, dateModified
-- `FAQPage` — preguntas frecuentes (muy efectivo para AI Overviews)
-
-**Para negocios locales:**
-- `LocalBusiness` — dirección, horario, teléfono
-- `Review` / `AggregateRating`
-
-**Para e-commerce:**
-- `Product` — precio, disponibilidad, reviews
-- `Offer` — condiciones de venta
-- `ItemList` — listados de productos
-
-**Para servicios:**
-- `Service` — descripción, área, precio
-- `HowTo` — guías paso a paso
-
-### Ejemplo completo — Organization + WebSite:
-
-```json
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
+  "material": "Acero inoxidable AISI 420",
+  "countryOfOrigin": {
+    "@type": "Country",
+    "name": "España"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "https://www.cuperinox.es/producto/navaja-multiusos-5-en-1/",
+    "priceCurrency": "EUR",
+    "price": "24.95",
+    "availability": "https://schema.org/InStock",
+    "seller": {
       "@type": "Organization",
-      "@id": "https://ejemplo.com/#organization",
-      "name": "Nombre de la Empresa",
-      "url": "https://ejemplo.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://ejemplo.com/logo.png",
-        "width": 600,
-        "height": 60
+      "name": "Cuperinox"
+    },
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": "ES"
       },
-      "sameAs": [
-        "https://twitter.com/empresa",
-        "https://linkedin.com/company/empresa",
-        "https://www.instagram.com/empresa"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+34-XXX-XXX-XXX",
-        "contactType": "customer service",
-        "availableLanguage": ["Spanish", "English"]
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 2,
+          "unitCode": "d"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 3,
+          "unitCode": "d"
+        }
       }
     },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+    }
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.7",
+    "reviewCount": "23"
+  },
+  "review": [
     {
-      "@type": "WebSite",
-      "@id": "https://ejemplo.com/#website",
-      "url": "https://ejemplo.com",
-      "name": "Nombre del Sitio",
-      "publisher": {"@id": "https://ejemplo.com/#organization"},
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://ejemplo.com/buscar?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "@type": "Review",
+      "author": {"@type": "Person", "name": "Cliente verificado"},
+      "datePublished": "2026-03-15",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5"
+      },
+      "reviewBody": "Excelente navaja, muy robusta y el afilador integrado es muy práctico."
     }
   ]
 }
 ```
 
-### Ejemplo FAQPage (crucial para AI Overviews):
+### Schema Organization (una vez, en toda la web):
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://www.cuperinox.es/#organization",
+  "name": "Cuperinox, S.L.",
+  "alternateName": "Cuperinox",
+  "url": "https://www.cuperinox.es",
+  "logo": "https://www.cuperinox.es/wp-content/uploads/logo-cuperinox.png",
+  "description": "Fabricante de cuchillería y menaje profesional de Albacete con 75 años de tradición. Cuchillos, navajas, tijeras y jamoneros de acero inoxidable.",
+  "foundingDate": "2004",
+  "founder": {
+    "@type": "Person",
+    "name": "Familia Peralta"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Calle D, 44, Polígono Industrial Campollano",
+    "addressLocality": "Albacete",
+    "addressRegion": "Castilla-La Mancha",
+    "postalCode": "02007",
+    "addressCountry": "ES"
+  },
+  "sameAs": [
+    "https://www.amazon.es/stores/CUPERINOX/page/XXXXX",
+    "https://www.leroymerlin.es/vendedor/cuperinox.html",
+    "https://www.makro.es/marketplace/b/cuperinox",
+    "https://www.instagram.com/cuperinox/",
+    "https://www.facebook.com/cuperinox/"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": ["Spanish"]
+  },
+  "knowsAbout": [
+    "Cuchillería",
+    "Navajas",
+    "Cuchillos profesionales",
+    "Jamoneros",
+    "Menaje de cocina",
+    "Acero inoxidable",
+    "Tradición cuchillera de Albacete"
+  ]
+}
+```
+
+### Schema BreadcrumbList:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://www.cuperinox.es/"},
+    {"@type": "ListItem", "position": 2, "name": "Navajas", "item": "https://www.cuperinox.es/categoria-producto/navajas/"},
+    {"@type": "ListItem", "position": 3, "name": "Navaja Multiusos 5 en 1"}
+  ]
+}
+```
+
+### Schema FAQPage (en categorías y productos):
 
 ```json
 {
@@ -328,191 +387,102 @@ Sitemap: https://ejemplo.com/sitemap.xml
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "¿Pregunta frecuente 1?",
+      "name": "¿Qué tipo de acero usan las navajas Cuperinox?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Respuesta directa y completa a la pregunta 1."
+        "text": "Las navajas Cuperinox están fabricadas con acero inoxidable AISI 420, un acero de alta resistencia a la corrosión con excelente capacidad de afilado y retención del filo. Toda la producción se realiza en Albacete, España."
       }
     },
     {
       "@type": "Question",
-      "name": "¿Pregunta frecuente 2?",
+      "name": "¿Son legales las navajas Cuperinox en España?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Respuesta directa y completa a la pregunta 2."
+        "text": "Sí. Las navajas con hoja inferior a 11 cm son legales para llevar en España. Las navajas Cuperinox cumplen con la normativa vigente. Para actividades de caza o campo, se permite portar navajas de mayor tamaño con justificación."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cuperinox envía a toda España?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí, Cuperinox envía a toda España peninsular en 24-48 horas. También se realizan envíos a Baleares, Canarias y Europa con plazos y tarifas específicas."
       }
     }
   ]
 }
 ```
 
----
-
-## 1.6 Google AI Overviews (SGE)
-
-Google genera respuestas con IA directamente en los resultados. Las webs citadas como fuente obtienen visibilidad privilegiada.
-
-### Cómo ser citado en AI Overviews:
-
-1. **Secciones FAQ** con schema `FAQPage` — el formato más efectivo
-2. **Respuestas directas** en las primeras 2 frases de cada sección
-3. **Datos y estadísticas propias** con fuente
-4. **Listas y tablas** — los AI Overviews extraen muy bien estos formatos
-5. **Contenido que demuestre E-E-A-T** — Google prioriza fuentes autoritativas
-6. **Headings como preguntas** — facilita la extracción
-
----
-
-# PARTE 2: SEO PARA CHATGPT SEARCH
-
-## 2.1 Concepto Fundamental
-
-En ChatGPT Search NO "rankeas" como en Google. El objetivo es **ser citado o referenciado** en la respuesta que la IA genera. ChatGPT usa RAG (Retrieval-Augmented Generation): indexa, embebe como vectores y recupera pasajes relevantes de fuentes externas.
-
-### Diferencias clave con Google SEO:
-
-| Aspecto | Google SEO | ChatGPT SEO |
-|---------|-----------|-------------|
-| Objetivo | Rankear en posición 1-10 | Ser citado en la respuesta |
-| Unidad | La página completa | El pasaje/párrafo |
-| Keywords | Keywords específicas | Preguntas conversacionales |
-| Métrica | Posición, CTR | Citation Rate |
-| Clic | El usuario hace clic | Puede no haber clic |
-| Queries | Fragmentadas ("mejor hotel madrid") | Conversacionales ("¿cuál es el mejor hotel para familias en Madrid centro?") |
-
-### Dato crítico:
-65-85% de los prompts de ChatGPT **no coinciden con ninguna keyword tradicional**. La keyword research clásica sola deja un gap enorme.
-
-## 2.2 Estrategias de Optimización para ChatGPT
-
-### 2.2.1 Claridad de Entidad
-
-La IA debe poder entender fácilmente:
-- **Quién eres** (persona/empresa)
-- **Qué haces** (producto/servicio)
-- **A quién sirves** (audiencia/mercado)
-
-Implementar con:
-- Schema `Organization` completo
-- Página "Sobre nosotros" clara y detallada
-- Presencia consistente en directorios, Wikipedia (si aplica), redes sociales
-
-### 2.2.2 Estructura del Contenido
-
+### Plugin recomendado para Schema en WooCommerce:
 ```
-[Heading como pregunta]
-[Respuesta directa en 1-2 frases — esto es lo que la IA extrae]
-[Desarrollo con datos, ejemplos, contexto]
-[Estadística o dato que respalde la afirmación]
+- Rank Math SEO (incluye schema Product automático + FAQPage + Organization)
+- O Yoast SEO Premium + WooCommerce SEO addon
+- Evitar instalar ambos — elegir UNO
 ```
 
-### 2.2.3 Contenido Optimizado para Extracción
+## 2.6 SEO Técnico WooCommerce — Checklist Cuperinox
 
-- **Front-load**: la respuesta va PRIMERO, luego el desarrollo
-- **Claims autocontenidos**: cada párrafo debe tener sentido por sí solo
-- **Datos con fuente**: "Según [estudio/fuente], el 73% de..."
-- **Listas y tablas**: formatos fácilmente extraíbles
-- **Definiciones claras**: "X es Y que hace Z" — formato que la IA cita directamente
+### URLs y estructura:
+- [ ] Cambiar URLs de producto con IDs numéricos a slugs descriptivos
+- [ ] Estructura: `/producto/nombre-producto/` (no `/producto/1874/`)
+- [ ] Categorías: `/categoria-producto/navajas/` (OK, mantener)
+- [ ] Configurar permalinks en WP: Ajustes > Enlaces permanentes > Nombre de la entrada
+- [ ] Redirección 301 de URLs viejas a nuevas
 
-### 2.2.4 Autoridad y Menciones
+### Contenido duplicado (problema grave en WooCommerce):
+- [ ] Canonical tags en todas las variaciones de producto
+- [ ] Noindex en: tags de producto, páginas de filtros, resultados de búsqueda interna
+- [ ] Noindex en páginas de paginación (?page=2, ?page=3...)
+- [ ] No permitir que los filtros de precio/color/tamaño creen URLs indexables
+- [ ] Un solo producto = una sola URL canónica
 
-ChatGPT pondera:
-- Menciones en sitios que indexa frecuentemente (medios, Wikipedia, directorios de industria)
-- Backlinks de sitios autoritativos
-- Consistencia de información entre fuentes (NAP para negocios locales)
-- Reviews en plataformas reconocidas
+```php
+// En functions.php — noindex para tags de WooCommerce
+add_action('wp_head', function() {
+    if (is_product_tag()) {
+        echo '<meta name="robots" content="noindex, follow">';
+    }
+});
+```
 
-### 2.2.5 Accesibilidad Técnica
+### Imágenes de producto:
+- [ ] Todas en formato WebP (usar Imagify o ShortPixel)
+- [ ] Alt text descriptivo: "Navaja multiusos 5 en 1 Cuperinox acero inoxidable"
+- [ ] Nombre de archivo descriptivo: `navaja-multiusos-5en1-cuperinox.webp` (no `IMG_4532.jpg`)
+- [ ] Mínimo 5 fotos por producto
+- [ ] Dimensiones definidas (width/height) para evitar CLS
+
+### Páginas innecesarias a noindex:
+- [ ] Mi cuenta (`/mi-cuenta/`)
+- [ ] Carrito (`/carrito/`)
+- [ ] Finalizar compra (`/finalizar-compra/`)
+- [ ] Tags de producto
+- [ ] Resultados de búsqueda interna
+- [ ] Páginas de archivo por fecha
+
+### Internal linking:
+- [ ] Productos relacionados configurados manualmente (no solo automáticos)
+- [ ] Cross-selling y up-selling en cada ficha
+- [ ] Breadcrumbs activos con schema
+- [ ] Menú de navegación con categorías principales
+- [ ] Blog posts que enlacen a fichas de producto
+
+## 2.7 robots.txt para Cuperinox
 
 ```
-# En robots.txt — PERMITIR los bots de ChatGPT:
-User-agent: GPTBot
+User-agent: *
 Allow: /
+Disallow: /mi-cuenta/
+Disallow: /carrito/
+Disallow: /finalizar-compra/
+Disallow: /wp-admin/
+Disallow: /wp-login.php
+Disallow: /*?add-to-cart=*
+Disallow: /*?orderby=*
+Disallow: /*?filter*
+Allow: /wp-admin/admin-ajax.php
 
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-```
-
-- Sitio rápido y crawleable
-- Sin contenido detrás de paywalls/login para lo que quieras que cite
-- Structured data completa
-
-## 2.3 Métrica: Citation Rate
-
-**Citation Rate** = con qué frecuencia tu sitio/marca aparece en respuestas de IA.
-
-- Benchmark actual: **25%** se considera buen nivel de visibilidad
-- Monitorizar tráfico referral desde `chatgpt.com` en analytics
-- Herramientas emergentes: se están desarrollando dashboards específicos para tracking
-
----
-
-# PARTE 3: GEO — GENERATIVE ENGINE OPTIMIZATION
-
-## 3.1 Qué es GEO
-
-Generative Engine Optimization es la práctica de estructurar contenido y presencia online para que los motores de IA — **ChatGPT, Perplexity, Google AI Overviews, Gemini y Claude** — citen, recomienden o incluyan tu contenido en sus respuestas.
-
-### Escala actual (Q1 2026):
-Los buscadores IA manejan un **12-18% de las consultas informacionales** en inglés, vs menos del 2% un año antes. Crecimiento exponencial.
-
-## 3.2 Diferencia Fundamental con SEO
-
-- **SEO** optimiza para **rankear una página**
-- **GEO** optimiza para **ser citado en una respuesta** (a menudo sin clic)
-
-### Mecanismo: RAG (Retrieval-Augmented Generation)
-1. El contenido se trocea en pasajes
-2. Se embebe como vectores semánticos
-3. Se recupera por relevancia semántica al query del usuario
-4. La IA sintetiza una respuesta y cita los pasajes que usó
-
-**La unidad de optimización pasa de la PÁGINA al PASAJE/PÁRRAFO.**
-
-Esto significa que:
-- Claridad > keywords
-- Estructura > longitud
-- Claims autocontenidos > narrativa fluida
-- Datos verificables > opiniones
-
-## 3.3 Tácticas Prácticas de GEO
-
-### 3.3.1 Optimización a Nivel de Pasaje
-
-```html
-<!-- MALO para GEO -->
-<p>Hay muchas formas de invertir y cada una tiene sus ventajas 
-e inconvenientes que dependen de muchos factores como el plazo, 
-el riesgo y la situación personal del inversor...</p>
-
-<!-- BUENO para GEO -->
-<h2>¿Cuáles son las mejores formas de invertir a largo plazo?</h2>
-<p>Las mejores formas de invertir a largo plazo son los fondos indexados 
-globales, los ETFs diversificados y la inversión inmobiliaria. 
-Según datos de Morningstar (2025), los fondos indexados al MSCI World 
-han generado un retorno anualizado del 8.2% en los últimos 30 años.</p>
-```
-
-### 3.3.2 Checklist GEO para Cada Página
-
-- [ ] **Heading como pregunta** que la gente haría a una IA
-- [ ] **Respuesta directa** en las primeras 1-2 frases bajo cada heading
-- [ ] **Al menos 1 estadística o dato** por sección con fuente citada
-- [ ] **Schema markup** relevante (FAQ, Article, HowTo, Product)
-- [ ] **Datos originales** cuando sea posible (estudios propios, encuestas, benchmarks)
-- [ ] **Claims verificables** — evitar opiniones sin respaldo
-- [ ] **Formato extraíble**: listas, tablas, definiciones claras
-- [ ] **robots.txt** permite GPTBot, PerplexityBot, ClaudeBot
-- [ ] **Menciones externas** en sitios que las IAs indexan
-- [ ] **Actualización reciente** — las IAs priorizan contenido fresco
-
-### 3.3.3 Bots de IA — Configuración de robots.txt
-
-```
-# Bots de IA para permitir (GEO)
+# BOTS DE IA — PERMITIR TODOS
 User-agent: GPTBot
 Allow: /
 
@@ -526,9 +496,6 @@ User-agent: PerplexityBot
 Allow: /
 
 User-agent: ClaudeBot
-Allow: /
-
-User-agent: Bytespider
 Allow: /
 
 User-agent: Google-Extended
@@ -540,145 +507,296 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
+User-agent: Bytespider
+Allow: /
+
 User-agent: cohere-ai
 Allow: /
+
+Sitemap: https://www.cuperinox.es/sitemap.xml
 ```
 
-### 3.3.4 Tipos de Contenido que las IAs Citan Más
+### IMPORTANTE — Firewall/WAF:
+Verificar en Cloudflare/Wordfence/Sucuri que NO se esté bloqueando a:
+- Googlebot
+- GPTBot
+- OAI-SearchBot
+- PerplexityBot
+- ClaudeBot
 
-1. **Definiciones claras**: "X es Y" — las IAs las citan directamente
-2. **Estadísticas con fuente**: "El 73% de los usuarios..." 
-3. **Listas comparativas**: "Los 5 mejores X para Y"
-4. **Tablas de datos**: comparaciones estructuradas
-5. **Paso a paso**: guías con instrucciones numeradas
-6. **FAQs**: pregunta + respuesta directa
-7. **Datos originales**: estudios, encuestas, benchmarks propios
+Si usas Wordfence, ir a: Wordfence > Firewall > Blocking > verificar que estos user-agents no están bloqueados.
 
-### 3.3.5 Métricas GEO
+Si usas Cloudflare, ir a: Security > WAF > Custom Rules > crear regla para permitir estos bots.
 
-| Métrica | Qué mide | Herramienta |
-|---------|----------|-------------|
-| Citation Rate | Veces que apareces en respuestas IA | Manual / herramientas GEO emergentes |
-| Tráfico referral IA | Visitas desde chatgpt.com, perplexity.ai | Google Analytics 4 |
-| Brand mentions | Menciones de marca en respuestas IA | Monitorización manual |
-| Benchmark | 25% citation rate = buena visibilidad | - |
+## 2.8 Sitemap XML
 
----
+Configurar con Rank Math o Yoast. Debe incluir:
 
-# PARTE 4: ESTRATEGIA INTEGRADA (Google + ChatGPT + GEO)
+```xml
+<!-- Sitemaps separados: -->
+sitemap-products.xml    <!-- Todas las fichas de producto -->
+sitemap-categories.xml  <!-- Categorías de producto -->
+sitemap-pages.xml       <!-- Páginas estáticas (quiénes somos, contacto) -->
+sitemap-posts.xml       <!-- Posts del blog -->
 
-## 4.1 Las Tres Capas Son Complementarias
-
-No hay que elegir entre SEO clásico y GEO. Son capas que se refuerzan:
-
-| Capa | Objetivo | Acción principal |
-|------|----------|-----------------|
-| SEO Google | Rankear en SERPs | Keywords, backlinks, Core Web Vitals, E-E-A-T |
-| SEO ChatGPT | Ser citado en respuestas | Claridad de entidad, estructura extraíble |
-| GEO | Ser fuente de la IA | Datos originales, claims verificables, schema |
-
-## 4.2 Workflow de Creación de Contenido SEO+GEO
-
-1. **Investigar**: keywords tradicionales + preguntas conversacionales que la gente haría a una IA
-2. **Estructurar**: headings como preguntas, respuestas front-loaded
-3. **Escribir**: claims autocontenidos, datos con fuente, formato extraíble
-4. **Marcar**: schema markup (Article, FAQ, Organization, Product según aplique)
-5. **Optimizar**: Core Web Vitals, mobile-first, velocidad
-6. **E-E-A-T**: autor con bio, experiencia demostrada, fuentes citadas
-7. **Distribuir**: conseguir menciones en sitios que las IAs indexan
-8. **Monitorizar**: posiciones Google + citation rate en IAs + tráfico referral
-
-## 4.3 Errores Comunes a Evitar
-
-1. **Bloquear bots de IA en robots.txt** — verificar siempre
-2. **Contenido tras paywall** que quieres que la IA cite
-3. **Keyword stuffing** — las IAs detectan contenido de baja calidad
-4. **No actualizar contenido** — las IAs priorizan contenido reciente
-5. **Ignorar schema markup** — es el puente entre tu contenido y las IAs
-6. **No tener datos originales** — las IAs prefieren fuentes primarias
-7. **Contenido genérico** sin experiencia real (falla en E-E-A-T)
-8. **No monitorizar tráfico de IAs** — configurar GA4 para tracking referral
+<!-- NO incluir: -->
+<!-- Tags de producto -->
+<!-- Páginas de carrito/checkout/mi-cuenta -->
+<!-- Páginas de filtros -->
+```
 
 ---
 
-# PARTE 5: TEMPLATES RÁPIDOS
+# PARTE 3: SEO PARA CHATGPT SEARCH — CUPERINOX
 
-## 5.1 Template de Artículo SEO+GEO
+## 3.1 Cómo ChatGPT Podría Citar a Cuperinox
 
+Cuando alguien pregunte a ChatGPT:
+- "¿Cuál es el mejor cuchillo jamonero español?"
+- "¿Dónde comprar navajas de Albacete?"
+- "¿Qué jamonero profesional comprar?"
+
+ChatGPT debe encontrar y citar a cuperinox.es. Para eso:
+
+### 3.1.1 Claridad de Entidad
+
+ChatGPT debe entender QUÉ es Cuperinox. Necesita:
+
+1. **Schema Organization completo** (ver sección 2.5)
+2. **Página "Quiénes somos" optimizada** con:
+   - Historia: 75 años, evolución desde Cuchillería Peralta
+   - Ubicación: Albacete, capital de la cuchillería española
+   - Qué fabrican: lista clara de categorías
+   - Diferenciación: fabricación propia, acero inoxidable, tradición artesanal
+3. **Presencia consistente** en directorios:
+   - Wikipedia (artículo de cuchillería de Albacete que mencione a Cuperinox)
+   - Google Business Profile actualizado
+   - Directorios: QDQ, Empresite, Axesor, ADECA (ya están, mantener actualizados)
+
+### 3.1.2 Contenido que ChatGPT Extraiga
+
+Cada página debe tener **pasajes autocontenidos** que la IA pueda citar:
+
+```
+EJEMPLO — En la página de categoría "Jamoneros":
+
+"Cuperinox fabrica jamoneros profesionales de madera y acero inoxidable 
+en Albacete desde 2004. El jamonero góndola Cuperinox es el modelo más 
+vendido para uso doméstico, con base antideslizante y pincho regulable. 
+Precio desde 39,95€ con envío en 24-48h a toda España."
+```
+
+Ese párrafo puede ser citado tal cual por ChatGPT. Contiene: qué es, quién lo hace, dónde, modelo concreto, precio, envío.
+
+### 3.1.3 Blog con Contenido de Autoridad
+
+Crear artículos que respondan preguntas que la gente hace a ChatGPT:
+
+| Pregunta conversacional | Artículo del blog |
+|------------------------|-------------------|
+| "¿Cuál es el mejor cuchillo jamonero?" | "Guía: Cómo Elegir el Mejor Cuchillo Jamonero en 2026" |
+| "¿Qué navaja comprar para camping?" | "Las 5 Mejores Navajas para Camping y Outdoor" |
+| "¿Cómo se afila un cuchillo correctamente?" | "Guía Completa: Cómo Afilar Cuchillos como un Profesional" |
+| "¿Son legales las navajas en España?" | "Normativa sobre Navajas en España: Qué Puedes y Qué No" |
+| "¿Qué tijeras de costura comprar?" | "Tijeras de Costura Profesionales: Guía de Compra 2026" |
+| "¿Qué regalo para alguien que le gusta cocinar?" | "10 Regalos de Cocina para Foodies: Cuchillos y Menaje Premium" |
+| "¿Diferencia entre acero inoxidable y acero al carbono?" | "Acero Inoxidable vs Acero al Carbono en Cuchillos: ¿Cuál Elegir?" |
+
+Cada artículo debe:
+- Responder la pregunta en las primeras 2 frases
+- Incluir datos propios (de Cuperinox como fabricante)
+- Mencionar productos Cuperinox con enlace interno
+- Tener FAQ section con schema
+
+## 3.2 Métricas ChatGPT para Cuperinox
+
+- Monitorizar tráfico referral desde `chatgpt.com` en Google Analytics 4
+- Buscar periódicamente en ChatGPT: "mejor cuchillo jamonero", "navajas Albacete", "comprar navajas online España" — verificar si Cuperinox aparece
+- Citation Rate objetivo: aparecer en al menos 1 de cada 4 consultas relevantes
+
+---
+
+# PARTE 4: GEO — GENERATIVE ENGINE OPTIMIZATION PARA CUPERINOX
+
+## 4.1 Por Qué GEO es Crucial para Cuperinox
+
+Los buscadores IA manejan ya un 12-18% de las consultas informacionales (Q1 2026). Para un e-commerce de nicho como Cuperinox, esto significa:
+
+- Cuando alguien pregunta a Perplexity "mejores navajas españolas", Cuperinox debe aparecer
+- Cuando alguien pregunta a Gemini "jamonero profesional recomendado", Cuperinox debe ser citado
+- La unidad de optimización es el PASAJE, no la página
+
+## 4.2 Tácticas GEO Específicas para Cuperinox
+
+### 4.2.1 Claims Verificables en Cada Página
+
+```
+BUENO (citable por IA):
+"Cuperinox es un fabricante español de cuchillería fundado en Albacete en 2004, 
+continuando 75 años de tradición de Cuchillería Peralta. Fabrica navajas, 
+cuchillos, tijeras y jamoneros de acero inoxidable en el Polígono Industrial 
+Campollano de Albacete."
+
+MALO (no citable):
+"Somos una empresa con mucha experiencia en el sector que fabrica productos 
+de gran calidad para nuestros clientes."
+```
+
+### 4.2.2 Datos Originales que las IAs Prioricen
+
+Como fabricante, Cuperinox tiene datos que nadie más tiene:
+- "El 73% de nuestras navajas se venden para uso outdoor y camping"
+- "Cada cuchillo jamonero Cuperinox se afila a mano con ángulo de 15°"
+- "Producimos más de X.000 navajas al año en nuestra fábrica de Albacete"
+- "El acero AISI 420 que usamos tiene una dureza de 54-56 HRC"
+
+Estos datos originales son ORO para GEO — las IAs priorizan fuentes primarias.
+
+### 4.2.3 Formato de Contenido para Extracción IA
+
+**Definiciones claras:**
+```
+"Un jamonero góndola es un soporte para jamón con forma de barco que permite 
+fijar la pieza de jamón en posición horizontal. Se diferencia del jamonero de 
+pincho por su mayor estabilidad y facilidad de corte."
+```
+
+**Tablas comparativas:**
 ```html
-<!-- Schema Article + FAQ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Título con keyword principal",
-  "author": {"@type": "Person", "name": "Autor", "url": "URL perfil"},
-  "datePublished": "2026-XX-XX",
-  "dateModified": "2026-XX-XX",
-  "publisher": {"@type": "Organization", "name": "Marca"}
-}
-</script>
-
-<article>
-  <h1>¿Keyword principal como pregunta o afirmación directa?</h1>
-  <p><strong>Respuesta directa en 1-2 frases.</strong> Desarrollo con dato 
-  respaldado por fuente. Según [fuente], [estadística relevante].</p>
-  
-  <h2>¿Subtema como pregunta?</h2>
-  <p>Respuesta directa. Desarrollo. Dato con fuente.</p>
-  
-  <h2>Preguntas frecuentes</h2>
-  <h3>¿Pregunta 1?</h3>
-  <p>Respuesta directa y completa.</p>
-  
-  <h3>¿Pregunta 2?</h3>
-  <p>Respuesta directa y completa.</p>
-</article>
+<table>
+  <caption>Comparativa de Jamoneros Cuperinox</caption>
+  <thead>
+    <tr><th>Modelo</th><th>Material</th><th>Uso</th><th>Precio</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Góndola Profesional</td><td>Madera + acero</td><td>Hostelería</td><td>89,95€</td></tr>
+    <tr><td>Góndola Doméstico</td><td>Madera</td><td>Hogar</td><td>49,95€</td></tr>
+    <tr><td>Pincho Básico</td><td>Madera</td><td>Hogar</td><td>29,95€</td></tr>
+  </tbody>
+</table>
 ```
 
-## 5.2 Checklist Rápido Pre-Publicación
+**Listas de recomendación:**
+```
+Las 3 mejores navajas Cuperinox para camping son:
+1. Navaja Outdoor Series Camuflaje — acero inoxidable negro, mango antideslizante
+2. Navaja Multiusos 5 en 1 — con afilador, abrebotella y cortacuerdas integrados
+3. Navaja Bloqueo Seguridad — liner lock, hoja de 8.5cm, ideal para EDC
+```
+
+## 4.3 robots.txt para Bots IA
+
+Ver sección 2.7 — verificar especialmente que:
+- GPTBot NO está bloqueado
+- OAI-SearchBot NO está bloqueado
+- PerplexityBot NO está bloqueado
+- El WAF/firewall no devuelve 403 a estos bots
+
+---
+
+# PARTE 5: PLAN DE ACCIÓN — PRIORIDADES
+
+## Prioridad 1 — URGENTE (semana 1-2):
+1. Verificar que el firewall no bloquea Googlebot ni bots de IA
+2. Instalar/configurar Rank Math SEO (schema automático para productos)
+3. Corregir URLs de productos con IDs numéricos → slugs descriptivos
+4. Configurar robots.txt correcto (ver sección 2.7)
+5. Verificar sitemap XML en Google Search Console
+
+## Prioridad 2 — IMPORTANTE (semana 3-4):
+6. Optimizar títulos y meta descriptions de TODOS los productos
+7. Añadir contenido a páginas de categoría (texto intro + FAQ)
+8. Ampliar descripciones de producto (mín. 300 palabras cada una)
+9. Optimizar imágenes (WebP, alt text, nombres descriptivos)
+10. Configurar Schema Organization completo
+
+## Prioridad 3 — CRECIMIENTO (mes 2-3):
+11. Crear blog con los artículos de la tabla de la sección 3.1.3
+12. Implementar reviews de clientes con schema
+13. Optimizar velocidad (caché, CDN, limpieza de plugins)
+14. Construir internal linking entre productos, categorías y blog
+15. Conseguir backlinks de asociaciones de Albacete, medios sectoriales
+
+## Prioridad 4 — MANTENIMIENTO (continuo):
+16. Actualizar contenido existente cada 3-6 meses
+17. Monitorizar Citation Rate en ChatGPT, Perplexity, Gemini
+18. Monitorizar tráfico referral de IAs en GA4
+19. Publicar 2-4 artículos de blog al mes
+20. Responder reviews de clientes
+
+---
+
+# PARTE 6: PLUGINS WOOCOMMERCE RECOMENDADOS PARA SEO
 
 ```
-SEO GOOGLE:
-[ ] Title tag < 60 chars con keyword al inicio
-[ ] Meta description 150-160 chars con keyword + CTA
-[ ] URL limpia y descriptiva
-[ ] H1 único con keyword principal
-[ ] Imágenes con alt text + compresión WebP
-[ ] Internal links a contenido relacionado
-[ ] Core Web Vitals OK (LCP < 2.5s, CLS < 0.1, INP < 200ms)
-[ ] Mobile responsive
-[ ] Schema markup validada
-[ ] Canonical tag
-
-GEO / IA:
-[ ] Respuesta directa en primeras 2 frases de cada sección
-[ ] Headings como preguntas conversacionales
-[ ] Al menos 1 estadística con fuente por sección
-[ ] FAQ section con schema FAQPage
-[ ] Claims autocontenidos (cada párrafo funciona solo)
-[ ] robots.txt permite GPTBot, PerplexityBot, ClaudeBot
-[ ] Datos originales cuando sea posible
-[ ] Contenido actualizado recientemente
+SEO General:
+  - Rank Math SEO (FREE/PRO) — schema, titles, sitemap, redirects, todo en uno
+  
+Velocidad:
+  - WP Rocket — caché (de pago, el mejor)
+  - LiteSpeed Cache — alternativa gratuita si el hosting es LiteSpeed
+  - Imagify — compresión y conversión a WebP
+  - Perfmatters — desactivar scripts por página
+  
+Schema adicional:
+  - Rank Math lo cubre todo. Si usas Yoast, añadir Schema Pro.
+  
+Reviews:
+  - Site Reviews — reviews con schema automático
+  - O activar reviews nativas de WooCommerce + schema de Rank Math
+  
+Analytics:
+  - Google Site Kit — conectar Analytics + Search Console desde WP
+  - Rank Math Analytics — métricas SEO dentro del dashboard
+  
+Seguridad (sin bloquear bots):
+  - Wordfence — pero configurar whitelist para bots de IA
+  - Cloudflare — crear regla Allow para user-agents de bots IA
 ```
 
 ---
 
-# PARTE 6: REFERENCIA RÁPIDA DE BOTS DE IA
+# PARTE 7: REFERENCIA RÁPIDA
 
-| Bot | Propietario | Qué hace |
-|-----|------------|----------|
-| GPTBot | OpenAI | Crawlea para entrenar modelos |
-| ChatGPT-User | OpenAI | Browsing en tiempo real de ChatGPT |
+## Bots de IA — User Agents
+
+| Bot | Propietario | Función |
+|-----|------------|---------|
+| GPTBot | OpenAI | Crawling para entrenamiento |
+| ChatGPT-User | OpenAI | Browsing en tiempo real |
 | OAI-SearchBot | OpenAI | ChatGPT Search |
 | PerplexityBot | Perplexity | Búsqueda y citación |
 | ClaudeBot | Anthropic | Crawling de Claude |
-| anthropic-ai | Anthropic | Entrenamiento Anthropic |
 | Google-Extended | Google | Gemini / AI Overviews |
 | Applebot-Extended | Apple | Apple Intelligence |
-| Bytespider | ByteDance | Crawling para TikTok/Doubao |
-| cohere-ai | Cohere | Modelos Cohere |
+| Bytespider | ByteDance | TikTok/Doubao |
+
+## Checklist Pre-Publicación de Producto
+
+```
+SEO GOOGLE:
+[ ] Title < 60 chars, keyword al inicio, "| Cuperinox" al final
+[ ] Meta description 150-160 chars con keyword + precio + CTA
+[ ] URL slug descriptiva (no IDs numéricos)
+[ ] H1 con keyword natural
+[ ] Mín. 5 imágenes WebP con alt text descriptivo
+[ ] Descripción > 300 palabras
+[ ] Tabla de características técnicas
+[ ] FAQ con schema FAQPage
+[ ] Schema Product completo (precio, stock, reviews, envío)
+[ ] Breadcrumbs con schema
+[ ] Productos relacionados configurados
+[ ] Internal links a categoría y blog
+
+GEO / IA:
+[ ] Respuesta directa en primeras 2 frases de la descripción
+[ ] Claims autocontenidos (cada párrafo funciona solo)
+[ ] Al menos 1 dato propio (como fabricante)
+[ ] Formato extraíble: tablas, listas, definiciones
+[ ] Contenido que responda preguntas conversacionales
+```
 
 ---
 
-*Guía compilada en julio 2026. Actualizar periódicamente con cambios de algoritmo.*
+*Guía creada para www.cuperinox.es — Julio 2026*
+*Actualizar con cada cambio de algoritmo de Google o evolución de los buscadores IA*
