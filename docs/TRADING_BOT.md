@@ -181,15 +181,54 @@ timestamp,open,high,low,close,volume
 mercado.** Un error de zona horaria no da error: desplaza en silencio el rango
 de apertura y la hora de cierre forzado. Los epoch se interpretan como UTC.
 
-De dónde sacar velas de 5 minutos del S&P 500:
+#### Exportar desde MetaTrader 5
 
-- **MetaTrader 5** — Herramientas › Centro de histórico › exportar (gratis con
-  cualquier bróker de CFD).
+Con el terminal abierto y con sesión iniciada, en la máquina Windows:
+
+```bash
+pip install MetaTrader5
+python scripts/export_mt5.py --symbol SP500m --timeframe M5 --days 180
+```
+
+Escribe `data/SP500m_M5.csv` y además imprime:
+
+- el **desfase horario del servidor** del bróker (MT5 no da las velas en hora
+  del mercado, sino en hora del servidor);
+- un `InstrumentSpec` listo para pegar, construido con el tick, el valor del
+  tick y la **horquilla real** de tu símbolo;
+- cuántos aciertos exige esa horquilla para cada tamaño de stop.
+
+Por GUI el camino equivalente es **Ver › Símbolos (Ctrl+U) › pestaña Barras**:
+elegir símbolo y periodo, *Solicitar*, y *Exportar barras*. No está en
+Herramientas › Opciones.
+
+Otras fuentes:
+
 - **TradingView** — botón de exportar datos del gráfico (requiere plan de pago
   para intradía histórico largo).
 - **Interactive Brokers** — `reqHistoricalData` vía API.
 - **Databento / FirstRate / Kibot** — datos de futuro ES de pago, con calidad
   de tick.
+
+#### La horquilla decide si esto es viable
+
+Con la horquilla de 0,7 puntos de un CFD tipo `SP500m`, pagada al entrar y al
+salir, el umbral de acierto de una estrategia 1:1 es:
+
+| stop | aciertos necesarios |
+|---|---|
+| 3 pts | 73,3 % |
+| 4 pts | 67,5 % |
+| 6 pts | 61,7 % |
+| 8 pts | 58,8 % |
+| 12 pts | 55,8 % |
+| 20 pts | 53,5 % |
+
+Ninguna estrategia intradía sostiene un 70 % de aciertos. La conclusión
+práctica es que con horquilla ancha **los stops muy ajustados son inviables por
+aritmética**, antes incluso de mirar si la estrategia funciona: sube
+`min_stop_points` o usa un vehículo más barato (futuro MES/ES). `cost_hurdle()`
+en `src/trading/mt5_export.py` calcula esta tabla para tu horquilla real.
 
 ### Desde Python
 
