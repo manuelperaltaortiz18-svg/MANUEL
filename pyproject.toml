@@ -4,6 +4,10 @@ version = "1.0.0"
 description = "Long-term compounding-first investment research and portfolio management system"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+automation = ["playwright>=1.40"]
+dev = ["pytest>=7.0", "playwright>=1.40"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
