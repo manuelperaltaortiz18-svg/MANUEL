@@ -165,13 +165,31 @@ python scripts/run_backtest.py --instrument US500 --longs-only \
     --session-start 09:00 --session-end 17:30 --entry-cutoff 16:30 --flat-at 17:15
 ```
 
-Formato del CSV (cabecera obligatoria; la marca de tiempo es la **apertura** de
-la vela y debe estar en hora local del mercado):
+### Datos
+
+El cargador acepta directamente lo que exportan brókeres y plataformas:
+separador coma, punto y coma o tabulador; cabeceras `<DATE>`/`<TIME>` de
+MetaTrader; marcas de tiempo ISO, `2026.01.05 09:30`, `05/01/2026 09:30` o
+epoch Unix (TradingView). Mínimo: una columna de fecha/hora y open/high/low/close.
 
 ```
 timestamp,open,high,low,close,volume
 2026-01-02T09:30:00,4780.25,4783.50,4779.00,4782.75,15230
 ```
+
+**La marca de tiempo es la apertura de la vela y debe estar en hora local del
+mercado.** Un error de zona horaria no da error: desplaza en silencio el rango
+de apertura y la hora de cierre forzado. Los epoch se interpretan como UTC.
+
+De dónde sacar velas de 5 minutos del S&P 500:
+
+- **MetaTrader 5** — Herramientas › Centro de histórico › exportar (gratis con
+  cualquier bróker de CFD).
+- **TradingView** — botón de exportar datos del gráfico (requiere plan de pago
+  para intradía histórico largo).
+- **Interactive Brokers** — `reqHistoricalData` vía API.
+- **Databento / FirstRate / Kibot** — datos de futuro ES de pago, con calidad
+  de tick.
 
 ### Desde Python
 

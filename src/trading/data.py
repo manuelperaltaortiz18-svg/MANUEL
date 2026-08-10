@@ -12,28 +12,62 @@ from __future__ import annotations
 
 import csv
 import random
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Iterator, Optional, Sequence
 
 from src.trading.models import Bar
 
-_TIMESTAMP_FIELDS = ("timestamp", "datetime", "date", "time")
+_TIMESTAMP_FIELDS = ("timestamp", "datetime", "date", "time", "local time", "gmt time")
+_DATE_FIELDS = ("date", "day")
+_TIME_FIELDS = ("time", "hour")
+_OHLC_ALIASES = {
+    "open": ("open", "o", "openprice", "open price"),
+    "high": ("high", "h", "highprice", "high price"),
+    "low": ("low", "l", "lowprice", "low price"),
+    "close": ("close", "c", "closeprice", "close price", "last", "price"),
+    "volume": ("volume", "vol", "v", "tickvol", "tick volume", "real volume"),
+}
 _ACCEPTED_FORMATS = (
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d %H:%M",
     "%Y-%m-%dT%H:%M:%S",
     "%Y-%m-%dT%H:%M",
+    "%Y.%m.%d %H:%M:%S",  # MetaTrader export
+    "%Y.%m.%d %H:%M",
     "%d/%m/%Y %H:%M:%S",
     "%d/%m/%Y %H:%M",
+    "%m/%d/%Y %H:%M:%S",
+    "%d.%m.%Y %H:%M:%S.%f",  # Dukascopy export
+    "%Y-%m-%d",
+    "%Y.%m.%d",
+    "%d/%m/%Y",
 )
 
 
 def parse_timestamp(raw: str) -> datetime:
-    """Parse the timestamp formats commonly exported by data vendors."""
-    text = raw.strip()
+    """
+    Parse the timestamp formats real broker and vendor exports actually use.
+
+    Covers ISO, MetaTrader dots, European and US slashes, Dukascopy
+    milliseconds, and Unix epochs in seconds or milliseconds (TradingView).
+
+    Epochs are read as UTC and returned naive. Everything else is taken at face
+    value. Since the bot compares bar times against session hours, the data must
+    be exported in exchange local time — a timezone mistake silently shifts the
+    opening range and the flat-at cutoff.
+    """
+    text = raw.strip().strip('"')
+    if not text:
+        raise ValueError("Empty timestamp")
+
+    digits = text.replace(".", "")
+    if digits.isdigit() and len(digits) in (10, 13):
+        seconds = int(digits) / (1000 if len(digits) == 13 else 1)
+        return datetime.fromtimestamp(seconds, tz=timezone.utc).replace(tzinfo=None)
+
     try:
-        return datetime.fromisoformat(text)
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).replace(tzinfo=None)
     except ValueError:
         pass
     for fmt in _ACCEPTED_FORMATS:
@@ -44,30 +78,83 @@ def parse_timestamp(raw: str) -> datetime:
     raise ValueError(f"Unrecognised timestamp: {raw!r}")
 
 
+def _normalise(name: str) -> str:
+    """MetaTrader writes '<OPEN>', some vendors 'Open Price' — flatten both."""
+    return name.strip().strip("<>").strip().lower().replace("_", " ")
+
+
+def _find(lookup: dict[str, str], names: tuple[str, ...]) -> Optional[str]:
+    for name in names:
+        if name in lookup:
+            return lookup[name]
+    return None
+
+
+def _sniff_delimiter(sample: str) -> str:
+    """Pick the separator by counting candidates in the header line."""
+    header = sample.splitlines()[0] if sample else ""
+    counts = {sep: header.count(sep) for sep in ("\t", ";", ",")}
+    best = max(counts, key=counts.get)
+    return best if counts[best] > 0 else ","
+
+
 def load_csv(path: str | Path) -> list[Bar]:
-    """Load OHLCV bars from CSV, sorted by time. Bar timestamps are open times."""
-    bars: list[Bar] = []
-    with open(path, newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        if reader.fieldnames is None:
+    """
+    Load OHLCV bars from a delimited text file, sorted by time.
+
+    Accepts comma, semicolon or tab separated files, MetaTrader-style
+    `<DATE>`/`<TIME>` column pairs, and epoch or textual timestamps. Bar
+    timestamps are OPEN times, in the market's local timezone — no conversion
+    is performed, so export the data in exchange time.
+    """
+    with open(path, newline="", encoding="utf-8-sig") as handle:
+        sample = handle.read(8192)
+        handle.seek(0)
+        reader = csv.DictReader(handle, delimiter=_sniff_delimiter(sample))
+        if not reader.fieldnames:
             raise ValueError(f"{path}: empty file or missing header")
-        lookup = {name.strip().lower(): name for name in reader.fieldnames}
-        ts_key = next((lookup[f] for f in _TIMESTAMP_FIELDS if f in lookup), None)
-        if ts_key is None:
-            raise ValueError(f"{path}: no timestamp column found in {reader.fieldnames}")
-        for row in reader:
-            if not row.get(ts_key):
-                continue
-            bars.append(
-                Bar(
-                    timestamp=parse_timestamp(row[ts_key]),
-                    open=float(row[lookup["open"]]),
-                    high=float(row[lookup["high"]]),
-                    low=float(row[lookup["low"]]),
-                    close=float(row[lookup["close"]]),
-                    volume=float(row.get(lookup.get("volume", ""), 0) or 0),
-                )
+
+        lookup = {_normalise(name): name for name in reader.fieldnames if name}
+        ts_key = _find(lookup, _TIMESTAMP_FIELDS)
+        date_key = _find(lookup, _DATE_FIELDS)
+        time_key = _find(lookup, _TIME_FIELDS)
+        split_timestamp = date_key is not None and time_key is not None
+        if ts_key is None and not split_timestamp:
+            raise ValueError(
+                f"{path}: no timestamp column found in {reader.fieldnames}"
             )
+
+        columns = {
+            field: _find(lookup, aliases) for field, aliases in _OHLC_ALIASES.items()
+        }
+        missing = [f for f in ("open", "high", "low", "close") if columns[f] is None]
+        if missing:
+            raise ValueError(f"{path}: missing column(s) {missing} in {reader.fieldnames}")
+
+        bars: list[Bar] = []
+        for line, row in enumerate(reader, start=2):
+            if split_timestamp:
+                raw = f"{row.get(date_key, '')} {row.get(time_key, '')}".strip()
+            else:
+                raw = (row.get(ts_key) or "").strip()
+            if not raw or not (row.get(columns["close"]) or "").strip():
+                continue  # blank or padding row
+            try:
+                bars.append(
+                    Bar(
+                        timestamp=parse_timestamp(raw),
+                        open=float(row[columns["open"]]),
+                        high=float(row[columns["high"]]),
+                        low=float(row[columns["low"]]),
+                        close=float(row[columns["close"]]),
+                        volume=float(
+                            (columns["volume"] and row.get(columns["volume"])) or 0
+                        ),
+                    )
+                )
+            except ValueError as exc:
+                raise ValueError(f"{path}: line {line}: {exc}") from exc
+
     bars.sort(key=lambda b: b.timestamp)
     return bars
 

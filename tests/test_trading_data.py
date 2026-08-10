@@ -24,8 +24,53 @@ def test_parse_timestamp_accepts_common_vendor_formats():
     assert parse_timestamp("2026-01-05T09:30:00") == datetime(2026, 1, 5, 9, 30)
     assert parse_timestamp("2026-01-05 09:30") == datetime(2026, 1, 5, 9, 30)
     assert parse_timestamp("05/01/2026 09:30:00") == datetime(2026, 1, 5, 9, 30)
+    assert parse_timestamp("2026.01.05 09:30:00") == datetime(2026, 1, 5, 9, 30)  # MT5
     with pytest.raises(ValueError):
         parse_timestamp("not a date")
+
+
+def test_parse_timestamp_accepts_unix_epochs():
+    assert parse_timestamp("1767605400") == datetime(2026, 1, 5, 9, 30)
+    assert parse_timestamp("1767605400000") == datetime(2026, 1, 5, 9, 30)
+
+
+def test_load_csv_reads_metatrader_tab_separated_exports(tmp_path):
+    path = tmp_path / "mt5.csv"
+    path.write_text(
+        "<DATE>\t<TIME>\t<OPEN>\t<HIGH>\t<LOW>\t<CLOSE>\t<TICKVOL>\n"
+        "2026.01.05\t09:30:00\t5000.0\t5005.0\t4998.0\t5003.0\t1200\n"
+        "2026.01.05\t09:35:00\t5003.0\t5008.0\t5002.0\t5007.0\t900\n",
+        encoding="utf-8",
+    )
+    bars = load_csv(path)
+    assert len(bars) == 2
+    assert bars[0].timestamp == datetime(2026, 1, 5, 9, 30)
+    assert bars[0].close == 5003.0
+    assert bars[1].volume == 900
+
+
+def test_load_csv_reads_semicolon_files_and_skips_padding_rows(tmp_path):
+    path = tmp_path / "eu.csv"
+    path.write_text(
+        "Date;Open;High;Low;Close;Volume\n"
+        "05/01/2026 09:30:00;5000,0;5005,0;4998,0;5003,0;10\n".replace(",", "."),
+        encoding="utf-8",
+    )
+    bars = load_csv(path)
+    assert len(bars) == 1
+    assert bars[0].open == 5000.0
+
+
+def test_load_csv_reports_the_offending_line(tmp_path):
+    path = tmp_path / "bad.csv"
+    path.write_text(
+        "timestamp,open,high,low,close\n"
+        "2026-01-05T09:30:00,5000,5005,4998,5003\n"
+        "2026-01-05T09:35:00,5003,4000,5002,5007\n",  # high below open
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="line 3"):
+        load_csv(path)
 
 
 def test_load_csv_reads_bars_in_order(tmp_path):
