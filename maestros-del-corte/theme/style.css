@@ -1,0 +1,20 @@
+/*
+Theme Name: Maestros del Corte
+Theme URI: https://maestrosdelcorte.es
+Author: Cuperinox
+Description: Tema de bloques a medida para Maestros del Corte by Cuperinox. Diseñado para catálogo corto de producto premium (soportes jamoneros, estuches de cuchillos y packs) sobre WooCommerce.
+Version: 1.0.0
+Requires at least: 6.5
+Tested up to: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: maestros-del-corte
+Tags: block-theme, full-site-editing, e-commerce, custom-colors, custom-menu, wide-blocks
+*/
+
+/*
+ * El grueso del diseño vive en theme.json (colores, tipografía, espaciados).
+ * Este archivo solo cubre lo que theme.json todavía no puede expresar.
+ * Los estilos de detalle están en assets/css/woocommerce.css.
+ */

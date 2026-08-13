@@ -1,0 +1,316 @@
+/**
+ * Maestros del Corte — acabado de WooCommerce.
+ *
+ * WooCommerce trae su propio CSS pensado para funcionar en cualquier tema.
+ * Aquí solo se corrigen los puntos donde ese estilo genérico rompe la
+ * sensación de marca: rejilla del catálogo, ficha de producto y checkout.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Catálogo
+ * ------------------------------------------------------------------ */
+
+.woocommerce ul.products {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--wp--preset--spacing--50) var(--wp--preset--spacing--40);
+	margin: 0;
+	padding: 0;
+}
+
+.woocommerce ul.products::before,
+.woocommerce ul.products::after {
+	content: none;
+}
+
+.woocommerce ul.products li.product {
+	width: 100%;
+	margin: 0;
+	float: none;
+	text-align: left;
+}
+
+.woocommerce ul.products li.product a img {
+	margin: 0 0 1rem;
+	border-radius: 2px;
+	background-color: var(--wp--preset--color--surface);
+	aspect-ratio: 4 / 5;
+	object-fit: cover;
+	transition: opacity 0.35s ease;
+}
+
+.woocommerce ul.products li.product:hover a img {
+	opacity: 0.88;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 1.25rem;
+	font-weight: 500;
+	line-height: 1.25;
+	padding: 0;
+	margin: 0 0 0.35rem;
+}
+
+.woocommerce ul.products li.product .price {
+	color: var(--wp--preset--color--contrast);
+	font-family: var(--wp--preset--font-family--body);
+	font-size: 0.9375rem;
+	font-weight: 500;
+}
+
+.woocommerce ul.products li.product .price del {
+	color: var(--wp--preset--color--contrast-soft);
+	opacity: 1;
+	margin-right: 0.4rem;
+}
+
+/* El botón de "añadir al carrito" en la rejilla resta más que suma en
+ * ticket alto: empuja a comprar sin haber leído la ficha. Se deja como
+ * enlace discreto y la venta se cierra en la ficha. */
+.woocommerce ul.products li.product .button {
+	background: none;
+	color: var(--wp--preset--color--accent);
+	padding: 0;
+	margin-top: 0.6rem;
+	font-size: 0.75rem;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.woocommerce span.onsale {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--base);
+	border-radius: 2px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	min-height: 0;
+	min-width: 0;
+	line-height: 1;
+	padding: 0.5rem 0.75rem;
+}
+
+.woocommerce .woocommerce-result-count,
+.woocommerce .woocommerce-ordering select {
+	color: var(--wp--preset--color--contrast-soft);
+	font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Ficha de producto
+ * ------------------------------------------------------------------ */
+
+.woocommerce div.product .product_title {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: clamp(2rem, 4vw, 2.75rem);
+	font-weight: 500;
+	line-height: 1.1;
+	letter-spacing: -0.015em;
+	margin-bottom: 0.75rem;
+}
+
+.woocommerce div.product p.price {
+	color: var(--wp--preset--color--contrast);
+	font-size: 1.5rem;
+	font-weight: 500;
+	margin-bottom: 1.25rem;
+}
+
+.woocommerce div.product .woocommerce-product-details__short-description {
+	color: var(--wp--preset--color--contrast-soft);
+	font-size: 1.0625rem;
+	line-height: 1.7;
+	margin-bottom: 1.75rem;
+}
+
+.woocommerce div.product form.cart .button {
+	width: 100%;
+	padding: 1.1rem 2rem;
+	border-radius: 2px;
+	background-color: var(--wp--preset--color--contrast);
+	color: var(--wp--preset--color--base);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	transition: background-color 0.2s ease;
+}
+
+.woocommerce div.product form.cart .button:hover {
+	background-color: var(--wp--preset--color--accent);
+	color: var(--wp--preset--color--base);
+}
+
+.woocommerce div.product form.cart div.quantity {
+	margin-bottom: 1rem;
+	float: none;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs {
+	padding: 0;
+	margin: 0 0 2rem;
+	border-bottom: 1px solid var(--wp--preset--color--line);
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs::before {
+	border: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li {
+	background: none;
+	border: 0;
+	border-radius: 0;
+	margin: 0 2rem 0 0;
+	padding: 0 0 0.9rem;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::after {
+	content: none;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li a {
+	color: var(--wp--preset--color--contrast-soft);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	text-decoration: none;
+	padding: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li.active a {
+	color: var(--wp--preset--color--contrast);
+	box-shadow: inset 0 -2px 0 0 var(--wp--preset--color--accent);
+	padding-bottom: 0.9rem;
+}
+
+/* Sellos de confianza bajo el botón de compra (ver functions.php). */
+.mdc-trust {
+	list-style: none;
+	margin: 1.25rem 0 0;
+	padding: 1.25rem 0 0;
+	border-top: 1px solid var(--wp--preset--color--line);
+	display: grid;
+	gap: 0.55rem;
+}
+
+.mdc-trust li {
+	position: relative;
+	padding-left: 1.5rem;
+	color: var(--wp--preset--color--contrast-soft);
+	font-size: 0.875rem;
+}
+
+.mdc-trust li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.45em;
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background-color: var(--wp--preset--color--accent);
+}
+
+/* ------------------------------------------------------------------ *
+ * Avisos, carrito y checkout
+ * ------------------------------------------------------------------ */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error {
+	border-top-color: var(--wp--preset--color--accent);
+	background-color: var(--wp--preset--color--surface);
+	border-radius: 2px;
+	font-size: 0.9375rem;
+}
+
+.woocommerce-error {
+	border-top-color: #B3261E;
+}
+
+.woocommerce-message::before,
+.woocommerce-info::before {
+	color: var(--wp--preset--color--accent);
+}
+
+.woocommerce table.shop_table {
+	border-radius: 2px;
+	border-color: var(--wp--preset--color--line);
+}
+
+.woocommerce table.shop_table th {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--wp--preset--color--contrast-soft);
+}
+
+.woocommerce .cart_totals h2,
+.woocommerce-checkout h3 {
+	font-family: var(--wp--preset--font-family--display);
+	font-size: 1.5rem;
+	font-weight: 500;
+}
+
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select {
+	border: 1px solid var(--wp--preset--color--line);
+	border-radius: 2px;
+	padding: 0.85rem 1rem;
+	font-size: 1rem;
+	background-color: #FFFFFF;
+}
+
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,
+.woocommerce form .form-row select:focus {
+	border-color: var(--wp--preset--color--accent);
+	outline: 2px solid rgba(21, 62, 110, 0.18);
+	outline-offset: 1px;
+}
+
+.woocommerce #payment div.payment_box {
+	background-color: var(--wp--preset--color--surface);
+	border-radius: 2px;
+}
+
+.woocommerce #payment div.payment_box::before {
+	border-bottom-color: var(--wp--preset--color--surface);
+}
+
+/* ------------------------------------------------------------------ *
+ * Adaptación a pantalla pequeña
+ * ------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+	.woocommerce ul.products {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 560px) {
+	.woocommerce ul.products {
+		grid-template-columns: 1fr;
+		gap: var(--wp--preset--spacing--40);
+	}
+
+	.woocommerce div.product .woocommerce-tabs ul.tabs li {
+		margin-right: 1.25rem;
+	}
+}
+
+/* Respeta la preferencia de movimiento reducido del sistema. */
+@media (prefers-reduced-motion: reduce) {
+	.woocommerce ul.products li.product a img,
+	.woocommerce div.product form.cart .button {
+		transition: none;
+	}
+}
