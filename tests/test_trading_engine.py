@@ -15,7 +15,7 @@ from src.trading.data import synthetic_bars
 from src.trading.models import Bar, ExitReason, Side
 
 DAY = date(2026, 1, 5)
-SESSION = SessionConfig(opening_range_minutes=15)
+SESSION = SessionConfig(opening_range_minutes=15, flat_at=time(15, 55))
 
 # Opening range 4995-5012 -> long entry 5012.25, stop 4995.25, target 5029.25.
 OPENING_RANGE_ROWS = [
@@ -34,6 +34,7 @@ def make_config(**risk_overrides) -> BotConfig:
         risk=RiskConfig(**risk_overrides),
         strategy=BreakoutConfig(mode="opening_range", stop_mode="range", atr_period=3),
         starting_equity=25_000.0,
+        timeframe_minutes=5,
     )
 
 
@@ -84,7 +85,9 @@ def test_open_position_is_flattened_at_the_session_flat_time():
     trades = bot.broker.trades
     assert len(trades) == 1
     assert trades[0].exit_reason is ExitReason.SESSION_CLOSE
-    assert trades[0].exit_time.time() == SESSION.flat_at
+    # The 15:50 bar ends exactly at flat_at, so closing on it is what makes the
+    # account flat *by* 15:55 rather than at 16:00.
+    assert trades[0].exit_time.time() == time(15, 50)
     assert bot.broker.position is None
 
 
@@ -127,6 +130,7 @@ def test_signals_are_rejected_when_size_rounds_to_zero():
         risk=RiskConfig(risk_per_trade_pct=0.1),  # 1 USD budget on 1k equity
         strategy=BreakoutConfig(mode="opening_range", stop_mode="range", atr_period=3),
         starting_equity=1_000.0,
+        timeframe_minutes=5,
     )
     bot = run(OPENING_RANGE_ROWS + [BREAKOUT_ROW], config=config)
     assert bot.broker.trades == []
@@ -141,6 +145,7 @@ def test_multi_day_backtest_never_carries_risk_overnight():
         risk=RiskConfig(),
         strategy=BreakoutConfig(mode="opening_range", stop_mode="atr", atr_period=14),
         starting_equity=25_000.0,
+        timeframe_minutes=5,
     )
     result = run_backtest(bars, config)
     assert result.trades, "synthetic data should produce trades"
@@ -161,6 +166,80 @@ def test_take_profit_trades_realise_close_to_plus_one_r():
         # deducted. On tight stops that drag is large, which is exactly why the
         # required hit rate sits well above 50%.
         assert 0.5 <= trade.r_multiple <= 1.0
+
+
+def fifteen_minute_config(strategy: BreakoutConfig | None = None) -> BotConfig:
+    return BotConfig(
+        instrument=MES_FUTURE,
+        session=SessionConfig(opening_range_minutes=30, flat_at=time(15, 45)),
+        risk=RiskConfig(),
+        strategy=strategy
+        or BreakoutConfig(mode="opening_range", stop_mode="atr", atr_period=14),
+        starting_equity=25_000.0,
+        timeframe_minutes=15,
+    )
+
+
+def day_bars_15m(rows, day=DAY, filler=5009.0) -> list[Bar]:
+    """A 09:30-16:00 session of 15-minute bars: 09:30, 09:45, ... 15:45."""
+    explicit = {t: (o, h, l, c) for t, o, h, l, c in rows}
+    bars = []
+    ts = datetime.combine(day, time(9, 30))
+    end = datetime.combine(day, time(16, 0))
+    while ts < end:
+        if ts.time() in explicit:
+            o, h, l, c = explicit[ts.time()]
+            bars.append(Bar(ts, o, h, l, c))
+        else:
+            bars.append(Bar(ts, filler, filler + 0.5, filler - 0.5, filler))
+        ts += timedelta(minutes=15)
+    return bars
+
+
+# Opening range over 09:30 and 09:45 (30 minutes), broken on the 10:15 bar.
+FIFTEEN_MINUTE_ROWS = [
+    (time(9, 30), 5000, 5010, 4995, 5005),
+    (time(9, 45), 5005, 5012, 5000, 5008),
+    (time(10, 0), 5008, 5011, 5002, 5009),
+    (time(10, 15), 5009, 5020, 5008, 5018),
+]
+
+
+def test_fifteen_minute_bars_still_flatten_before_the_close():
+    """
+    Regression: `flat_at` used to be compared against bar START times. On a
+    15-minute timeframe no bar is stamped 15:55, so the forced close never
+    fired and the position leaked into the next session.
+    """
+    config = fifteen_minute_config(
+        strategy=BreakoutConfig(mode="opening_range", stop_mode="range", atr_period=3)
+    )
+    bot = build_bot(config)
+    bot.run(day_bars_15m(FIFTEEN_MINUTE_ROWS))
+
+    trades = bot.broker.trades
+    assert len(trades) == 1
+    trade = trades[0]
+    assert trade.entry_time.time() == time(10, 15)
+    assert trade.exit_reason is ExitReason.SESSION_CLOSE
+    # 15:30 is the last bar that ENDS at or before the 15:45 deadline.
+    assert trade.exit_time.time() == time(15, 30)
+    assert trade.entry_time.date() == trade.exit_time.date()
+    assert bot.broker.position is None
+
+
+def test_fifteen_minute_multi_day_run_never_holds_overnight():
+    result = run_backtest(synthetic_bars(days=30, minutes=15, seed=17),
+                          fifteen_minute_config())
+    assert result.trades, "15m data should produce trades"
+    for trade in result.trades:
+        assert trade.entry_time.date() == trade.exit_time.date()
+        assert trade.exit_time.time() <= time(15, 45)
+
+
+def test_opening_range_spans_two_bars_on_the_default_timeframe():
+    session = SessionConfig(opening_range_minutes=30)
+    assert session.opening_range_end == time(10, 0)  # 09:30 and 09:45 bars
 
 
 def test_bot_holds_at_most_one_position_at_a_time():

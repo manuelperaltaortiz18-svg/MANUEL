@@ -79,8 +79,8 @@ class SessionConfig:
     session_start: time = time(9, 30)
     session_end: time = time(16, 0)
     entry_cutoff: time = time(15, 30)  # no new brackets submitted after this
-    flat_at: time = time(15, 55)  # force-close any open position
-    opening_range_minutes: int = 15
+    flat_at: time = time(15, 45)  # force-close any open position
+    opening_range_minutes: int = 30  # two bars on the default 15m timeframe
 
     def __post_init__(self) -> None:
         if not self.session_start < self.entry_cutoff <= self.flat_at <= self.session_end:
@@ -188,7 +188,7 @@ class BotConfig:
     risk: RiskConfig = field(default_factory=RiskConfig)
     strategy: BreakoutConfig = field(default_factory=BreakoutConfig)
     starting_equity: float = 25_000.0
-    timeframe_minutes: int = 5
+    timeframe_minutes: int = 15
 
 
 DEFAULT_CONFIG = BotConfig()

@@ -19,9 +19,12 @@ Bot automático de ruptura de rango con bracket estrictamente simétrico, motor
 de simulación propio e interfaz de bróker enchufable.
 Documentación: [`docs/TRADING_BOT.md`](docs/TRADING_BOT.md).
 
+Opera en velas de **15 minutos** por defecto.
+
 ```bash
 python scripts/run_backtest.py                    # backtest con datos sintéticos
-python scripts/run_backtest.py --csv datos.csv --timeframe 5 --list-trades
+python scripts/run_backtest.py --csv datos.csv --timeframe 15 --list-trades
+python scripts/export_mt5.py --symbol SP500m --timeframe M1   # en Windows con MT5
 ```
 
 ```

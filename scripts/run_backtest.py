@@ -45,7 +45,7 @@ def parse_time(value: str) -> time:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Backtest the 1:1 S&P 500 breakout bot")
     p.add_argument("--csv", help="OHLCV CSV file; omit to use synthetic data")
-    p.add_argument("--timeframe", type=int, default=5, help="Bar size in minutes")
+    p.add_argument("--timeframe", type=int, default=15, help="Bar size in minutes")
     p.add_argument(
         "--instrument", default="MES", choices=sorted(INSTRUMENTS), help="Contract spec"
     )
@@ -54,7 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mode", default="opening_range", choices=("opening_range", "donchian")
     )
     p.add_argument("--lookback", type=int, default=12, help="Donchian lookback in bars")
-    p.add_argument("--or-minutes", type=int, default=15, help="Opening range length")
+    p.add_argument("--or-minutes", type=int, default=30, help="Opening range length")
     p.add_argument("--atr-period", type=int, default=14)
     p.add_argument("--atr-multiple", type=float, default=1.0, help="Stop = mult * ATR")
     p.add_argument(
@@ -71,7 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--session-start", type=parse_time, default=time(9, 30))
     p.add_argument("--session-end", type=parse_time, default=time(16, 0))
     p.add_argument("--entry-cutoff", type=parse_time, default=time(15, 30))
-    p.add_argument("--flat-at", type=parse_time, default=time(15, 55))
+    p.add_argument("--flat-at", type=parse_time, default=time(15, 45))
     p.add_argument("--days", type=int, default=120, help="Synthetic sessions to generate")
     p.add_argument("--seed", type=int, default=42, help="Synthetic data seed")
     p.add_argument("--verbose", action="store_true", help="Print every order and fill")

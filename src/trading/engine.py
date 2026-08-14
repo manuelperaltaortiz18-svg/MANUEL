@@ -13,7 +13,7 @@ Ordering inside a bar is deliberate:
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Callable, Optional
 
 from src.config.trading_config import BotConfig
@@ -43,6 +43,7 @@ class TradingBot:
         self.risk = risk
         self.logger = logger
         self._day: Optional[date] = None
+        self._bar_duration = timedelta(minutes=config.timeframe_minutes)
         self.rejected_signals: list[tuple[datetime, str]] = []
 
     # -- main loop ---------------------------------------------------------
@@ -65,7 +66,7 @@ class TradingBot:
         if not self.session.is_in_session(t):
             return
 
-        if t >= self.session.flat_at:
+        if self._crosses_flat_time(ts):
             self.broker.cancel_pending("session close")
             if self.broker.position is not None:
                 self.broker.close_position(ExitReason.SESSION_CLOSE, ts)
@@ -137,6 +138,21 @@ class TradingBot:
             f"stop {order.stop_loss} target {order.take_profit} "
             f"(R:R {order.reward_risk_ratio:.2f})"
         )
+
+    def _crosses_flat_time(self, ts: datetime) -> bool:
+        """
+        True when this bar is the last one that leaves the account flat in time.
+
+        The test is on the bar's END, not its start, because `flat_at` is a
+        deadline: closing on the bar that ends at 15:45 makes the account flat
+        at 15:45. Comparing start times instead would, on a 15-minute
+        timeframe, find no bar stamped 15:55 at all and skip the forced close
+        entirely — leaking the position into the next session.
+        """
+        end = ts + self._bar_duration
+        if end.date() != ts.date():
+            return True
+        return end.time() >= self.session.flat_at
 
     def _roll_session(self, day: date, now: datetime) -> None:
         self.broker.cancel_pending("new session")

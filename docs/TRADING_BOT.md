@@ -71,7 +71,7 @@ Nunca se opera al precio de una vela que ya se ha visto.
 
 | modo | rango que se rompe |
 |---|---|
-| `opening_range` | máximo/mínimo de los primeros N minutos de sesión (por defecto 15) |
+| `opening_range` | máximo/mínimo de los primeros N minutos de sesión (por defecto 30, es decir 2 velas de 15m) |
 | `donchian` | máximo/mínimo de las últimas `lookback_bars` velas cerradas |
 
 Reglas comunes:
@@ -114,7 +114,13 @@ Cortacircuitos por sesión, todos configurables:
 | capital mínimo para operar | desactivado |
 
 Además, el bot **nunca mantiene posiciones de un día para otro**: cierra a
-`flat_at` (15:55 por defecto) y deja de armar entradas a `entry_cutoff` (15:30).
+`flat_at` (15:45 por defecto) y deja de armar entradas a `entry_cutoff` (15:30).
+
+`flat_at` es una **fecha límite**, y se compara contra el *final* de la vela,
+no contra su inicio. Con velas de 15 minutos la última vela que termina a las
+15:45 es la de las 15:30, así que ahí se cierra. Si se comparase el inicio, en
+15m no existiría ninguna vela a las 15:55 y el cierre forzado no se dispararía
+nunca — ese fallo existió y tiene su test de regresión.
 
 ## 5. Supuestos del simulador (leer antes de creerse un backtest)
 
@@ -133,15 +139,21 @@ Ese último punto tiene un coste medible. Sobre 400 sesiones sintéticas, sin
 comisiones ni deslizamiento (donde un bracket simétrico debería resolverse
 cerca de una moneda al aire):
 
-| medición | aciertos |
-|---|---|
-| todas las operaciones | 40,8 % |
-| excluyendo salidas en la vela de entrada | 47,3 % |
+| medición | velas 5m | velas 15m |
+|---|---|---|
+| todas las operaciones | 40,8 % | 40,1 % |
+| excluyendo salidas en la vela de entrada | 47,3 % | 43,9 % |
 
 Es decir: el motor **no** genera dinero de la nada — sesga en contra. Para
 evaluar de verdad la estrategia hacen falta datos de 1 minuto o de tick que
-resuelvan la secuencia intravela; con velas de 5 minutos el resultado es un
-suelo, no una estimación centrada.
+resuelvan la secuencia intravela; con velas de 15 minutos el resultado es un
+suelo, no una estimación centrada, y el sesgo es mayor que en 5m porque cada
+vela abarca más recorrido.
+
+**Cómo mitigarlo:** exporta el histórico en M1 y deja que
+`run_backtest.py --timeframe 15` agregue las velas. El bot opera igual en 15
+minutos, pero conviene comparar con una pasada en M1 para ver cuánto del
+resultado viene del supuesto intravela.
 
 Un detalle relacionado: ninguna operación ganadora rinde exactamente +1,00 R.
 El deslizamiento de entrada y las dos comisiones ya están descontados, así que
@@ -153,11 +165,11 @@ stop.
 ### Backtest desde línea de comandos
 
 ```bash
-# Datos sintéticos, valores por defecto (MES, 5m, ruptura del rango de apertura, 1:1)
+# Datos sintéticos, valores por defecto (MES, 15m, ruptura del rango de apertura, 1:1)
 python scripts/run_backtest.py
 
 # Datos reales de 1 minuto agregados a 15m, modo Donchian, con blotter
-python scripts/run_backtest.py --csv data/es_1m.csv --timeframe 15 \
+python scripts/run_backtest.py --csv data/SP500m_M5.csv --timeframe 15 \
     --mode donchian --lookback 20 --risk-pct 0.5 --list-trades
 
 # CFD, solo largos, sesión europea
@@ -187,8 +199,12 @@ Con el terminal abierto y con sesión iniciada, en la máquina Windows:
 
 ```bash
 pip install MetaTrader5
-python scripts/export_mt5.py --symbol SP500m --timeframe M5 --days 180
+python scripts/export_mt5.py --symbol SP500m --timeframe M1 --days 180
 ```
+
+Exporta en **M1** aunque el bot opere en 15 minutos: el agregado a 15m lo hace
+`run_backtest.py --timeframe 15`, y tener el M1 permite medir después cuánto
+del resultado depende del supuesto de secuencia intravela.
 
 Escribe `data/SP500m_M5.csv` y además imprime:
 
