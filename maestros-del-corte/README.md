@@ -44,15 +44,37 @@ En *WooCommerce → Ajustes → Avanzado*, comprueba que están asignadas Carrit
 
 *Ajustes → Lectura → Tu portada muestra → Una página estática*. La plantilla `front-page.html` ya monta las cinco secciones; edítalas en *Apariencia → Editor → Plantillas → Portada*.
 
-**6. Envío gratuito**
+**6. Zonas de envío**
 
-En *WooCommerce → Ajustes → Envío*, crea una zona que cubra los destinos a los que vendes y añádele el método **Envío gratuito** con la condición *"N/A"* (sin pedido mínimo). Sin esto, el checkout puede quedarse sin métodos disponibles y bloquear la compra.
+En *WooCommerce → Ajustes → Envío* hacen falta **tres zonas**:
+
+| Zona | Regiones | Método |
+|---|---|---|
+| Península | España, **excluyendo** Baleares, Las Palmas, Santa Cruz de Tenerife, Ceuta y Melilla | Envío gratuito (sin mínimo) |
+| Baleares | Provincia de Baleares | Precio fijo o por peso |
+| Canarias, Ceuta y Melilla | Las Palmas, Santa Cruz de Tenerife, Ceuta, Melilla | Precio fijo o por peso |
+
+WooCommerce permite seleccionar provincias españolas concretas dentro de la zona, así que la exclusión de la península se hace añadiendo provincia a provincia en las otras dos zonas y dejando "España" en la primera. **El orden importa**: WooCommerce aplica la primera zona que coincide, así que Baleares y Canarias deben ir *por encima* de la de península en la lista.
+
+Sin ninguna tarifa configurada, el checkout se queda sin métodos disponibles y bloquea la compra.
 
 **7. Páginas de contenido**
 
-Crea las páginas **Envíos y plazos** (`/envios/`), **Devoluciones y garantía** (`/devoluciones/`) y **Cuidado y mantenimiento** (`/cuidado/`). En cada una, insértale su patrón desde el editor: botón `+` → pestaña *Patrones* → categoría **Maestros del Corte**.
+Crea estas páginas e insértale a cada una su patrón desde el editor (botón `+` → pestaña *Patrones* → categoría **Maestros del Corte**):
 
-Los textos son una base sólida, pero **revísalos con vuestro asesor legal antes de publicar** y ajusta lo que no encaje con vuestra operativa real.
+| Página | URL |
+|---|---|
+| Envíos y plazos | `/envios/` |
+| Devoluciones y garantía | `/devoluciones/` |
+| Cuidado y mantenimiento | `/cuidado/` |
+| Aviso legal | `/aviso-legal/` |
+| Condiciones generales de venta | `/terminos/` |
+
+Los textos legales llevan **huecos entre corchetes** (`[CIF]`, `[RAZÓN SOCIAL]`…) que hay que rellenar con los datos fiscales reales. Busca `[` en la página para localizarlos todos.
+
+> Estos textos son una base bien fundamentada, con las referencias legales correctas, pero **no sustituyen a un asesor**. Que los revise alguien antes de publicar.
+
+Faltan aún **Política de Privacidad** (`/privacidad/`) y **Política de Cookies** (`/cookies/`), que dependen de qué herramientas de analítica y marketing acabéis instalando.
 
 **8. Imágenes**
 
@@ -83,19 +105,22 @@ Dos unidades del mismo cuchillo con grabados distintos se mantienen como líneas
 
 | | |
 |---|---|
-| Envío | Gratuito en todos los pedidos |
+| Envío península | Gratuito, sin importe mínimo |
+| Baleares, Canarias, Ceuta y Melilla | Tarifa aparte, calculada en el carrito |
 | Plazo | 24–48 h laborables (+2–3 días si lleva grabado) |
 | Devolución | 14 días naturales, porte de vuelta a cargo del cliente |
 | Defecto de fábrica | Recogida y sustitución sin coste |
+| Garantía legal | 3 años por falta de conformidad |
 | Piezas grabadas | Excluidas del desistimiento (avisado antes de comprar) |
 
-El aviso de devolución aparece en tres sitios: sello bajo el botón de compra, nota junto al botón de pagar del checkout, y página de devoluciones.
+El aviso de devolución aparece en tres sitios: sello bajo el botón de compra, nota junto al botón de pagar del checkout, y página de devoluciones. No es redundancia — el coste del porte solo se puede repercutir al cliente si se le informó **antes** de comprar, y esto lo deja acreditado.
 
 ## Pendiente antes de lanzar
 
-- [ ] Textos legales: aviso legal, privacidad, cookies, condiciones de venta
-- [ ] Método de **envío gratuito** configurado en la zona de envío (si no, el checkout se bloquea)
-- [ ] Comprobar que el envío gratis sigue siendo rentable en destinos caros (Canarias, Baleares) — un jamonero es voluminoso y ahí el porte se dispara
+- [ ] Rellenar los datos fiscales `[entre corchetes]` en aviso legal y condiciones de venta
+- [ ] Política de privacidad y de cookies
+- [ ] Las tres zonas de envío configuradas (si falta alguna, el checkout se bloquea en ese destino)
+- [ ] Cerrar tarifas reales con el transportista para Baleares y Canarias antes de fijar los importes
 - [ ] Pasarela de pago en producción y una compra real de prueba de principio a fin
 - [ ] Redirecciones 301 desde las URLs de la línea en cuperinox.es
 - [ ] Analítica y consentimiento de cookies

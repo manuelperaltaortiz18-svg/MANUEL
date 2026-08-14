@@ -114,7 +114,7 @@ function mdc_trust_badges() {
 	// informa ANTES de comprar. Por eso aparece aquí y no solo en el aviso
 	// legal.
 	$items = array(
-		__( 'Envío gratis · entrega en 24–48 h', 'maestros-del-corte' ),
+		__( 'Envío gratis en península · entrega en 24–48 h', 'maestros-del-corte' ),
 		__( 'Devolución en 14 días · porte de vuelta a cargo del cliente', 'maestros-del-corte' ),
 		__( 'Defecto de fábrica: lo recogemos y sustituimos sin coste', 'maestros-del-corte' ),
 	);

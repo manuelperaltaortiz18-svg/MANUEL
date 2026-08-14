@@ -7,16 +7,16 @@
  */
 ?>
 <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.125rem"}},"textColor":"contrast-soft"} -->
-<p class="has-contrast-soft-color has-text-color" style="font-size:1.125rem">Envío gratuito en todos los pedidos. Preparamos y entregamos en 24–48 horas laborables.</p>
+<p class="has-contrast-soft-color has-text-color" style="font-size:1.125rem">Envío gratuito en península, sin importe mínimo. Preparamos y entregamos en 24–48 horas laborables.</p>
 <!-- /wp:paragraph -->
 
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"},"margin":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"}},"border":{"top":{"color":"var:preset|color|line","width":"1px"},"bottom":{"color":"var:preset|color|line","width":"1px"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="border-top-color:var(--wp--preset--color--line);border-top-width:1px;border-bottom-color:var(--wp--preset--color--line);border-bottom-width:1px;margin-top:var(--wp--preset--spacing--40);margin-bottom:var(--wp--preset--spacing--40);padding-top:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--40)">
-	<!-- wp:paragraph {"style":{"typography":{"fontSize":"1.0625rem"}}} -->
-	<p style="font-size:1.0625rem"><strong>Envío gratis</strong> en todos los pedidos, sin importe mínimo.<br><strong>Plazo de entrega:</strong> 24–48 horas laborables desde la confirmación del pedido.</p>
-	<!-- /wp:paragraph -->
-</div>
-<!-- /wp:group -->
+<!-- wp:table {"className":"is-style-stripes","style":{"spacing":{"margin":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"}}}} -->
+<figure class="wp-block-table is-style-stripes" style="margin-top:var(--wp--preset--spacing--40);margin-bottom:var(--wp--preset--spacing--40)"><table><thead><tr><th>Destino</th><th>Coste</th><th>Plazo</th></tr></thead><tbody>
+<tr><td>Península</td><td><strong>Gratis</strong></td><td>24–48 h laborables</td></tr>
+<tr><td>Baleares</td><td>Tarifa según pedido</td><td>3–5 días laborables</td></tr>
+<tr><td>Canarias, Ceuta y Melilla</td><td>Tarifa según pedido</td><td>5–10 días laborables</td></tr>
+</tbody></table><figcaption class="wp-element-caption">El coste exacto se calcula en el carrito antes de pagar, según destino y volumen del pedido.</figcaption></figure>
+<!-- /wp:table -->
 
 <!-- wp:heading {"level":2} -->
 <h2 class="wp-block-heading">Cuándo sale tu pedido</h2>
@@ -47,11 +47,23 @@
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
+<h2 class="wp-block-heading">Baleares</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Servimos a Baleares con tarifa propia, que verás calculada en el carrito antes de pagar. Nuestros productos son voluminosos y el transporte marítimo tiene un coste que no podemos absorber. El plazo habitual es de 3 a 5 días laborables.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":2} -->
 <h2 class="wp-block-heading">Canarias, Ceuta y Melilla</h2>
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p>Estos destinos están fuera del territorio aduanero del IVA peninsular, por lo que el envío requiere despacho de aduana. Los impuestos y tasas de importación que aplique el destino corren por cuenta del destinatario y son ajenos a nuestra tarifa. El plazo de entrega también puede ampliarse por el trámite aduanero.</p>
+<p>Estos destinos están fuera del territorio de aplicación del IVA peninsular, por lo que el envío requiere despacho de aduana. La tarifa de transporte se calcula en el carrito según el pedido.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Los impuestos y tasas de importación del destino (IGIC en Canarias, IPSI en Ceuta y Melilla) y los gastos de gestión aduanera <strong>corren por cuenta del destinatario</strong> y son ajenos a nuestra tarifa: los cobra la aduana o el transportista, no nosotros. El plazo se amplía por el trámite, normalmente entre 5 y 10 días laborables.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
