@@ -1,0 +1,279 @@
+//@version=6
+// =============================================================================
+//  NASDAQ — Fallo y recuperación del rango de la primera vela (1:1)
+//
+//  La secuencia exacta:
+//    1. La PRIMERA vela de la apertura americana define un rango (máx/mín).
+//    2. El precio CIERRA fuera de ese rango (arriba o abajo).
+//    3. El precio VUELVE y cierra DENTRO del rango.
+//    4. El siguiente cierre fuera del rango dispara la entrada, en la dirección
+//       de ese cierre. Si rompió arriba, falló y cierra por debajo -> corto.
+//
+//  Entrada a MERCADO en la apertura de la vela siguiente (la señal es un
+//  cierre, no un nivel tocado: no se puede fingir que entramos al cierre que
+//  acabamos de usar para decidir).
+//  Stop ESTRUCTURAL al otro lado del rango. Objetivo a 1:1 medido desde el
+//  llenado REAL, no desde el cierre estimado.
+//
+//  Diseñado para 15 minutos. Todo se calcula en minutos desde la apertura, así
+//  que funciona en cualquier temporalidad y zona horaria.
+// =============================================================================
+
+strategy(
+     title              = "NASDAQ — Recuperación de rango 1:1",
+     shorttitle         = "RECLAIM 1:1",
+     overlay            = true,
+     initial_capital    = 100000,
+     default_qty_type   = strategy.fixed,
+     default_qty_value  = 1,
+     pyramiding         = 0,
+     calc_on_every_tick = false,
+     close_entries_rule = "ANY")
+
+// ----------------------------------------------------------------------------
+//  Entradas
+// ----------------------------------------------------------------------------
+gSes = "1 · Sesión"
+sessionSpec = input.session("0930-1600", "Sesión (apertura americana)", group = gSes)
+sessionTz   = input.string("America/New_York", "Zona horaria", group = gSes,
+     options = ["America/New_York", "Europe/Madrid", "Europe/London", "UTC", "Etc/GMT-2", "Etc/GMT-3"])
+rangeBars   = input.int(1,   "Velas que forman el rango", minval = 1, group = gSes,
+     tooltip = "1 = solo la primera vela de la apertura, que es la estrategia descrita.")
+cutoffMins  = input.int(330, "Sin entradas tras (min desde apertura)", minval = 1, group = gSes)
+flatMins    = input.int(375, "Cerrar todo a (min desde apertura)", minval = 1, group = gSes,
+     tooltip = "Menor que la duración de la sesión: el cierre se ejecuta en la vela siguiente.")
+
+gStr = "2 · Estrategia"
+requireExcursion = input.bool(true, "Exigir salida y regreso al rango", group = gStr,
+     tooltip = "Desactivado, entra en el primer cierre fuera del rango (ruptura simple).")
+rrRatio     = input.float(1.0, "Objetivo / Stop (1.0 = 1:1)", minval = 0.1, step = 0.1, group = gStr)
+stopBufTicks= input.int(2,   "Margen del stop pasado el rango (ticks)", minval = 0, group = gStr)
+minRangePts = input.float(0.0,  "Rango mínimo (puntos)", minval = 0.0, step = 1.0, group = gStr)
+maxRangePts = input.float(0.0,  "Rango máximo (puntos, 0 = sin tope)", minval = 0.0, step = 1.0, group = gStr,
+     tooltip = "En una apertura violenta el rango es tan ancho que el stop deja de tener sentido.")
+allowLong   = input.bool(true, "Permitir largos",  group = gStr)
+allowShort  = input.bool(true, "Permitir cortos",  group = gStr)
+maxPerDay   = input.int(1,   "Máx. operaciones por sesión", minval = 1, group = gStr)
+
+gRsk = "3 · Riesgo"
+riskPct     = input.float(0.5, "Riesgo por operación (% del capital)", minval = 0.01, step = 0.05, group = gRsk)
+qtyStep     = input.float(1.0, "Escalón de volumen", minval = 0.001, step = 0.001, group = gRsk)
+minQty      = input.float(1.0, "Volumen mínimo",     minval = 0.001, step = 0.001, group = gRsk)
+maxLosses   = input.int(3,     "Parar tras N pérdidas seguidas", minval = 1, group = gRsk)
+dailyLossPct= input.float(2.0, "Límite de pérdida diaria (%)", minval = 0.0, step = 0.1, group = gRsk)
+maxDdPct    = input.float(0.0, "Drawdown máx. total (%, 0 = off)", minval = 0.0, step = 0.5, group = gRsk)
+
+// ----------------------------------------------------------------------------
+//  Sesión
+// ----------------------------------------------------------------------------
+inSession  = not na(time(timeframe.period, sessionSpec, sessionTz))
+newSession = inSession and not nz(inSession[1], false)
+
+var int sessionOpenTime = 0
+var int barsThisSession = 0
+
+if newSession
+    sessionOpenTime := time
+    barsThisSession := 0
+
+if inSession
+    barsThisSession := barsThisSession + 1
+
+barMs        = timeframe.in_seconds(timeframe.period) * 1000
+minsFromOpen = sessionOpenTime > 0 ? (time - sessionOpenTime) / 60000.0 : -1.0
+minsAtBarEnd = sessionOpenTime > 0 ? (time + barMs - sessionOpenTime) / 60000.0 : -1.0
+
+entryWindow = inSession and minsFromOpen < cutoffMins
+mustBeFlat  = inSession and minsAtBarEnd >= flatMins
+
+// ----------------------------------------------------------------------------
+//  Rango de la primera vela
+// ----------------------------------------------------------------------------
+var float rangeHigh = na
+var float rangeLow  = na
+
+if newSession
+    rangeHigh := na
+    rangeLow  := na
+
+buildingRange = inSession and barsThisSession <= rangeBars
+if buildingRange
+    rangeHigh := na(rangeHigh) ? high : math.max(rangeHigh, high)
+    rangeLow  := na(rangeLow)  ? low  : math.min(rangeLow,  low)
+
+hasRange  = not na(rangeHigh) and not na(rangeLow) and not buildingRange
+rangeSize = hasRange ? rangeHigh - rangeLow : na
+
+// ----------------------------------------------------------------------------
+//  Máquina de estados: sale del rango -> vuelve -> cierra fuera
+// ----------------------------------------------------------------------------
+var bool leftRange = false
+var bool returned  = false
+
+if newSession
+    leftRange := false
+    returned  := false
+
+closedAbove = hasRange and close > rangeHigh
+closedBelow = hasRange and close < rangeLow
+closedOut   = closedAbove or closedBelow
+
+if hasRange
+    if not leftRange
+        if closedOut
+            leftRange := true
+    else if not returned
+        if not closedOut
+            returned := true
+
+armed = requireExcursion ? (leftRange and returned) : hasRange
+
+// ----------------------------------------------------------------------------
+//  Cortacircuitos
+// ----------------------------------------------------------------------------
+var int   tradesToday     = 0
+var int   consecLosses    = 0
+var float dayStartEquity  = na
+var int   processedTrades = 0
+var float peakEquity      = na
+var bool  accountBlown    = false
+
+if newSession
+    tradesToday    := 0
+    consecLosses   := 0
+    dayStartEquity := strategy.equity
+
+if strategy.closedtrades > processedTrades
+    for i = processedTrades to strategy.closedtrades - 1
+        p = strategy.closedtrades.profit(i)
+        if p < 0
+            consecLosses := consecLosses + 1
+        else if p > 0
+            consecLosses := 0
+    processedTrades := strategy.closedtrades
+
+if strategy.position_size != 0 and strategy.position_size[1] == 0
+    tradesToday := tradesToday + 1
+
+peakEquity := na(peakEquity) ? strategy.equity : math.max(peakEquity, strategy.equity)
+if maxDdPct > 0 and not na(peakEquity)
+    if strategy.equity <= peakEquity * (1.0 - maxDdPct / 100.0)
+        accountBlown := true
+
+dayPnl       = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+dailyLossHit = dailyLossPct > 0 and not na(dayStartEquity) and
+                dayPnl <= -dayStartEquity * dailyLossPct / 100.0
+
+canTrade = not accountBlown and tradesToday < maxPerDay and
+           consecLosses < maxLosses and not dailyLossHit
+
+// ----------------------------------------------------------------------------
+//  Niveles y tamaño
+// ----------------------------------------------------------------------------
+stopBuffer = stopBufTicks * syminfo.mintick
+longStop   = hasRange ? rangeLow  - stopBuffer : na
+shortStop  = hasRange ? rangeHigh + stopBuffer : na
+
+// El riesgo se estima con el cierre que confirma; el llenado real llega en la
+// apertura siguiente y puede ser peor. Por eso el tamaño se calcula a la baja
+// y TradingView aplica el volumen sobre el llenado real.
+estRiskLong  = hasRange ? close - longStop  : na
+estRiskShort = hasRange ? shortStop - close : na
+
+pointValue = syminfo.pointvalue
+riskBudget = strategy.equity * riskPct / 100.0
+
+sizeFor(riskPoints) =>
+    raw = riskPoints > 0 ? riskBudget / (riskPoints * pointValue) : 0.0
+    stepped = qtyStep > 0 ? math.floor(raw / qtyStep) * qtyStep : raw
+    stepped >= minQty ? stepped : 0.0
+
+rangeOk = hasRange and rangeSize >= minRangePts and
+          (maxRangePts <= 0 or rangeSize <= maxRangePts)
+
+// ----------------------------------------------------------------------------
+//  Órdenes
+// ----------------------------------------------------------------------------
+flat       = strategy.position_size == 0
+baseOk     = armed and rangeOk and entryWindow and flat and canTrade and not mustBeFlat
+
+goLong  = baseOk and closedAbove and allowLong  and not na(estRiskLong)  and estRiskLong  > 0
+goShort = baseOk and closedBelow and allowShort and not na(estRiskShort) and estRiskShort > 0
+
+qtyLong  = goLong  ? sizeFor(estRiskLong)  : 0.0
+qtyShort = goShort ? sizeFor(estRiskShort) : 0.0
+
+if goLong and qtyLong > 0
+    strategy.entry("L", strategy.long, qty = qtyLong, comment = "recuperación alcista")
+
+if goShort and qtyShort > 0
+    strategy.entry("S", strategy.short, qty = qtyShort, comment = "recuperación bajista")
+
+// El objetivo se mide desde el precio de entrada REAL, así el 1:1 es exacto
+// aunque la apertura nos dé un llenado peor que el cierre que confirmó.
+if strategy.position_size > 0
+    entryPrice = strategy.opentrades.entry_price(strategy.opentrades - 1)
+    risk       = entryPrice - longStop
+    if risk > 0
+        strategy.exit("L-x", from_entry = "L", stop = longStop,
+             limit = entryPrice + risk * rrRatio,
+             comment_loss = "stop", comment_profit = "objetivo")
+
+if strategy.position_size < 0
+    entryPrice = strategy.opentrades.entry_price(strategy.opentrades - 1)
+    risk       = shortStop - entryPrice
+    if risk > 0
+        strategy.exit("S-x", from_entry = "S", stop = shortStop,
+             limit = entryPrice - risk * rrRatio,
+             comment_loss = "stop", comment_profit = "objetivo")
+
+if mustBeFlat or not inSession or accountBlown
+    strategy.cancel("L")
+    strategy.cancel("S")
+    if strategy.position_size != 0
+        strategy.close_all(comment = accountBlown ? "drawdown máximo" : "cierre de sesión")
+
+// ----------------------------------------------------------------------------
+//  Visualización
+// ----------------------------------------------------------------------------
+plot(hasRange ? rangeHigh : na, "Máx. primera vela", color = color.new(color.teal, 0),
+     style = plot.style_linebr, linewidth = 2)
+plot(hasRange ? rangeLow : na,  "Mín. primera vela", color = color.new(color.orange, 0),
+     style = plot.style_linebr, linewidth = 2)
+
+bgcolor(buildingRange ? color.new(color.blue, 90) : na, title = "Vela del rango")
+bgcolor(hasRange and leftRange and not returned ? color.new(color.yellow, 93) : na,
+     title = "Fuera del rango, esperando regreso")
+bgcolor(armed and flat ? color.new(color.green, 94) : na, title = "Armado")
+
+plotshape(goLong  and qtyLong  > 0, "Entrada larga", shape.triangleup,
+     location.belowbar, color.teal,   size = size.small)
+plotshape(goShort and qtyShort > 0, "Entrada corta", shape.triangledown,
+     location.abovebar, color.orange, size = size.small)
+
+// ----------------------------------------------------------------------------
+//  Tabla
+// ----------------------------------------------------------------------------
+var table info = table.new(position.top_right, 2, 6, border_width = 1)
+if barstate.islast
+    table.cell(info, 0, 0, "Rango 1ª vela", text_size = size.small)
+    table.cell(info, 1, 0, hasRange ? str.tostring(rangeSize, "#.##") + " pts" : "—",
+         text_size = size.small)
+    table.cell(info, 0, 1, "Estado del patrón", text_size = size.small)
+    table.cell(info, 1, 1, not hasRange ? "formando" : armed ? "armado" :
+         leftRange ? "fuera, esperando" : "dentro", text_size = size.small)
+    table.cell(info, 0, 2, "Operaciones hoy", text_size = size.small)
+    table.cell(info, 1, 2, str.tostring(tradesToday) + " / " + str.tostring(maxPerDay),
+         text_size = size.small)
+    table.cell(info, 0, 3, "P&L del día", text_size = size.small)
+    table.cell(info, 1, 3, str.tostring(dayPnl, "#.##"), text_size = size.small,
+         text_color = dayPnl >= 0 ? color.teal : color.red)
+    table.cell(info, 0, 4, "Riesgo por op.", text_size = size.small)
+    table.cell(info, 1, 4, str.tostring(riskBudget, "#.##"), text_size = size.small)
+    table.cell(info, 0, 5, "Estado cuenta", text_size = size.small)
+    table.cell(info, 1, 5, accountBlown ? "DD MÁXIMO" : dailyLossHit ? "límite diario" :
+         canTrade ? "operando" : "bloqueado", text_size = size.small,
+         text_color = accountBlown or dailyLossHit ? color.red : color.teal)
+
+alertcondition(goLong,  "Recuperación alcista", "RECLAIM 1:1 — entrada larga")
+alertcondition(goShort, "Recuperación bajista", "RECLAIM 1:1 — entrada corta")

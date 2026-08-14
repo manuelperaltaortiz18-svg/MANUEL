@@ -24,10 +24,12 @@ from src.config.trading_config import (  # noqa: E402
     INSTRUMENTS,
     BotConfig,
     BreakoutConfig,
+    RangeReclaimConfig,
     RiskConfig,
     SessionConfig,
 )
 from src.trading.backtest import run_backtest  # noqa: E402
+from src.trading.strategy import BreakoutStrategy, RangeReclaimStrategy  # noqa: E402
 from src.trading.data import (  # noqa: E402
     filter_session,
     load_csv,
@@ -51,8 +53,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--equity", type=float, default=25_000.0, help="Starting equity")
     p.add_argument(
-        "--mode", default="opening_range", choices=("opening_range", "donchian")
+        "--mode",
+        default="opening_range",
+        choices=("opening_range", "donchian", "reclaim"),
+        help="reclaim = fallo y recuperación del rango de la primera vela",
     )
+    p.add_argument(
+        "--no-excursion",
+        action="store_true",
+        help="reclaim: entrar en el primer cierre fuera, sin exigir el regreso",
+    )
+    p.add_argument("--range-bars", type=int, default=1, help="reclaim: velas del rango")
+    p.add_argument("--stop-buffer-ticks", type=float, default=2.0)
+    p.add_argument("--max-range-points", type=float, default=0.0)
     p.add_argument("--lookback", type=int, default=12, help="Donchian lookback in bars")
     p.add_argument("--or-minutes", type=int, default=30, help="Opening range length")
     p.add_argument("--atr-period", type=int, default=14)
@@ -90,15 +103,20 @@ def main(argv: list[str] | None = None) -> int:
         opening_range_minutes=args.or_minutes,
     )
     instrument = INSTRUMENTS[args.instrument]
-    config = BotConfig(
-        instrument=instrument,
-        session=session,
-        risk=RiskConfig(
-            risk_per_trade_pct=args.risk_pct,
-            max_trades_per_day=args.max_trades,
-            daily_loss_limit_pct=args.daily_loss_pct,
-        ),
-        strategy=BreakoutConfig(
+    is_reclaim = args.mode == "reclaim"
+    strategy_config = (
+        RangeReclaimConfig(
+            range_bars=args.range_bars,
+            require_excursion=not args.no_excursion,
+            reward_risk_ratio=args.reward_risk,
+            stop_buffer_ticks=args.stop_buffer_ticks,
+            max_range_points=args.max_range_points,
+            max_signals_per_day=args.max_trades,
+            allow_long=not args.shorts_only,
+            allow_short=not args.longs_only,
+        )
+        if is_reclaim
+        else BreakoutConfig(
             mode=args.mode,
             lookback_bars=args.lookback,
             atr_period=args.atr_period,
@@ -107,7 +125,17 @@ def main(argv: list[str] | None = None) -> int:
             allow_long=not args.shorts_only,
             allow_short=not args.longs_only,
             max_signals_per_day=args.max_trades,
+        )
+    )
+    config = BotConfig(
+        instrument=instrument,
+        session=session,
+        risk=RiskConfig(
+            risk_per_trade_pct=args.risk_pct,
+            max_trades_per_day=args.max_trades,
+            daily_loss_limit_pct=args.daily_loss_pct,
         ),
+        strategy=strategy_config,
         starting_equity=args.equity,
         timeframe_minutes=args.timeframe,
     )
@@ -133,7 +161,14 @@ def main(argv: list[str] | None = None) -> int:
         print("No bars inside the configured session window.", file=sys.stderr)
         return 1
 
-    result = run_backtest(bars, config, logger=print if args.verbose else None)
+    strategy = (
+        RangeReclaimStrategy(config.strategy, instrument, session)
+        if is_reclaim
+        else BreakoutStrategy(config.strategy, instrument, session)
+    )
+    result = run_backtest(
+        bars, config, logger=print if args.verbose else None, strategy=strategy
+    )
     report = result.report
 
     print()

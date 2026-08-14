@@ -41,6 +41,18 @@ class ExitReason(Enum):
     MANUAL = "manual"
 
 
+class EntryType(Enum):
+    """
+    How the entry reaches the market.
+
+    STOP   — resting order above/below a level; only fills on a real breakout.
+    MARKET — the signal was a bar CLOSE, so the order goes in at the next open.
+    """
+
+    STOP = "stop"
+    MARKET = "market"
+
+
 class OrderStatus(Enum):
     PENDING = "pending"
     FILLED = "filled"
@@ -147,26 +159,37 @@ class BracketOrder:
     id: str
     side: Side
     qty: float
-    entry_stop: float
     stop_loss: float
-    take_profit: float
     created_at: datetime
+    entry_type: EntryType = EntryType.STOP
+    entry_stop: Optional[float] = None
+    take_profit: Optional[float] = None
+    reward_risk_ratio: float = 1.0
     entry_limit: Optional[float] = None
+    max_risk_money: Optional[float] = None
     expires_at: Optional[datetime] = None
     tag: str = ""
     status: OrderStatus = OrderStatus.PENDING
 
     @property
-    def risk_points(self) -> float:
+    def risk_points(self) -> Optional[float]:
+        """Planned risk, once the entry level is known. None for market entries."""
+        if self.entry_stop is None:
+            return None
         return abs(self.entry_stop - self.stop_loss)
 
-    @property
-    def reward_points(self) -> float:
-        return abs(self.take_profit - self.entry_stop)
+    def target_for(self, fill_price: float) -> float:
+        """
+        The take-profit for an actual fill.
 
-    @property
-    def reward_risk_ratio(self) -> float:
-        return self.reward_points / self.risk_points if self.risk_points else 0.0
+        A fixed `take_profit` is honoured as given. Otherwise the target is
+        derived from the fill so the 1:1 stays exact no matter where the entry
+        actually happened — the stop is a structural level, the target is not.
+        """
+        if self.take_profit is not None:
+            return self.take_profit
+        risk = abs(fill_price - self.stop_loss)
+        return fill_price + risk * self.reward_risk_ratio * self.side.sign
 
 
 @dataclass
@@ -267,22 +290,37 @@ class Signal:
     """
 
     side: Side
-    entry_stop: float
     stop_loss: float
-    take_profit: float
     reason: str
+    entry_type: EntryType = EntryType.STOP
+    entry_stop: Optional[float] = None
+    take_profit: Optional[float] = None
+    reward_risk_ratio: float = 1.0
+    reference_price: Optional[float] = None  # expected fill for a market entry
     entry_limit: Optional[float] = None
     valid_until: Optional[datetime] = None
     meta: dict = field(default_factory=dict)
 
     @property
+    def entry_reference(self) -> float:
+        """Price the bracket is measured from: the trigger, or the last close."""
+        if self.entry_stop is not None:
+            return self.entry_stop
+        if self.reference_price is None:
+            raise ValueError("A market signal needs a reference_price for sizing")
+        return self.reference_price
+
+    @property
     def risk_points(self) -> float:
-        return abs(self.entry_stop - self.stop_loss)
+        return abs(self.entry_reference - self.stop_loss)
 
     @property
     def reward_points(self) -> float:
-        return abs(self.take_profit - self.entry_stop)
+        target = self.take_profit
+        if target is None:
+            return self.risk_points * self.reward_risk_ratio
+        return abs(target - self.entry_reference)
 
     @property
-    def reward_risk_ratio(self) -> float:
+    def realised_reward_risk(self) -> float:
         return self.reward_points / self.risk_points if self.risk_points else 0.0

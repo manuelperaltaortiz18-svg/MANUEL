@@ -112,6 +112,7 @@ class TradingBot:
         if pending is not None:
             unchanged = (
                 pending.side is signal.side
+                and pending.entry_type is signal.entry_type
                 and pending.entry_stop == signal.entry_stop
                 and pending.stop_loss == signal.stop_loss
                 and pending.take_profit == signal.take_profit
@@ -125,18 +126,24 @@ class TradingBot:
         order = self.broker.submit_bracket(
             side=signal.side,
             qty=qty,
-            entry_stop=signal.entry_stop,
             stop_loss=signal.stop_loss,
-            take_profit=signal.take_profit,
             now=now,
+            entry_type=signal.entry_type,
+            entry_stop=signal.entry_stop,
+            take_profit=signal.take_profit,
+            reward_risk_ratio=signal.reward_risk_ratio,
             entry_limit=signal.entry_limit,
+            max_risk_money=self.risk.risk_budget(self.broker.equity),
             expires_at=signal.valid_until,
             tag=signal.reason,
         )
+        where = (
+            f"@ {order.entry_stop}" if order.entry_stop is not None
+            else "at next open"
+        )
         self._log(
-            f"{now:%Y-%m-%d %H:%M} armed {order.side.value} {qty:g} @ {order.entry_stop} "
-            f"stop {order.stop_loss} target {order.take_profit} "
-            f"(R:R {order.reward_risk_ratio:.2f})"
+            f"{now:%Y-%m-%d %H:%M} armed {order.side.value} {qty:g} {where} "
+            f"stop {order.stop_loss} (R:R {signal.realised_reward_risk:.2f})"
         )
 
     def _crosses_flat_time(self, ts: datetime) -> bool:

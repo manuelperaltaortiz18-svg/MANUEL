@@ -77,6 +77,10 @@ class RiskManager:
 
     # -- sizing ------------------------------------------------------------
 
+    def risk_budget(self, equity: float) -> float:
+        """Money a single trade is allowed to lose. Hard cap, not a target."""
+        return max(0.0, equity * self.config.risk_per_trade_pct / 100.0)
+
     def position_size(self, equity: float, risk_points: float) -> float:
         """
         Units to trade so that a stop-out costs `risk_per_trade_pct` of equity.
@@ -86,7 +90,7 @@ class RiskManager:
         """
         if equity <= 0 or risk_points <= 0:
             return 0.0
-        risk_budget = equity * self.config.risk_per_trade_pct / 100.0
+        risk_budget = self.risk_budget(equity)
         risk_per_unit = risk_points * self.instrument.point_value
         if risk_per_unit <= 0:
             return 0.0

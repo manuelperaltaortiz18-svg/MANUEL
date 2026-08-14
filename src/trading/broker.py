@@ -22,6 +22,7 @@ from typing import Optional
 from src.trading.models import (
     Bar,
     BracketOrder,
+    EntryType,
     ExitReason,
     InstrumentSpec,
     OrderStatus,
@@ -64,19 +65,31 @@ class Broker(ABC):
         self,
         side: Side,
         qty: float,
-        entry_stop: float,
         stop_loss: float,
-        take_profit: float,
         now: datetime,
+        entry_type: EntryType = EntryType.STOP,
+        entry_stop: Optional[float] = None,
+        take_profit: Optional[float] = None,
+        reward_risk_ratio: float = 1.0,
         entry_limit: Optional[float] = None,
+        max_risk_money: Optional[float] = None,
         expires_at: Optional[datetime] = None,
         tag: str = "",
     ) -> BracketOrder:
         """
-        Place a stop entry with attached stop-loss and take-profit.
+        Place an entry with attached stop-loss and take-profit.
 
-        `entry_limit` turns the entry into a stop-limit: the trade is skipped
-        rather than filled at a price worse than that level.
+        A STOP entry rests at `entry_stop` and only fills on a real breakout;
+        `entry_limit` makes it a stop-limit, so the trade is skipped rather
+        than filled at a price worse than that level. A MARKET entry goes in at
+        the next bar's open — the shape a close-based signal needs.
+
+        `take_profit` may be left None, in which case the target is computed
+        from the actual fill at `reward_risk_ratio` times the risk.
+
+        `max_risk_money` is a hard cap re-applied at fill time: a worse fill
+        means a wider real stop, so the size is cut to keep the loss inside the
+        budget instead of quietly exceeding it.
         """
 
     @abstractmethod
@@ -146,11 +159,14 @@ class SimulatedBroker(Broker):
         self,
         side: Side,
         qty: float,
-        entry_stop: float,
         stop_loss: float,
-        take_profit: float,
         now: datetime,
+        entry_type: EntryType = EntryType.STOP,
+        entry_stop: Optional[float] = None,
+        take_profit: Optional[float] = None,
+        reward_risk_ratio: float = 1.0,
         entry_limit: Optional[float] = None,
+        max_risk_money: Optional[float] = None,
         expires_at: Optional[datetime] = None,
         tag: str = "",
     ) -> BracketOrder:
@@ -158,25 +174,41 @@ class SimulatedBroker(Broker):
             raise RuntimeError("Cannot submit an entry while a position is open")
         if qty <= 0:
             raise ValueError("qty must be positive")
-        if side is Side.LONG and not (stop_loss < entry_stop < take_profit):
-            raise ValueError("Long bracket must satisfy stop < entry < target")
-        if side is Side.SHORT and not (take_profit < entry_stop < stop_loss):
-            raise ValueError("Short bracket must satisfy target < entry < stop")
-        if entry_limit is not None:
-            if side is Side.LONG and entry_limit < entry_stop:
-                raise ValueError("Long entry limit must sit at or above the stop level")
-            if side is Side.SHORT and entry_limit > entry_stop:
-                raise ValueError("Short entry limit must sit at or below the stop level")
+        if reward_risk_ratio <= 0:
+            raise ValueError("reward_risk_ratio must be positive")
+
+        if entry_type is EntryType.STOP:
+            if entry_stop is None:
+                raise ValueError("A stop entry needs an entry_stop level")
+            if side is Side.LONG and not stop_loss < entry_stop:
+                raise ValueError("Long stop entry must sit above its stop-loss")
+            if side is Side.SHORT and not entry_stop < stop_loss:
+                raise ValueError("Short stop entry must sit below its stop-loss")
+            if take_profit is not None:
+                if side is Side.LONG and not entry_stop < take_profit:
+                    raise ValueError("Long target must sit above the entry")
+                if side is Side.SHORT and not take_profit < entry_stop:
+                    raise ValueError("Short target must sit below the entry")
+            if entry_limit is not None:
+                if side is Side.LONG and entry_limit < entry_stop:
+                    raise ValueError("Long entry limit must sit at or above the stop level")
+                if side is Side.SHORT and entry_limit > entry_stop:
+                    raise ValueError("Short entry limit must sit at or below the stop level")
+        elif entry_stop is not None:
+            raise ValueError("A market entry must not carry an entry_stop level")
 
         self._pending = BracketOrder(
             id=f"ord-{next(self._ids)}",
             side=side,
             qty=qty,
-            entry_stop=entry_stop,
             stop_loss=stop_loss,
-            take_profit=take_profit,
             created_at=now,
+            entry_type=entry_type,
+            entry_stop=entry_stop,
+            take_profit=take_profit,
+            reward_risk_ratio=reward_risk_ratio,
             entry_limit=entry_limit,
+            max_risk_money=max_risk_money,
             expires_at=expires_at,
             tag=tag,
         )
@@ -219,8 +251,12 @@ class SimulatedBroker(Broker):
         order = self._pending
         assert order is not None
         slip = self.instrument.slippage_points
+        long = order.side is Side.LONG
 
-        if order.side is Side.LONG:
+        if order.entry_type is EntryType.MARKET:
+            # A close-based signal reaches the market at the next open.
+            fill = bar.open + slip * order.side.sign
+        elif long:
             if bar.high < order.entry_stop:
                 return False
             fill = max(order.entry_stop, bar.open) + slip
@@ -230,27 +266,56 @@ class SimulatedBroker(Broker):
             fill = min(order.entry_stop, bar.open) - slip
 
         fill = self.instrument.round_price(
-            fill, RoundMode.UP if order.side is Side.LONG else RoundMode.DOWN
+            fill, RoundMode.UP if long else RoundMode.DOWN
         )
         if order.entry_limit is not None:
-            too_far = (
-                fill > order.entry_limit
-                if order.side is Side.LONG
-                else fill < order.entry_limit
-            )
+            too_far = fill > order.entry_limit if long else fill < order.entry_limit
             if too_far:
                 # Stop-limit: price ran away from the level. Skipping the trade
                 # beats entering so far in that the 1:1 bracket is already spent.
                 return False
-        commission = self.instrument.commission(order.qty)
+
+        # A market fill can gap past its own stop. There is no trade to take
+        # then — the setup is already invalidated, and a "risk" of zero or
+        # negative would make the 1:1 target meaningless.
+        if (long and fill <= order.stop_loss) or (not long and fill >= order.stop_loss):
+            order.status = OrderStatus.CANCELLED
+            self._pending = None
+            return False
+
+        take_profit = self.instrument.round_price(order.target_for(fill))
+        planned_risk = (
+            order.risk_points
+            if order.risk_points is not None
+            else abs(fill - order.stop_loss)
+        )
+
+        # The size was computed from an expected entry. The real one can be
+        # worse, which widens the real stop — so the cap is re-applied here
+        # rather than discovering afterwards that the trade risked too much.
+        qty = order.qty
+        if order.max_risk_money is not None:
+            real_risk_per_unit = abs(fill - order.stop_loss) * self.instrument.point_value
+            if real_risk_per_unit <= 0:
+                return False
+            affordable = self.instrument.round_qty(
+                order.max_risk_money / real_risk_per_unit
+            )
+            qty = min(qty, affordable)
+            if qty <= 0:
+                order.status = OrderStatus.CANCELLED
+                self._pending = None
+                return False
+
+        commission = self.instrument.commission(qty)
         self._position = Position(
             side=order.side,
-            qty=order.qty,
+            qty=qty,
             entry_price=fill,
             entry_time=bar.timestamp,
             stop_loss=order.stop_loss,
-            take_profit=order.take_profit,
-            planned_risk_points=order.risk_points,
+            take_profit=take_profit,
+            planned_risk_points=planned_risk,
             entry_commission=commission,
             entry_slippage_points=slip,
             tag=order.tag,

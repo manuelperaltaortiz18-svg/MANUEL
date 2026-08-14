@@ -394,3 +394,65 @@ print(simulate_challenge(stats, risk_per_trade_pct=1.0).summary())
 
 Todo lo anterior parte de una tasa de acierto **supuesta**. Cuál es la real solo
 lo dicen tus datos.
+
+## 11. Estrategia 2 — Recuperación del rango de la primera vela (Nasdaq)
+
+La secuencia, tal cual:
+
+1. La **primera vela de 15 minutos** de la apertura americana define un rango.
+2. El precio **cierra fuera** de ese rango.
+3. El precio **vuelve y cierra dentro**.
+4. El siguiente **cierre fuera** dispara la entrada, en la dirección de ese
+   cierre. Si rompió al alza, falló y cierra por debajo del mínimo → **corto**.
+
+Entrada a **mercado en la apertura de la vela siguiente**, stop **estructural**
+al otro lado del rango, objetivo a 1:1 medido desde el llenado real.
+
+Código: `RangeReclaimStrategy` en `src/trading/strategy.py`,
+`RangeReclaimConfig` en `src/config/trading_config.py`, versión TradingView en
+`pine/nasdaq_range_reclaim_1to1.pine`.
+
+```bash
+python scripts/run_backtest.py --mode reclaim --instrument NAS100 \
+    --equity 100000 --max-trades 1 --list-trades
+```
+
+### Dos cambios que exigió en el motor
+
+**Entradas a mercado.** La señal es un *cierre*, no un nivel tocado, así que la
+orden entra en la apertura siguiente. Fingir que entramos al mismo cierre que
+usamos para decidir sería mentir en el backtest.
+
+**Tope de riesgo aplicado en el llenado.** El tamaño se calcula con el cierre
+que confirma, pero el llenado real llega después y puede ser peor, lo que
+ensancha el stop real. Sin corregirlo el riesgo se pasa del presupuesto: en el
+primer test la operación arriesgaba 503 $ con un tope de 500 $. Ahora el bróker
+recalcula el volumen sobre el precio real de entrada y lo recorta, o rechaza la
+operación si no cabe ningún tamaño. Con una cuenta de prop firm, pasarse del
+riesgo es exactamente lo que no puede ocurrir.
+
+### Por qué encaja mucho mejor con un 1:1 que la ruptura por ATR
+
+El stop es la anchura del rango de apertura, no un múltiplo de ATR — mucho más
+ancho. Y como el coste de ejecución es fijo, un stop ancho lo diluye. Sobre los
+mismos 250 días sintéticos a escala Nasdaq:
+
+| estrategia | instrumento | operaciones | stop medio | coste/R | acierto necesario |
+|---|---|---|---|---|---|
+| Recuperación | MNQ (futuro) | 178 | 74 pts | 0,017 | **50,8 %** |
+| Recuperación | NAS100 (CFD) | 178 | 75 pts | 0,037 | **51,9 %** |
+| Ruptura por ATR | NAS100 (CFD) | 402 | 40 pts | 0,060 | 53,0 % |
+
+50,8 % es prácticamente el 50 % teórico: con el futuro MNQ, esta estrategia casi
+no paga peaje. Ese es su mérito estructural, y es independiente de si el patrón
+funciona o no.
+
+Otras dos propiedades que van a favor en una evaluación de prop firm: **una sola
+operación al día** (menos exposición a la regla de consistencia) y **posiciones
+pequeñas** por el stop ancho.
+
+### Lo que sigue sin saberse
+
+Todo lo anterior es estructura de costes, que es calculable. Si el patrón acierta
+más del 51 % es una pregunta empírica que estos datos sintéticos no responden —
+son un paseo aleatorio, y ahí sale justo lo que debe salir, ~50 %.

@@ -17,10 +17,15 @@ from collections import deque
 from datetime import date, datetime
 from typing import Optional
 
-from src.config.trading_config import BreakoutConfig, SessionConfig
+from src.config.trading_config import (
+    BreakoutConfig,
+    RangeReclaimConfig,
+    SessionConfig,
+)
 from src.trading.indicators import RollingExtremes, WilderATR, ema
 from src.trading.models import (
     Bar,
+    EntryType,
     InstrumentSpec,
     Position,
     RoundMode,
@@ -132,10 +137,11 @@ class BreakoutStrategy(Strategy):
 
         return Signal(
             side=side,
-            entry_stop=entry,
             stop_loss=self.instrument.round_price(stop_loss),
-            take_profit=self.instrument.round_price(take_profit),
             reason=f"{self.config.mode} breakout ({side.value})",
+            entry_stop=entry,
+            take_profit=self.instrument.round_price(take_profit),
+            reward_risk_ratio=self.config.reward_risk_ratio,
             entry_limit=self._entry_limit(side, entry),
             valid_until=self._session_deadline(bar.timestamp),
             meta={
@@ -242,3 +248,144 @@ class BreakoutStrategy(Strategy):
 
     def _session_deadline(self, ts: datetime) -> datetime:
         return datetime.combine(ts.date(), self.session.flat_at)
+
+
+class RangeReclaimStrategy(Strategy):
+    """
+    Fallo y recuperación del rango de apertura: the first candle of the session
+    defines a range, price closes outside it, closes back inside, and the next
+    close outside triggers the trade — in the direction of that close.
+
+    Why this shape matters. A plain breakout enters on the first push out of the
+    range and gets chopped by the fake move. This one waits for that fake move
+    to be rejected: the excursion, the return, and only then the close that
+    holds. The direction is whichever way the confirming close goes, so a break
+    up that fails and closes below the low is a short — the "o al revés" case.
+
+    Execution differs from the breakout strategy in two ways that matter:
+
+    * The trigger is a CLOSE, not a level being touched, so the entry is a
+      market order at the next open rather than a resting stop. There is no
+      pretending we got filled at the close we used to decide.
+    * The stop is structural — the far side of the range, plus a buffer — not a
+      volatility multiple. The target is then computed from the actual fill so
+      the 1:1 holds exactly, whatever the open gave us.
+    """
+
+    def __init__(
+        self,
+        config: RangeReclaimConfig,
+        instrument: InstrumentSpec,
+        session: SessionConfig,
+    ) -> None:
+        self.config = config
+        self.instrument = instrument
+        self.session = session
+
+        self._bars_seen = 0
+        self._range_high: Optional[float] = None
+        self._range_low: Optional[float] = None
+        self._left_range = False
+        self._returned = False
+        self._entries_today = 0
+
+    # -- lifecycle ---------------------------------------------------------
+
+    def on_session_start(self, day: date) -> None:
+        self._bars_seen = 0
+        self._range_high = None
+        self._range_low = None
+        self._left_range = False
+        self._returned = False
+        self._entries_today = 0
+
+    def on_entry_filled(self, position: Position) -> None:
+        self._entries_today += 1
+
+    # -- state -------------------------------------------------------------
+
+    @property
+    def range_high(self) -> Optional[float]:
+        return self._range_high
+
+    @property
+    def range_low(self) -> Optional[float]:
+        return self._range_low
+
+    @property
+    def armed(self) -> bool:
+        """True once the excursion-and-return has happened (or isn't required)."""
+        return self._returned or not self.config.require_excursion
+
+    # -- signal generation -------------------------------------------------
+
+    def on_bar(self, bar: Bar) -> Optional[Signal]:
+        self._bars_seen += 1
+
+        if self._bars_seen <= self.config.range_bars:
+            self._range_high = bar.high if self._range_high is None else max(self._range_high, bar.high)
+            self._range_low = bar.low if self._range_low is None else min(self._range_low, bar.low)
+            return None  # the range candle itself never trades
+
+        if self._range_high is None or self._range_low is None:
+            return None
+        if self._entries_today >= self.config.max_signals_per_day:
+            return None
+
+        above = bar.close > self._range_high
+        below = bar.close < self._range_low
+        outside = above or below
+
+        # State machine: out of the range, back inside, then out again.
+        if not self._left_range:
+            if outside:
+                self._left_range = True
+            if self.config.require_excursion:
+                return None
+        elif not self._returned:
+            if not outside:
+                self._returned = True
+            return None
+
+        if not outside:
+            return None
+
+        width = self._range_high - self._range_low
+        if width < self.config.min_range_points:
+            return None
+        if self.config.max_range_points and width > self.config.max_range_points:
+            return None
+
+        side = Side.LONG if above else Side.SHORT
+        if side is Side.LONG and not self.config.allow_long:
+            return None
+        if side is Side.SHORT and not self.config.allow_short:
+            return None
+
+        buffer_points = self.config.stop_buffer_ticks * self.instrument.tick_size
+        if side is Side.LONG:
+            stop_loss = self.instrument.round_price(
+                self._range_low - buffer_points, RoundMode.DOWN
+            )
+        else:
+            stop_loss = self.instrument.round_price(
+                self._range_high + buffer_points, RoundMode.UP
+            )
+
+        return Signal(
+            side=side,
+            stop_loss=stop_loss,
+            reason=f"range reclaim ({side.value})",
+            entry_type=EntryType.MARKET,
+            reward_risk_ratio=self.config.reward_risk_ratio,
+            # Sizing needs a price before the fill exists; the close we just
+            # confirmed on is the honest estimate of where we get in.
+            reference_price=bar.close,
+            valid_until=None,
+            meta={
+                "range_high": self._range_high,
+                "range_low": self._range_low,
+                "range_width": width,
+                "confirming_close": bar.close,
+            },
+        )

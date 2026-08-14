@@ -59,8 +59,47 @@ SPY_ETF = InstrumentSpec(
     currency="USD",
 )
 
+# --- Nasdaq ---
+
+NQ_FUTURE = InstrumentSpec(
+    symbol="NQ",
+    tick_size=0.25,
+    point_value=20.0,
+    qty_step=1.0,
+    min_qty=1.0,
+    commission_per_unit=2.10,
+    slippage_ticks=1.0,
+    currency="USD",
+)
+
+MNQ_FUTURE = InstrumentSpec(
+    symbol="MNQ",
+    tick_size=0.25,
+    point_value=2.0,
+    qty_step=1.0,
+    min_qty=1.0,
+    commission_per_unit=0.62,
+    slippage_ticks=1.0,
+    currency="USD",
+)
+
+NAS100_CFD = InstrumentSpec(
+    symbol="NAS100",
+    tick_size=0.1,
+    point_value=1.0,
+    qty_step=0.1,
+    min_qty=0.1,
+    commission_per_unit=0.0,  # el coste va en la horquilla
+    slippage_ticks=15.0,      # ~1.5 puntos; MÍDELO en tu bróker
+    currency="USD",
+)
+
 INSTRUMENTS = {
-    spec.symbol: spec for spec in (ES_FUTURE, MES_FUTURE, SP500_CFD, SPY_ETF)
+    spec.symbol: spec
+    for spec in (
+        ES_FUTURE, MES_FUTURE, SP500_CFD, SPY_ETF,
+        NQ_FUTURE, MNQ_FUTURE, NAS100_CFD,
+    )
 }
 
 
@@ -192,3 +231,41 @@ class BotConfig:
 
 
 DEFAULT_CONFIG = BotConfig()
+
+
+@dataclass(frozen=True)
+class RangeReclaimConfig:
+    """
+    Fallo y recuperación del rango de la primera vela de la sesión.
+
+    Secuencia: la primera vela define un rango; el precio CIERRA fuera de él;
+    vuelve a CERRAR dentro; y a partir de ahí el primer cierre fuera del rango
+    dispara la entrada, en la dirección de ese cierre. Entrada a mercado en la
+    apertura siguiente, stop al otro lado del rango, objetivo a 1:1 medido
+    desde el llenado real.
+
+    El stop es estructural (el lado opuesto del rango), así que su distancia la
+    marca la amplitud de esa primera vela. Por eso `max_range_points` importa:
+    en una apertura violenta el rango puede ser tan ancho que el tamaño se
+    quede en cero, y entonces es mejor no operar el día.
+    """
+
+    range_bars: int = 1              # velas que forman el rango (1 = la primera)
+    require_excursion: bool = True   # exigir salida y regreso antes de entrar
+    reward_risk_ratio: float = 1.0
+    stop_buffer_ticks: float = 2.0   # el stop va justo PASADO el rango
+    min_range_points: float = 0.0
+    max_range_points: float = 0.0    # 0 = sin tope
+    max_signals_per_day: int = 1
+    allow_long: bool = True
+    allow_short: bool = True
+
+    def __post_init__(self) -> None:
+        if self.range_bars <= 0:
+            raise ValueError("range_bars must be positive")
+        if self.reward_risk_ratio <= 0:
+            raise ValueError("reward_risk_ratio must be positive")
+        if self.max_range_points and self.max_range_points < self.min_range_points:
+            raise ValueError("max_range_points must exceed min_range_points")
+        if not (self.allow_long or self.allow_short):
+            raise ValueError("At least one direction must be enabled")

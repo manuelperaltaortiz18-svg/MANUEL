@@ -25,9 +25,11 @@ def bar(index, o, h, l, c):
 def armed_broker(instrument=NO_COST, side=Side.LONG):
     broker = SimulatedBroker(instrument, starting_equity=10_000.0)
     if side is Side.LONG:
-        broker.submit_bracket(Side.LONG, 1, 5010.0, 5000.0, 5020.0, T0)
+        broker.submit_bracket(Side.LONG, 1, stop_loss=5000.0, now=T0,
+                              entry_stop=5010.0, take_profit=5020.0)
     else:
-        broker.submit_bracket(Side.SHORT, 1, 4990.0, 5000.0, 4980.0, T0)
+        broker.submit_bracket(Side.SHORT, 1, stop_loss=5000.0, now=T0,
+                              entry_stop=4990.0, take_profit=4980.0)
     return broker
 
 
@@ -54,7 +56,8 @@ def test_gapped_entry_fills_at_the_open_not_the_level():
 def test_stop_limit_skips_entries_that_gap_beyond_the_limit():
     broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
     broker.submit_bracket(
-        Side.LONG, 1, 5010.0, 5000.0, 5020.0, T0, entry_limit=5011.0
+        Side.LONG, 1, stop_loss=5000.0, now=T0, entry_stop=5010.0,
+        take_profit=5020.0, entry_limit=5011.0
     )
     broker.on_bar(bar(1, 5013, 5016, 5012, 5015))  # opens 3 pts through the trigger
     assert broker.position is None
@@ -68,7 +71,8 @@ def test_stop_limit_skips_entries_that_gap_beyond_the_limit():
 def test_entry_limit_must_sit_on_the_far_side_of_the_trigger():
     broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
     with pytest.raises(ValueError):
-        broker.submit_bracket(Side.LONG, 1, 5010.0, 5000.0, 5020.0, T0, entry_limit=5009.0)
+        broker.submit_bracket(Side.LONG, 1, stop_loss=5000.0, now=T0,
+                              entry_stop=5010.0, take_profit=5020.0, entry_limit=5009.0)
 
 
 def test_take_profit_fills_when_only_the_target_is_touched():
@@ -119,7 +123,8 @@ def test_short_bracket_mirrors_long_behaviour():
 
 def test_slippage_and_commission_are_charged_on_both_sides():
     broker = SimulatedBroker(MES_FUTURE, starting_equity=10_000.0)
-    broker.submit_bracket(Side.LONG, 1, 5010.0, 5000.0, 5020.0, T0)
+    broker.submit_bracket(Side.LONG, 1, stop_loss=5000.0, now=T0,
+                              entry_stop=5010.0, take_profit=5020.0)
     broker.on_bar(bar(1, 5005, 5012, 5004, 5011))
     # One tick of slippage on a stop entry.
     assert broker.position.entry_price == 5010.25
@@ -138,7 +143,8 @@ def test_slippage_is_recorded_so_spread_costs_can_be_reported():
         slippage_ticks=5.0,  # cost lives entirely in the spread
     )
     broker = SimulatedBroker(wide_spread, starting_equity=10_000.0)
-    broker.submit_bracket(Side.LONG, 10, 5010.0, 5000.0, 5020.0, T0)
+    broker.submit_bracket(Side.LONG, 10, stop_loss=5000.0, now=T0,
+                          entry_stop=5010.0, take_profit=5020.0)
     broker.on_bar(bar(1, 5005, 5012, 5004, 5011))
     broker.on_bar(bar(2, 5011, 5011, 4990, 4995))  # stopped out
     trade = broker.trades[0]
@@ -160,7 +166,8 @@ def test_take_profit_exits_pay_no_slippage():
 def test_expired_order_is_removed_and_never_fills():
     broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
     broker.submit_bracket(
-        Side.LONG, 1, 5010.0, 5000.0, 5020.0, T0, expires_at=T0 + timedelta(minutes=5)
+        Side.LONG, 1, stop_loss=5000.0, now=T0, entry_stop=5010.0,
+        take_profit=5020.0, expires_at=T0 + timedelta(minutes=5)
     )
     broker.on_bar(bar(1, 5005, 5015, 5004, 5012))
     assert broker.position is None
@@ -187,13 +194,119 @@ def test_equity_tracks_realised_pnl():
 def test_bracket_validation_rejects_inverted_levels():
     broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
     with pytest.raises(ValueError):
-        broker.submit_bracket(Side.LONG, 1, 5010.0, 5020.0, 5000.0, T0)
+        broker.submit_bracket(Side.LONG, 1, stop_loss=5020.0, now=T0,
+                              entry_stop=5010.0, take_profit=5000.0)
     with pytest.raises(ValueError):
-        broker.submit_bracket(Side.LONG, 0, 5010.0, 5000.0, 5020.0, T0)
+        broker.submit_bracket(Side.LONG, 0, stop_loss=5000.0, now=T0,
+                              entry_stop=5010.0, take_profit=5020.0)
 
 
 def test_cannot_arm_a_second_entry_while_in_a_position():
     broker = armed_broker()
     broker.on_bar(bar(1, 5005, 5012, 5004, 5011))
     with pytest.raises(RuntimeError):
-        broker.submit_bracket(Side.LONG, 1, 5030.0, 5020.0, 5040.0, T0)
+        broker.submit_bracket(Side.LONG, 1, stop_loss=5020.0, now=T0,
+                              entry_stop=5030.0, take_profit=5040.0)
+
+
+# ---------------------------------------------------------------------------
+#  Market entries (close-based signals)
+# ---------------------------------------------------------------------------
+
+from src.trading.models import EntryType  # noqa: E402
+
+
+def market_broker(instrument=NO_COST, stop_loss=4990.0, **kwargs):
+    broker = SimulatedBroker(instrument, starting_equity=10_000.0)
+    broker.submit_bracket(
+        Side.LONG, 1, stop_loss=stop_loss, now=T0,
+        entry_type=EntryType.MARKET, **kwargs
+    )
+    return broker
+
+
+def test_market_entry_fills_at_the_next_open():
+    broker = market_broker()
+    # Deliberately quiet bar: neither bracket level is reached, so the position
+    # is still open and can be inspected.
+    broker.on_bar(bar(1, 5002, 5006, 5000, 5004))
+    assert broker.position is not None
+    assert broker.position.entry_price == 5002  # the open, not the close
+
+
+def test_market_target_is_derived_from_the_fill_keeping_the_ratio_exact():
+    broker = market_broker(stop_loss=4990.0)  # no fixed take_profit
+    broker.on_bar(bar(1, 5002, 5006, 5000, 5004))
+    position = broker.position
+    risk = position.entry_price - position.stop_loss
+    reward = position.take_profit - position.entry_price
+    assert reward == pytest.approx(risk)  # 1:1 measured from the real fill
+
+
+def test_market_entry_honours_an_explicit_ratio():
+    broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
+    broker.submit_bracket(
+        Side.LONG, 1, stop_loss=4990.0, now=T0,
+        entry_type=EntryType.MARKET, reward_risk_ratio=2.0
+    )
+    broker.on_bar(bar(1, 5000, 5005, 4999, 5004))
+    position = broker.position
+    assert position.take_profit - position.entry_price == pytest.approx(
+        2 * (position.entry_price - position.stop_loss)
+    )
+
+
+def test_market_entry_that_gaps_past_its_own_stop_is_abandoned():
+    broker = market_broker(stop_loss=4990.0)
+    broker.on_bar(bar(1, 4980, 4995, 4975, 4990))  # opens below the stop
+    assert broker.position is None
+    assert broker.pending_order is None  # not left resting either
+
+
+def test_a_market_entry_cannot_carry_a_resting_level():
+    broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
+    with pytest.raises(ValueError):
+        broker.submit_bracket(
+            Side.LONG, 1, stop_loss=4990.0, now=T0,
+            entry_type=EntryType.MARKET, entry_stop=5010.0
+        )
+
+
+# ---------------------------------------------------------------------------
+#  The risk cap survives a bad fill
+# ---------------------------------------------------------------------------
+
+
+def test_a_worse_fill_cuts_the_size_instead_of_exceeding_the_budget():
+    """
+    Size is computed from an expected entry; the real one can be worse, which
+    widens the real stop. Without the cap the trade quietly risks more than
+    allowed — the single fastest way to breach a funded-account limit.
+    """
+    fractional = InstrumentSpec(
+        symbol="CFD", tick_size=0.25, point_value=1.0,
+        qty_step=0.1, min_qty=0.1, commission_per_unit=0.0, slippage_ticks=0.0,
+    )
+    broker = SimulatedBroker(fractional, starting_equity=100_000.0)
+    # Sized for a 100-point stop: 500 / 100 = 5.0 units.
+    broker.submit_bracket(
+        Side.LONG, 5.0, stop_loss=4900.0, now=T0,
+        entry_type=EntryType.MARKET, max_risk_money=500.0,
+    )
+    broker.on_bar(bar(1, 5020, 5060, 5015, 5050))  # fills 20 points higher
+
+    position = broker.position
+    real_risk = (position.entry_price - position.stop_loss) * position.qty
+    assert position.qty < 5.0          # size was cut
+    assert real_risk <= 500.0          # and the budget held
+
+
+def test_the_cap_refuses_the_trade_when_no_size_fits():
+    broker = SimulatedBroker(NO_COST, starting_equity=10_000.0)
+    broker.submit_bracket(
+        Side.LONG, 1, stop_loss=4900.0, now=T0,
+        entry_type=EntryType.MARKET, max_risk_money=10.0,  # 1 unit risks ~500
+    )
+    broker.on_bar(bar(1, 5000, 5005, 4999, 5004))
+    assert broker.position is None
+    assert broker.trades == []

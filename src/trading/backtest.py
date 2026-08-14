@@ -52,16 +52,17 @@ def run_backtest(
     bars: Sequence[Bar],
     config: BotConfig = DEFAULT_CONFIG,
     logger: Optional[Logger] = None,
+    strategy: Optional[Strategy] = None,
 ) -> BacktestResult:
     """Replay `bars` and return trades plus a full performance report."""
     broker = SimulatedBroker(config.instrument, config.starting_equity)
-    bot = build_bot(config, broker=broker, logger=logger)
+    bot = build_bot(config, broker=broker, strategy=strategy, logger=logger)
     bot.run(bars)
 
     report = analyse(
         broker.trades,
         config.starting_equity,
-        reward_risk_ratio=config.strategy.reward_risk_ratio,
+        reward_risk_ratio=getattr(config.strategy, "reward_risk_ratio", 1.0),
     )
     equity = [config.starting_equity] + [e for _, e in broker.equity_curve]
     return BacktestResult(
