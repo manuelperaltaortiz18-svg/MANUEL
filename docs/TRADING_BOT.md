@@ -320,3 +320,77 @@ de sesión y el hecho de que nunca se mantenga riesgo de un día para otro.
   que se ha medido es el ruido. Con 665 operaciones el intervalo de confianza
   del 95 % de la tasa de acierto sigue siendo de ±4 puntos porcentuales, y esa
   cifra la imprime el propio runner por ese motivo.
+
+## 10. TradingView (Pine) y prop firms
+
+### El script
+
+`pine/sp500_orb_1to1.pine` es el mismo bot en Pine v6: mismo rango de apertura,
+mismo stop-limit de entrada, mismo bracket 1:1, mismos cortacircuitos. Todo se
+calcula en **minutos desde la apertura de la sesión**, así que funciona en
+cualquier temporalidad, símbolo y zona horaria sin tocar el código.
+
+Al pegarlo en TradingView, lo primero es **Propiedades → comisión y
+deslizamiento**. Sin eso el backtest no significa nada: la horquilla es el coste
+dominante de una estrategia 1:1.
+
+La lógica de dirección del port está fijada contra el motor Python por un test
+(`test_pine_port_direction_logic_matches_the_engine`), para que los dos no se
+separen en silencio.
+
+### Qué hace falta para "un 70 % de rentabilidad"
+
+Con el coste medido del CFD en 15m (0,118 R por operación, empate en 55,9 % de
+aciertos), 250 sesiones y 2 operaciones al día:
+
+| riesgo por operación | acierto necesario para +70 % |
+|---|---|
+| 0,5 % | 66,5 % |
+| 1,0 % | 61,2 % |
+| 2,0 % | 58,6 % |
+
+Y la probabilidad real, simulando 20 000 caminos (ruina = perder la mitad):
+
+| acierto | riesgo | llega a +70 % | se arruina antes |
+|---|---|---|---|
+| 56 % | 1 % | 1,4 % | 0,5 % |
+| 56 % | 2 % | 18,0 % | 26,1 % |
+| 58 % | 2 % | 46,5 % | 7,4 % |
+| 60 % | 2 % | 77,8 % | 1,4 % |
+
+Es decir: el 70 % no es imposible, pero exige un acierto sostenido de ~58-60 %
+en una estrategia 1:1 **después de costes**, y la vía rápida (subir el riesgo)
+compra rentabilidad pagando con probabilidad de ruina.
+
+### En una evaluación de prop firm el objetivo no es el 70 %
+
+Objetivo típico +10 %, pérdida diaria −5 %, drawdown máximo −10 %:
+
+| acierto | riesgo | pasa | revienta |
+|---|---|---|---|
+| 55 % | 1 % | 15,3 % | 32,9 % |
+| 58 % | 1 % | 27,9 % | 19,4 % |
+| 58 % | 2 % | 49,4 % | 48,7 % |
+| 62 % | 1 % | 50,0 % | 7,8 % |
+
+Dos lecturas que importan más que cualquier promesa:
+
+1. **Subir el riesgo del 1 % al 2 % sube el aprobado del 27,9 % al 49,4 %, pero
+   el reventón del 19,4 % al 48,7 %.** Deja de ser una estrategia y pasa a ser
+   una apuesta.
+2. **El límite de pérdida diaria no salta nunca** (0,0 % en toda la tabla). Con
+   3 operaciones al día al 1 % no se puede perder un 5 % en una sesión. Lo que
+   tumba la cuenta es siempre el **drawdown acumulado**. Por eso el parámetro
+   que hay que configurar con cuidado en el Pine es `Drawdown máx. total`, no el
+   diario.
+
+`src/trading/propfirm.py` genera estas tablas para tus propios números:
+
+```python
+from src.trading.propfirm import StrategyStats, simulate_challenge
+stats = StrategyStats(hit_rate=0.58, cost_r=0.118, trades_per_day=2)
+print(simulate_challenge(stats, risk_per_trade_pct=1.0).summary())
+```
+
+Todo lo anterior parte de una tasa de acierto **supuesta**. Cuál es la real solo
+lo dicen tus datos.

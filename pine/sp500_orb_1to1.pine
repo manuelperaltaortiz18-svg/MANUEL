@@ -1,0 +1,273 @@
+//@version=6
+// =============================================================================
+//  S&P 500 — Ruptura de rango de apertura con bracket 1:1
+//  Puerto a Pine del bot de src/trading/ (mismas reglas, mismos parámetros).
+//
+//  Diseñado para velas de 15 minutos, pero todo se calcula en MINUTOS DESDE LA
+//  APERTURA de la sesión, así que funciona en cualquier temporalidad y en
+//  cualquier símbolo/zona horaria sin tocar el código.
+//
+//  Reglas:
+//    - Rango de apertura = máx/mín de los primeros N minutos de sesión.
+//    - Entrada: orden STOP-LIMIT a 1 tick del rango. El límite evita que un
+//      hueco te llene tan lejos que el objetivo ya esté consumido.
+//    - Stop = ATR x multiplicador, acotado. Objetivo = LA MISMA DISTANCIA (1:1).
+//    - Tamaño calculado desde el stop: cada operación arriesga el mismo % .
+//    - Cortacircuitos: operaciones/día, pérdidas consecutivas, pérdida diaria
+//      y drawdown máximo total (regla típica de prop firm).
+//    - Nunca se queda posición abierta al cierre de la sesión.
+//
+//  IMPORTANTE para el backtest: configura comisión y deslizamiento en
+//  Propiedades. Sin eso, el resultado que veas no existe. Con una horquilla de
+//  0,7 puntos y stops de 9 puntos, una estrategia 1:1 necesita ~56 % de
+//  aciertos SOLO para empatar.
+// =============================================================================
+
+strategy(
+     title                   = "S&P 500 — Ruptura de rango 1:1",
+     shorttitle              = "ORB 1:1",
+     overlay                 = true,
+     initial_capital         = 25000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     pyramiding              = 0,
+     calc_on_every_tick      = false,
+     close_entries_rule      = "ANY")
+// Sin process_orders_on_close: una orden colocada al cierre de esta vela queda
+// activa a partir de la SIGUIENTE, igual que en el motor de src/trading/.
+// Nunca se opera al precio de una vela que ya se ha visto.
+
+// ----------------------------------------------------------------------------
+//  Entradas
+// ----------------------------------------------------------------------------
+gSes = "1 · Sesión"
+sessionSpec  = input.session("0930-1600", "Sesión de mercado",            group = gSes)
+sessionTz    = input.string("America/New_York", "Zona horaria",           group = gSes,
+     options = ["America/New_York", "Europe/Madrid", "Europe/London", "UTC", "Etc/GMT-2", "Etc/GMT-3"])
+orMinutes    = input.int(30,  "Rango de apertura (minutos)",  minval = 1,  group = gSes)
+cutoffMins   = input.int(360, "Sin entradas tras (min desde apertura)", minval = 1, group = gSes)
+flatMins     = input.int(375, "Cerrar todo a (min desde apertura)",  minval = 1, group = gSes,
+     tooltip = "Debe ser MENOR que la duración de la sesión (RTH = 390 min): el cierre " +
+               "se ejecuta en la apertura de la vela siguiente, que tiene que existir.")
+
+gStr = "2 · Estrategia"
+atrLen       = input.int(14,   "Periodo ATR",              minval = 1,      group = gStr)
+atrMult      = input.float(1.0,"Stop = ATR x",             minval = 0.1, step = 0.1, group = gStr)
+rrRatio      = input.float(1.0,"Objetivo / Stop (1.0 = 1:1)", minval = 0.1, step = 0.1, group = gStr)
+minStopPts   = input.float(2.0,"Stop mínimo (puntos)",     minval = 0.0, step = 0.5, group = gStr)
+maxStopPts   = input.float(40.0,"Stop máximo (puntos)",    minval = 0.1, step = 0.5, group = gStr)
+bufferTicks  = input.int(1,    "Margen de ruptura (ticks)", minval = 0,     group = gStr)
+maxSlipTicks = input.int(4,    "Deslizamiento máx. de entrada (ticks)", minval = 0, group = gStr)
+allowLong    = input.bool(true, "Permitir largos",  group = gStr)
+allowShort   = input.bool(true, "Permitir cortos",  group = gStr)
+maxPerDay    = input.int(3,    "Máx. operaciones por sesión", minval = 1,   group = gStr)
+
+gRsk = "3 · Riesgo"
+riskPct      = input.float(0.5, "Riesgo por operación (% del capital)", minval = 0.01, step = 0.05, group = gRsk)
+qtyStep      = input.float(1.0, "Escalón de volumen",  minval = 0.001, step = 0.001, group = gRsk)
+minQty       = input.float(1.0, "Volumen mínimo",      minval = 0.001, step = 0.001, group = gRsk)
+maxLosses    = input.int(3,     "Parar tras N pérdidas seguidas", minval = 1, group = gRsk)
+dailyLossPct = input.float(2.0, "Límite de pérdida diaria (%)",  minval = 0.0, step = 0.1, group = gRsk)
+maxDdPct     = input.float(0.0, "Drawdown máx. total (%, 0 = off)", minval = 0.0, step = 0.5, group = gRsk)
+
+gViz = "4 · Visual"
+showLevels   = input.bool(true, "Dibujar niveles", group = gViz)
+
+// ----------------------------------------------------------------------------
+//  Sesión: todo relativo a la apertura, en minutos
+// ----------------------------------------------------------------------------
+inSession   = not na(time(timeframe.period, sessionSpec, sessionTz))
+newSession  = inSession and not nz(inSession[1], false)
+
+var int sessionOpenTime = 0
+if newSession
+    sessionOpenTime := time
+
+barMs       = timeframe.in_seconds(timeframe.period) * 1000
+minsFromOpen = sessionOpenTime > 0 ? (time - sessionOpenTime) / 60000.0 : -1.0
+// El final de la vela, no su inicio: "cerrar a los 375 min" es una fecha límite.
+// Comparando el inicio, en 15m no habría vela a las 15:55 y no se cerraría nunca.
+minsAtBarEnd = sessionOpenTime > 0 ? (time + barMs - sessionOpenTime) / 60000.0 : -1.0
+
+buildingRange = inSession and minsFromOpen < orMinutes
+rangeReady    = inSession and minsFromOpen >= orMinutes
+entryWindow   = inSession and minsFromOpen < cutoffMins
+mustBeFlat    = inSession and minsAtBarEnd >= flatMins
+
+// ----------------------------------------------------------------------------
+//  Rango de apertura
+// ----------------------------------------------------------------------------
+var float orHigh = na
+var float orLow  = na
+
+if newSession
+    orHigh := na
+    orLow  := na
+
+if buildingRange
+    orHigh := na(orHigh) ? high : math.max(orHigh, high)
+    orLow  := na(orLow)  ? low  : math.min(orLow,  low)
+
+// ----------------------------------------------------------------------------
+//  Contadores de sesión y cortacircuitos
+// ----------------------------------------------------------------------------
+var int   tradesToday     = 0
+var int   consecLosses    = 0
+var float dayStartEquity  = na
+var int   processedTrades = 0
+var float peakEquity      = na
+var bool  accountBlown    = false
+
+if newSession
+    tradesToday    := 0
+    consecLosses   := 0
+    dayStartEquity := strategy.equity
+
+// Rachas de pérdidas: se leen de las operaciones ya cerradas.
+if strategy.closedtrades > processedTrades
+    for i = processedTrades to strategy.closedtrades - 1
+        profit = strategy.closedtrades.profit(i)
+        if profit < 0
+            consecLosses := consecLosses + 1
+        else if profit > 0
+            consecLosses := 0
+    processedTrades := strategy.closedtrades
+
+// Nueva posición abierta -> cuenta como operación del día.
+if strategy.position_size != 0 and strategy.position_size[1] == 0
+    tradesToday := tradesToday + 1
+
+// Drawdown máximo total (la regla que más gente tumba en una prop firm).
+peakEquity := na(peakEquity) ? strategy.equity : math.max(peakEquity, strategy.equity)
+if maxDdPct > 0 and not na(peakEquity)
+    if strategy.equity <= peakEquity * (1.0 - maxDdPct / 100.0)
+        accountBlown := true
+
+dayPnl        = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+dailyLossHit  = dailyLossPct > 0 and not na(dayStartEquity) and
+                 dayPnl <= -dayStartEquity * dailyLossPct / 100.0
+
+canTrade = not accountBlown and
+           tradesToday < maxPerDay and
+           consecLosses < maxLosses and
+           not dailyLossHit
+
+// ----------------------------------------------------------------------------
+//  Niveles: stop por ATR, objetivo a la MISMA distancia
+// ----------------------------------------------------------------------------
+atrValue  = ta.atr(atrLen)
+rawStop   = atrValue * atrMult
+stopDist  = math.max(minStopPts, math.min(maxStopPts, rawStop))
+// Cuadrar a la rejilla de ticks: así entrada, stop y objetivo caen en la
+// rejilla y el 1:1 es exacto, no aproximado.
+stopDist := math.round(stopDist / syminfo.mintick) * syminfo.mintick
+
+buffer   = bufferTicks  * syminfo.mintick
+maxSlip  = maxSlipTicks * syminfo.mintick
+
+longTrigger  = na(orHigh) ? na : orHigh + buffer
+shortTrigger = na(orLow)  ? na : orLow  - buffer
+midpoint     = (na(orHigh) or na(orLow)) ? na : (orHigh + orLow) / 2.0
+
+// Dirección: se arma el lado hacia el que se inclina el precio. Si ese lado
+// está desactivado, se usa el otro (nunca los dos a la vez).
+hasRange  = not na(midpoint)
+leansLong = hasRange and close >= midpoint
+wantLong  = hasRange and allowLong  and (leansLong or not allowShort)
+wantShort = hasRange and allowShort and (not leansLong or not allowLong)
+
+// ----------------------------------------------------------------------------
+//  Tamaño de posición: lo decide el stop, nunca al revés
+// ----------------------------------------------------------------------------
+pointValue = syminfo.pointvalue
+riskBudget = strategy.equity * riskPct / 100.0
+riskPerUnit = stopDist * pointValue
+rawQty     = riskPerUnit > 0 ? riskBudget / riskPerUnit : 0.0
+steppedQty = qtyStep > 0 ? math.floor(rawQty / qtyStep) * qtyStep : rawQty
+// Por debajo del mínimo NO se redondea hacia arriba: se descarta la operación.
+qty        = steppedQty >= minQty ? steppedQty : 0.0
+
+// ----------------------------------------------------------------------------
+//  Órdenes
+// ----------------------------------------------------------------------------
+flat        = strategy.position_size == 0
+readyToArm  = rangeReady and entryWindow and flat and canTrade and
+              qty > 0 and not na(stopDist) and stopDist > 0 and not mustBeFlat
+
+if readyToArm and wantLong and not na(longTrigger)
+    stopPrice   = longTrigger - stopDist
+    targetPrice = longTrigger + stopDist * rrRatio
+    strategy.cancel("S")   // el sesgo ha cambiado de lado
+    strategy.entry("L", strategy.long, qty = qty,
+         stop = longTrigger, limit = longTrigger + maxSlip,
+         comment = "ORB largo")
+    strategy.exit("L-x", from_entry = "L", stop = stopPrice, limit = targetPrice,
+         comment_loss = "stop", comment_profit = "objetivo")
+
+if readyToArm and wantShort and not na(shortTrigger)
+    stopPrice   = shortTrigger + stopDist
+    targetPrice = shortTrigger - stopDist * rrRatio
+    strategy.cancel("L")   // el sesgo ha cambiado de lado
+    strategy.entry("S", strategy.short, qty = qty,
+         stop = shortTrigger, limit = shortTrigger - maxSlip,
+         comment = "ORB corto")
+    strategy.exit("S-x", from_entry = "S", stop = stopPrice, limit = targetPrice,
+         comment_loss = "stop", comment_profit = "objetivo")
+
+// Cancelar la orden en reposo cuando ya no debe existir.
+if not readyToArm or mustBeFlat
+    if strategy.position_size == 0
+        strategy.cancel("L")
+        strategy.cancel("S")
+
+// Cierre forzado: plano antes del final de la sesión, siempre.
+if mustBeFlat or not inSession
+    strategy.cancel("L")
+    strategy.cancel("S")
+    if strategy.position_size != 0
+        strategy.close_all(comment = "cierre de sesión")
+
+// La cuenta ha superado el drawdown máximo: fuera del mercado y sin más entradas.
+if accountBlown and strategy.position_size != 0
+    strategy.close_all(comment = "drawdown máximo")
+
+// ----------------------------------------------------------------------------
+//  Visualización
+// ----------------------------------------------------------------------------
+plotHigh = showLevels and rangeReady ? orHigh : na
+plotLow  = showLevels and rangeReady ? orLow  : na
+plot(plotHigh, "Máx. rango", color = color.new(color.teal, 0), style = plot.style_linebr, linewidth = 2)
+plot(plotLow,  "Mín. rango", color = color.new(color.orange, 0), style = plot.style_linebr, linewidth = 2)
+
+bgcolor(buildingRange ? color.new(color.blue, 92) : na, title = "Formando rango")
+bgcolor(inSession and not canTrade ? color.new(color.red, 93) : na, title = "Bloqueado por riesgo")
+
+plotchar(readyToArm and wantLong,  "Largo armado", "▲", location.belowbar, color.teal,   size = size.tiny)
+plotchar(readyToArm and wantShort, "Corto armado", "▼", location.abovebar, color.orange, size = size.tiny)
+
+// ----------------------------------------------------------------------------
+//  Tabla de control
+// ----------------------------------------------------------------------------
+var table info = table.new(position.top_right, 2, 6, border_width = 1)
+if barstate.islast
+    table.cell(info, 0, 0, "Operaciones hoy", text_size = size.small)
+    table.cell(info, 1, 0, str.tostring(tradesToday) + " / " + str.tostring(maxPerDay), text_size = size.small)
+    table.cell(info, 0, 1, "Pérdidas seguidas", text_size = size.small)
+    table.cell(info, 1, 1, str.tostring(consecLosses) + " / " + str.tostring(maxLosses), text_size = size.small)
+    table.cell(info, 0, 2, "P&L del día", text_size = size.small)
+    table.cell(info, 1, 2, str.tostring(dayPnl, "#.##"), text_size = size.small,
+         text_color = dayPnl >= 0 ? color.teal : color.red)
+    table.cell(info, 0, 3, "Stop actual (pts)", text_size = size.small)
+    table.cell(info, 1, 3, str.tostring(stopDist, "#.##"), text_size = size.small)
+    table.cell(info, 0, 4, "Volumen calculado", text_size = size.small)
+    table.cell(info, 1, 4, str.tostring(qty, "#.###"), text_size = size.small)
+    table.cell(info, 0, 5, "Estado", text_size = size.small)
+    table.cell(info, 1, 5, accountBlown ? "DD MÁXIMO" : dailyLossHit ? "límite diario" :
+         canTrade ? "operando" : "bloqueado", text_size = size.small,
+         text_color = accountBlown or dailyLossHit ? color.red : color.teal)
+
+// ----------------------------------------------------------------------------
+//  Alertas (para automatizar vía webhook)
+// ----------------------------------------------------------------------------
+alertcondition(readyToArm and wantLong,  "Ruptura al alza",  "ORB 1:1 — largo armado")
+alertcondition(readyToArm and wantShort, "Ruptura a la baja", "ORB 1:1 — corto armado")

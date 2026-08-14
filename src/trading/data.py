@@ -11,6 +11,7 @@ Expected CSV layout (header required, extra columns ignored):
 from __future__ import annotations
 
 import csv
+import math
 import random
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
@@ -240,14 +241,23 @@ def synthetic_bars(
     gap_volatility_points: float = 8.0,
     seed: int = 42,
     tick_size: float = 0.25,
+    volatility_reference_minutes: int = 5,
 ) -> list[Bar]:
     """
     Deterministic random-walk feed with overnight gaps and intraday drift.
+
+    `bar_volatility_points` describes a bar of `volatility_reference_minutes`
+    and is scaled by the square root of time for other timeframes, so a 15m bar
+    moves ~1.7x a 5m one. Without that scaling every timeframe would produce
+    identically sized bars, which quietly invalidates any comparison between
+    them — ATR-based stops would come out the same on 5m and 15m.
 
     Not a substitute for real data — it exists so the engine, the strategy and
     the metrics can be run end-to-end (and regression-tested) offline.
     """
     rng = random.Random(seed)
+    scale = math.sqrt(minutes / max(1, volatility_reference_minutes))
+    bar_volatility_points *= scale
     bars: list[Bar] = []
     price = start_price
     current = start_date

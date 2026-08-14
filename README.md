@@ -27,8 +27,10 @@ python scripts/run_backtest.py --csv datos.csv --timeframe 15 --list-trades
 python scripts/export_mt5.py --symbol SP500m --timeframe M1   # en Windows con MT5
 ```
 
+Versión TradingView: [`pine/sp500_orb_1to1.pine`](pine/sp500_orb_1to1.pine).
+
 ```
-src/config/trading_config.py   src/trading/   scripts/run_backtest.py
+src/config/trading_config.py   src/trading/   scripts/   pine/
 ```
 
 Las señales del bot **no** deben usarse para modificar la asignación

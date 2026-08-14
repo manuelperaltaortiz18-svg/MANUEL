@@ -161,6 +161,37 @@ def test_donchian_mode_waits_for_the_full_lookback():
     assert signal.entry_stop == 5013.25  # highest high of the last 4 bars + 1 tick
 
 
+@pytest.mark.parametrize("allow_long", [True, False])
+@pytest.mark.parametrize("allow_short", [True, False])
+@pytest.mark.parametrize("leans_long", [True, False])
+def test_pine_port_direction_logic_matches_the_engine(allow_long, allow_short, leans_long):
+    """
+    The Pine port in pine/sp500_orb_1to1.pine picks its side with:
+
+        wantLong  = allowLong  and (leansLong or not allowShort)
+        wantShort = allowShort and (not leansLong or not allowLong)
+
+    This pins that truth table against the Python strategy, so the two cannot
+    drift apart silently. An earlier version of the Pine fallback was wrong and
+    simply never armed the enabled side when the natural one was disabled.
+    """
+    if not (allow_long or allow_short):
+        pytest.skip("at least one direction must be enabled")
+
+    strategy = make_strategy(allow_long=allow_long, allow_short=allow_short)
+    # Close above the range midpoint leans long, below leans short.
+    last = (time(9, 45), 5009, 5010, 5005, 5009) if leans_long else (
+        time(9, 45), 5000, 5001, 4996, 4997
+    )
+    signal = feed(strategy, OPENING_RANGE_BARS + [last])
+
+    pine_long = allow_long and (leans_long or not allow_short)
+    pine_short = allow_short and (not leans_long or not allow_long)
+    expected = Side.LONG if pine_long else Side.SHORT if pine_short else None
+
+    assert (signal.side if signal else None) is expected
+
+
 def test_signal_expires_at_the_session_flat_time():
     strategy = make_strategy()
     signal = feed(strategy, OPENING_RANGE_BARS + [(time(9, 45), 5009, 5010, 5005, 5009)])
