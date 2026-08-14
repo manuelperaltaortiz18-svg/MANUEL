@@ -234,24 +234,30 @@ DEFAULT_CONFIG = BotConfig()
 
 
 @dataclass(frozen=True)
-class RangeReclaimConfig:
+class FirstCandleBreakConfig:
     """
-    Fallo y recuperación del rango de la primera vela de la sesión.
+    Cierre fuera del rango de la primera vela de la sesión.
 
-    Secuencia: la primera vela define un rango; el precio CIERRA fuera de él;
-    vuelve a CERRAR dentro; y a partir de ahí el primer cierre fuera del rango
-    dispara la entrada, en la dirección de ese cierre. Entrada a mercado en la
-    apertura siguiente, stop al otro lado del rango, objetivo a 1:1 medido
-    desde el llenado real.
+    La primera vela define un rango. La primera vela posterior que CIERRE por
+    encima del máximo entra largo; la que cierre por debajo del mínimo entra
+    corto. Entrada a mercado en la apertura siguiente, stop al otro lado del
+    rango, objetivo a 1:1 medido desde el llenado real.
+
+    El disparo es un CIERRE, no un nivel tocado: una vela puede perforar el
+    rango con la mecha y volver dentro, y eso no es señal.
 
     El stop es estructural (el lado opuesto del rango), así que su distancia la
     marca la amplitud de esa primera vela. Por eso `max_range_points` importa:
     en una apertura violenta el rango puede ser tan ancho que el tamaño se
-    quede en cero, y entonces es mejor no operar el día.
+    quede en cero, y entonces es mejor no operar ese día.
+
+    `require_excursion` activa la variante de fallo y recuperación: exige que
+    el precio salga del rango, vuelva a cerrar dentro, y solo entonces opera el
+    siguiente cierre fuera.
     """
 
-    range_bars: int = 1              # velas que forman el rango (1 = la primera)
-    require_excursion: bool = True   # exigir salida y regreso antes de entrar
+    range_bars: int = 1               # velas que forman el rango (1 = la primera)
+    require_excursion: bool = False   # True = variante fallo y recuperación
     reward_risk_ratio: float = 1.0
     stop_buffer_ticks: float = 2.0   # el stop va justo PASADO el rango
     min_range_points: float = 0.0

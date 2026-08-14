@@ -30,7 +30,7 @@ python scripts/export_mt5.py --symbol SP500m --timeframe M1   # en Windows con M
 Dos estrategias, ambas con bracket 1:1:
 
 - **Ruptura del rango de apertura** (S&P 500) — [`pine/sp500_orb_1to1.pine`](pine/sp500_orb_1to1.pine)
-- **Recuperación del rango de la primera vela** (Nasdaq) — [`pine/nasdaq_range_reclaim_1to1.pine`](pine/nasdaq_range_reclaim_1to1.pine)
+- **Cierre fuera del rango de la primera vela** (Nasdaq) — [`pine/nasdaq_first_candle_1to1.pine`](pine/nasdaq_first_candle_1to1.pine)
 
 ```
 src/config/trading_config.py   src/trading/   scripts/   pine/

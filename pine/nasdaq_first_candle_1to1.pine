@@ -1,13 +1,19 @@
 //@version=6
 // =============================================================================
-//  NASDAQ — Fallo y recuperación del rango de la primera vela (1:1)
+//  NASDAQ — Cierre fuera del rango de la primera vela (1:1)
 //
-//  La secuencia exacta:
+//  La regla:
 //    1. La PRIMERA vela de la apertura americana define un rango (máx/mín).
-//    2. El precio CIERRA fuera de ese rango (arriba o abajo).
-//    3. El precio VUELVE y cierra DENTRO del rango.
-//    4. El siguiente cierre fuera del rango dispara la entrada, en la dirección
-//       de ese cierre. Si rompió arriba, falló y cierra por debajo -> corto.
+//    2. La primera vela que CIERRE por encima del máximo -> largo.
+//       La primera que cierre por debajo del mínimo -> corto.
+//
+//  El disparo es el CIERRE, no el nivel tocado: una vela puede perforar el
+//  rango con la mecha y volver dentro, y eso NO es señal. Esa es la diferencia
+//  con una ruptura por orden stop.
+//
+//  Opcional ("Exigir salida y regreso"): la variante de fallo y recuperación,
+//  donde el precio tiene que salir, volver a cerrar dentro, y solo entonces
+//  opera el siguiente cierre fuera.
 //
 //  Entrada a MERCADO en la apertura de la vela siguiente (la señal es un
 //  cierre, no un nivel tocado: no se puede fingir que entramos al cierre que
@@ -20,8 +26,8 @@
 // =============================================================================
 
 strategy(
-     title              = "NASDAQ — Recuperación de rango 1:1",
-     shorttitle         = "RECLAIM 1:1",
+     title              = "NASDAQ — Cierre fuera del rango 1:1",
+     shorttitle         = "1ª VELA 1:1",
      overlay            = true,
      initial_capital    = 100000,
      default_qty_type   = strategy.fixed,
@@ -44,8 +50,10 @@ flatMins    = input.int(375, "Cerrar todo a (min desde apertura)", minval = 1, g
      tooltip = "Menor que la duración de la sesión: el cierre se ejecuta en la vela siguiente.")
 
 gStr = "2 · Estrategia"
-requireExcursion = input.bool(true, "Exigir salida y regreso al rango", group = gStr,
-     tooltip = "Desactivado, entra en el primer cierre fuera del rango (ruptura simple).")
+requireExcursion = input.bool(false, "Exigir salida y regreso al rango", group = gStr,
+     tooltip = "Por defecto OFF: entra en el primer cierre fuera del rango. " +
+               "Activado, espera al fallo: salir, volver a cerrar dentro, y operar " +
+               "el siguiente cierre fuera.")
 rrRatio     = input.float(1.0, "Objetivo / Stop (1.0 = 1:1)", minval = 0.1, step = 0.1, group = gStr)
 stopBufTicks= input.int(2,   "Margen del stop pasado el rango (ticks)", minval = 0, group = gStr)
 minRangePts = input.float(0.0,  "Rango mínimo (puntos)", minval = 0.0, step = 1.0, group = gStr)
@@ -204,10 +212,10 @@ qtyLong  = goLong  ? sizeFor(estRiskLong)  : 0.0
 qtyShort = goShort ? sizeFor(estRiskShort) : 0.0
 
 if goLong and qtyLong > 0
-    strategy.entry("L", strategy.long, qty = qtyLong, comment = "recuperación alcista")
+    strategy.entry("L", strategy.long, qty = qtyLong, comment = "cierre sobre el rango")
 
 if goShort and qtyShort > 0
-    strategy.entry("S", strategy.short, qty = qtyShort, comment = "recuperación bajista")
+    strategy.entry("S", strategy.short, qty = qtyShort, comment = "cierre bajo el rango")
 
 // El objetivo se mide desde el precio de entrada REAL, así el 1:1 es exacto
 // aunque la apertura nos dé un llenado peor que el cierre que confirmó.
@@ -260,8 +268,8 @@ if barstate.islast
     table.cell(info, 1, 0, hasRange ? str.tostring(rangeSize, "#.##") + " pts" : "—",
          text_size = size.small)
     table.cell(info, 0, 1, "Estado del patrón", text_size = size.small)
-    table.cell(info, 1, 1, not hasRange ? "formando" : armed ? "armado" :
-         leftRange ? "fuera, esperando" : "dentro", text_size = size.small)
+    table.cell(info, 1, 1, not hasRange ? "formando rango" : armed ? "esperando cierre" :
+         leftRange ? "fuera, esperando regreso" : "dentro", text_size = size.small)
     table.cell(info, 0, 2, "Operaciones hoy", text_size = size.small)
     table.cell(info, 1, 2, str.tostring(tradesToday) + " / " + str.tostring(maxPerDay),
          text_size = size.small)
@@ -275,5 +283,5 @@ if barstate.islast
          canTrade ? "operando" : "bloqueado", text_size = size.small,
          text_color = accountBlown or dailyLossHit ? color.red : color.teal)
 
-alertcondition(goLong,  "Recuperación alcista", "RECLAIM 1:1 — entrada larga")
-alertcondition(goShort, "Recuperación bajista", "RECLAIM 1:1 — entrada corta")
+alertcondition(goLong,  "Cierre sobre el rango", "1ª VELA 1:1 — entrada larga")
+alertcondition(goShort, "Cierre bajo el rango", "1ª VELA 1:1 — entrada corta")

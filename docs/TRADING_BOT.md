@@ -395,27 +395,47 @@ print(simulate_challenge(stats, risk_per_trade_pct=1.0).summary())
 Todo lo anterior parte de una tasa de acierto **supuesta**. Cuál es la real solo
 lo dicen tus datos.
 
-## 11. Estrategia 2 — Recuperación del rango de la primera vela (Nasdaq)
+## 11. Estrategia 2 — Cierre fuera del rango de la primera vela (Nasdaq)
 
-La secuencia, tal cual:
+La regla:
 
 1. La **primera vela de 15 minutos** de la apertura americana define un rango.
-2. El precio **cierra fuera** de ese rango.
-3. El precio **vuelve y cierra dentro**.
-4. El siguiente **cierre fuera** dispara la entrada, en la dirección de ese
-   cierre. Si rompió al alza, falló y cierra por debajo del mínimo → **corto**.
+2. La primera vela que **cierre por encima del máximo** entra **larga**; la
+   primera que **cierre por debajo del mínimo** entra **corta**.
 
 Entrada a **mercado en la apertura de la vela siguiente**, stop **estructural**
 al otro lado del rango, objetivo a 1:1 medido desde el llenado real.
 
-Código: `RangeReclaimStrategy` en `src/trading/strategy.py`,
-`RangeReclaimConfig` en `src/config/trading_config.py`, versión TradingView en
-`pine/nasdaq_range_reclaim_1to1.pine`.
+El disparo es el **cierre**, no el nivel tocado. Una vela puede perforar el
+rango con la mecha y volver dentro: eso no es señal. Es la diferencia con una
+ruptura por orden stop, y es más restrictivo — pide confirmación, a cambio de
+entrar más tarde y peor.
+
+Código: `FirstCandleBreakStrategy` en `src/trading/strategy.py`,
+`FirstCandleBreakConfig` en `src/config/trading_config.py`, TradingView en
+`pine/nasdaq_first_candle_1to1.pine`.
 
 ```bash
-python scripts/run_backtest.py --mode reclaim --instrument NAS100 \
+python scripts/run_backtest.py --mode first-candle --instrument NAS100 \
     --equity 100000 --max-trades 1 --list-trades
 ```
+
+### Variante opcional: fallo y recuperación
+
+Con `--require-excursion` (o el check del Pine) el precio tiene que salir del
+rango, volver a cerrar dentro, y solo entonces se opera el siguiente cierre
+fuera. Así, una ruptura al alza que falla y cierra bajo el mínimo se opera en
+corto. Sobre los mismos 250 días sintéticos:
+
+| variante | instrumento | operaciones | stop medio | coste/R | acierto necesario |
+|---|---|---|---|---|---|
+| Cierre fuera | MNQ | 250 | 74 pts | 0,016 | **50,8 %** |
+| Cierre fuera | NAS100 | 250 | 75 pts | 0,034 | 51,7 % |
+| Fallo y recuperación | MNQ | 178 | 74 pts | 0,017 | 50,8 % |
+| Fallo y recuperación | NAS100 | 178 | 75 pts | 0,037 | 51,9 % |
+
+Misma estructura de costes; la variante con recuperación simplemente opera un
+28 % menos de días. Cuál acierta más es empírico.
 
 ### Dos cambios que exigió en el motor
 
@@ -434,18 +454,10 @@ riesgo es exactamente lo que no puede ocurrir.
 ### Por qué encaja mucho mejor con un 1:1 que la ruptura por ATR
 
 El stop es la anchura del rango de apertura, no un múltiplo de ATR — mucho más
-ancho. Y como el coste de ejecución es fijo, un stop ancho lo diluye. Sobre los
-mismos 250 días sintéticos a escala Nasdaq:
-
-| estrategia | instrumento | operaciones | stop medio | coste/R | acierto necesario |
-|---|---|---|---|---|---|
-| Recuperación | MNQ (futuro) | 178 | 74 pts | 0,017 | **50,8 %** |
-| Recuperación | NAS100 (CFD) | 178 | 75 pts | 0,037 | **51,9 %** |
-| Ruptura por ATR | NAS100 (CFD) | 402 | 40 pts | 0,060 | 53,0 % |
-
-50,8 % es prácticamente el 50 % teórico: con el futuro MNQ, esta estrategia casi
-no paga peaje. Ese es su mérito estructural, y es independiente de si el patrón
-funciona o no.
+ancho (74 puntos frente a 40 en los mismos datos). Y como el coste de ejecución
+es fijo, un stop ancho lo diluye: **0,016 R en el futuro MNQ, un acierto
+necesario del 50,8 %**, casi el 50 % teórico. La ruptura por ATR necesita 53,0 %
+sobre los mismos datos.
 
 Otras dos propiedades que van a favor en una evaluación de prop firm: **una sola
 operación al día** (menos exposición a la regla de consistencia) y **posiciones

@@ -19,7 +19,7 @@ from typing import Optional
 
 from src.config.trading_config import (
     BreakoutConfig,
-    RangeReclaimConfig,
+    FirstCandleBreakConfig,
     SessionConfig,
 )
 from src.trading.indicators import RollingExtremes, WilderATR, ema
@@ -250,17 +250,19 @@ class BreakoutStrategy(Strategy):
         return datetime.combine(ts.date(), self.session.flat_at)
 
 
-class RangeReclaimStrategy(Strategy):
+class FirstCandleBreakStrategy(Strategy):
     """
-    Fallo y recuperación del rango de apertura: the first candle of the session
-    defines a range, price closes outside it, closes back inside, and the next
-    close outside triggers the trade — in the direction of that close.
+    The session's first candle defines a range; the first candle to CLOSE
+    outside it takes the trade — long above the high, short below the low.
 
-    Why this shape matters. A plain breakout enters on the first push out of the
-    range and gets chopped by the fake move. This one waits for that fake move
-    to be rejected: the excursion, the return, and only then the close that
-    holds. The direction is whichever way the confirming close goes, so a break
-    up that fails and closes below the low is a short — the "o al revés" case.
+    Closing outside is a stricter trigger than touching the level. A candle can
+    spike through the range and close back inside; that is not a signal here,
+    which is the whole difference from a stop-order breakout.
+
+    With `require_excursion` the strategy waits instead for the failed move:
+    price must close outside, close back inside, and only then does the next
+    close outside trigger — so a break up that fails and closes below the low
+    becomes a short.
 
     Execution differs from the breakout strategy in two ways that matter:
 
@@ -274,7 +276,7 @@ class RangeReclaimStrategy(Strategy):
 
     def __init__(
         self,
-        config: RangeReclaimConfig,
+        config: FirstCandleBreakConfig,
         instrument: InstrumentSpec,
         session: SessionConfig,
     ) -> None:
@@ -314,7 +316,9 @@ class RangeReclaimStrategy(Strategy):
 
     @property
     def armed(self) -> bool:
-        """True once the excursion-and-return has happened (or isn't required)."""
+        """True when a close outside the range would trigger a trade."""
+        if self._range_high is None:
+            return False
         return self._returned or not self.config.require_excursion
 
     # -- signal generation -------------------------------------------------
@@ -375,7 +379,7 @@ class RangeReclaimStrategy(Strategy):
         return Signal(
             side=side,
             stop_loss=stop_loss,
-            reason=f"range reclaim ({side.value})",
+            reason=f"first-candle break ({side.value})",
             entry_type=EntryType.MARKET,
             reward_risk_ratio=self.config.reward_risk_ratio,
             # Sizing needs a price before the fill exists; the close we just
