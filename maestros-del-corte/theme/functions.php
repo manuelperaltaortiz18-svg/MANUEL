@@ -110,10 +110,13 @@ add_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_des
  * intervenciones que más mueven la conversión en ticket alto.
  */
 function mdc_trust_badges() {
+	// El coste de devolución a cargo del cliente solo es exigible si se le
+	// informa ANTES de comprar. Por eso aparece aquí y no solo en el aviso
+	// legal.
 	$items = array(
-		__( 'Envío en 24–48 h en península', 'maestros-del-corte' ),
-		__( 'Devolución gratuita en 30 días', 'maestros-del-corte' ),
-		__( 'Garantía Cuperinox', 'maestros-del-corte' ),
+		__( 'Envío gratis · entrega en 24–48 h', 'maestros-del-corte' ),
+		__( 'Devolución en 14 días · porte de vuelta a cargo del cliente', 'maestros-del-corte' ),
+		__( 'Defecto de fábrica: lo recogemos y sustituimos sin coste', 'maestros-del-corte' ),
 	);
 
 	echo '<ul class="mdc-trust">';
@@ -123,3 +126,25 @@ function mdc_trust_badges() {
 	echo '</ul>';
 }
 add_action( 'woocommerce_after_add_to_cart_form', 'mdc_trust_badges', 15 );
+
+/**
+ * Recordatorio de las condiciones de devolución junto al botón de pagar.
+ *
+ * Repetirlo aquí no es redundancia: el coste del porte de vuelta solo se
+ * puede repercutir al cliente si se le ha informado antes de comprar, y
+ * este es el último punto en el que aún no ha comprado.
+ */
+function mdc_aviso_devolucion_checkout() {
+	?>
+	<p class="mdc-checkout-nota">
+		<?php
+		printf(
+			/* translators: %s: enlace a la página de devoluciones. */
+			esc_html__( 'Devolución en 14 días naturales; el porte de vuelta corre a tu cargo salvo defecto de fábrica. Las piezas con grabado personalizado no admiten devolución. %s', 'maestros-del-corte' ),
+			'<a href="' . esc_url( home_url( '/devoluciones/' ) ) . '">' . esc_html__( 'Ver condiciones', 'maestros-del-corte' ) . '</a>'
+		);
+		?>
+	</p>
+	<?php
+}
+add_action( 'woocommerce_review_order_before_submit', 'mdc_aviso_devolucion_checkout', 5 );

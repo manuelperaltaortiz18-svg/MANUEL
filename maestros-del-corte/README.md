@@ -44,7 +44,17 @@ En *WooCommerce → Ajustes → Avanzado*, comprueba que están asignadas Carrit
 
 *Ajustes → Lectura → Tu portada muestra → Una página estática*. La plantilla `front-page.html` ya monta las cinco secciones; edítalas en *Apariencia → Editor → Plantillas → Portada*.
 
-**6. Imágenes**
+**6. Envío gratuito**
+
+En *WooCommerce → Ajustes → Envío*, crea una zona que cubra los destinos a los que vendes y añádele el método **Envío gratuito** con la condición *"N/A"* (sin pedido mínimo). Sin esto, el checkout puede quedarse sin métodos disponibles y bloquear la compra.
+
+**7. Páginas de contenido**
+
+Crea las páginas **Envíos y plazos** (`/envios/`), **Devoluciones y garantía** (`/devoluciones/`) y **Cuidado y mantenimiento** (`/cuidado/`). En cada una, insértale su patrón desde el editor: botón `+` → pestaña *Patrones* → categoría **Maestros del Corte**.
+
+Los textos son una base sólida, pero **revísalos con vuestro asesor legal antes de publicar** y ajusta lo que no encaje con vuestra operativa real.
+
+**8. Imágenes**
 
 El patrón de portada y el de grabado traen los huecos de imagen vacíos a propósito. Añade las tuyas desde el editor. Formato recomendado: **4:5 vertical** para producto de catálogo, para que la rejilla quede pareja.
 
@@ -69,10 +79,23 @@ Dos unidades del mismo cuchillo con grabados distintos se mantienen como líneas
 
 **Catálogo a 3 columnas y 24 productos por página.** Con catálogo corto cabe todo sin paginar; cada clic de paginación es una fuga.
 
+## Condiciones comerciales implementadas
+
+| | |
+|---|---|
+| Envío | Gratuito en todos los pedidos |
+| Plazo | 24–48 h laborables (+2–3 días si lleva grabado) |
+| Devolución | 14 días naturales, porte de vuelta a cargo del cliente |
+| Defecto de fábrica | Recogida y sustitución sin coste |
+| Piezas grabadas | Excluidas del desistimiento (avisado antes de comprar) |
+
+El aviso de devolución aparece en tres sitios: sello bajo el botón de compra, nota junto al botón de pagar del checkout, y página de devoluciones.
+
 ## Pendiente antes de lanzar
 
 - [ ] Textos legales: aviso legal, privacidad, cookies, condiciones de venta
-- [ ] Tarifas de transporte configuradas (el jamonero es voluminoso — cerrarlas antes de fijar precios)
+- [ ] Método de **envío gratuito** configurado en la zona de envío (si no, el checkout se bloquea)
+- [ ] Comprobar que el envío gratis sigue siendo rentable en destinos caros (Canarias, Baleares) — un jamonero es voluminoso y ahí el porte se dispara
 - [ ] Pasarela de pago en producción y una compra real de prueba de principio a fin
 - [ ] Redirecciones 301 desde las URLs de la línea en cuperinox.es
 - [ ] Analítica y consentimiento de cookies

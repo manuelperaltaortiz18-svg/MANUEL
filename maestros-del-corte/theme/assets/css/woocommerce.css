@@ -286,6 +286,16 @@
 	border-bottom-color: var(--wp--preset--color--surface);
 }
 
+.mdc-checkout-nota {
+	margin: 0 0 1.25rem;
+	padding: 1rem 1.15rem;
+	border-radius: 2px;
+	background-color: var(--wp--preset--color--surface);
+	color: var(--wp--preset--color--contrast-soft);
+	font-size: 0.8125rem;
+	line-height: 1.6;
+}
+
 /* ------------------------------------------------------------------ *
  * Adaptación a pantalla pequeña
  * ------------------------------------------------------------------ */
