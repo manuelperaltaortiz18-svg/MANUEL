@@ -246,6 +246,10 @@ class FirstCandleBreakConfig:
     El disparo es un CIERRE, no un nivel tocado: una vela puede perforar el
     rango con la mecha y volver dentro, y eso no es señal.
 
+    El rango se mide en MINUTOS desde la apertura, no en número de velas: así
+    es el mismo rango en 5m, 15m o 1h, y no se descoloca si falta una vela justo
+    en la apertura — que es como se tuerce en los datos reales.
+
     El stop es estructural (el lado opuesto del rango), así que su distancia la
     marca la amplitud de esa primera vela. Por eso `max_range_points` importa:
     en una apertura violenta el rango puede ser tan ancho que el tamaño se
@@ -256,7 +260,7 @@ class FirstCandleBreakConfig:
     siguiente cierre fuera.
     """
 
-    range_bars: int = 1               # velas que forman el rango (1 = la primera)
+    range_minutes: int = 15           # minutos que forman el rango, no velas
     require_excursion: bool = False   # True = variante fallo y recuperación
     reward_risk_ratio: float = 1.0
     stop_buffer_ticks: float = 2.0   # el stop va justo PASADO el rango
@@ -267,8 +271,8 @@ class FirstCandleBreakConfig:
     allow_short: bool = True
 
     def __post_init__(self) -> None:
-        if self.range_bars <= 0:
-            raise ValueError("range_bars must be positive")
+        if self.range_minutes <= 0:
+            raise ValueError("range_minutes must be positive")
         if self.reward_risk_ratio <= 0:
             raise ValueError("reward_risk_ratio must be positive")
         if self.max_range_points and self.max_range_points < self.min_range_points:

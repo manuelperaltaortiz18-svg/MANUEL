@@ -490,3 +490,83 @@ pequeñas** por el stop ancho.
 Todo lo anterior es estructura de costes, que es calculable. Si el patrón acierta
 más del 51 % es una pregunta empírica que estos datos sintéticos no responden —
 son un paseo aleatorio, y ahí sale justo lo que debe salir, ~50 %.
+
+## 12. Correcciones tras el primer backtest en TradingView
+
+Un backtest real sobre Nasdaq devolvió **53,23 % de aciertos con profit factor
+0,998**. Esas dos cifras juntas son un diagnóstico: con 1:1 y ese acierto, el
+profit factor debería ser 1,14. Que saliera 0,998 significa que las ganadoras
+medían **0,88 veces** las perdedoras — el objetivo no estaba a 1R.
+
+### El fallo: el bracket llegaba una vela tarde
+
+El `strategy.exit` se colocaba dentro de `if strategy.position_size != 0`, es
+decir al cierre de la vela de entrada. En Pine, una orden colocada en esa vela
+no está activa hasta la **siguiente**, así que **la vela de entrada corría sin
+stop y sin objetivo**. Cualquier toque del objetivo dentro de ella se perdía y
+la operación seguía viva hasta un desenlace peor.
+
+Corregido enviando el bracket **en la misma vela que la entrada** — Pine acepta
+un `exit` para una entrada aún no llenada y lo activa en el instante del
+llenado. En la vela de entrada el objetivo usa el cierre como estimación del
+llenado; en cuanto la posición existe, se recoloca a la distancia exacta desde
+el precio real. El stop nunca se mueve: es estructural.
+
+El motor Python ya evaluaba las salidas en la vela de entrada, así que no tenía
+este fallo. Ahora las dos versiones coinciden, y un test recorre 120 sesiones
+comprobando que **en toda operación ganadora la distancia al objetivo es igual
+a la distancia al stop**, dentro de un tick.
+
+### El rango: medido en minutos, no en velas
+
+El rango se construía contando velas (`range_bars = 1`). Si falta una vela en
+la apertura, o si el gráfico no está exactamente en 15m, "la primera vela" deja
+de ser la que toca y el rango sale descolocado. Ahora se mide en **minutos
+desde la apertura** (`range_minutes = 15`), así que sale idéntico en 5m, 15m o
+1h y aguanta huecos de datos. Mismo cambio en Pine y en Python.
+
+Para poder verificarlo de un vistazo, el Pine dibuja ahora la **caja del rango**
+sobre las velas que lo formaron, las líneas de **entrada, stop y objetivo** de
+la operación viva —si las distancias arriba y abajo no se ven iguales, el 1:1
+no se cumple— y una fila en la tabla con el máximo/mínimo del rango y la hora de
+apertura detectada. Si esos valores no cuadran con el gráfico, el problema está
+en la sesión o en la zona horaria, no en la estrategia.
+
+## 13. Optimizar sin engañarse
+
+```bash
+python scripts/optimize.py --csv data/NAS100_M1.csv --instrument NAS100
+```
+
+`src/trading/optimize.py` hace búsqueda en rejilla con dos defensas incorporadas,
+no opcionales:
+
+**División walk-forward.** Cada combinación se puntúa también sobre datos que no
+ha visto. Las dos cifras se imprimen juntas, así que la caída entre una y otra
+no se puede pasar por alto.
+
+**Referencia de suerte pura.** Probar N combinaciones y quedarse con la mejor son
+N oportunidades de acertar por azar. `best_of_n_by_chance` calcula qué acierto
+mostraría el más afortunado de N lanzadores de moneda sobre el mismo número de
+operaciones. Si el ganador no supera esa cifra, la búsqueda no ha encontrado
+nada, y el script lo dice con esas palabras.
+
+Sobre 400 sesiones sintéticas, con 24 combinaciones y 237 operaciones:
+
+```
+Mejor en muestra: range_minutes=30, stop_buffer_ticks=8, require_excursion=False
+  acierto         54,9 % dentro, 53,8 % fuera
+  suerte pura     56,3 %  (lo mejor de 24 lanzamientos de moneda)
+
+Veredicto: el mejor acierto (54,9 %) no supera lo que mostraría el más
+afortunado de 24 lanzadores de moneda (56,3 %). La búsqueda encontró ruido.
+```
+
+Que es exactamente lo que debe salir sobre un paseo aleatorio.
+
+### Por qué 62 operaciones no bastan para optimizar
+
+Con 62 operaciones y 53,23 % de aciertos, el intervalo de confianza del 95 % va
+del **40,8 % al 65,6 %**. Cualquier ajuste de parámetros sobre esa muestra
+está moviendo ruido. Antes de tocar un solo parámetro hacen falta más datos:
+exporta 2-3 años de M1 y vuelve a medir.

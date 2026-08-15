@@ -284,7 +284,8 @@ class FirstCandleBreakStrategy(Strategy):
         self.instrument = instrument
         self.session = session
 
-        self._bars_seen = 0
+        self._session_open: Optional[datetime] = None
+        self._range_complete = False
         self._range_high: Optional[float] = None
         self._range_low: Optional[float] = None
         self._left_range = False
@@ -294,7 +295,8 @@ class FirstCandleBreakStrategy(Strategy):
     # -- lifecycle ---------------------------------------------------------
 
     def on_session_start(self, day: date) -> None:
-        self._bars_seen = 0
+        self._session_open = None
+        self._range_complete = False
         self._range_high = None
         self._range_low = None
         self._left_range = False
@@ -317,19 +319,24 @@ class FirstCandleBreakStrategy(Strategy):
     @property
     def armed(self) -> bool:
         """True when a close outside the range would trigger a trade."""
-        if self._range_high is None:
+        if self._range_high is None or not self._range_complete:
             return False
         return self._returned or not self.config.require_excursion
 
     # -- signal generation -------------------------------------------------
 
     def on_bar(self, bar: Bar) -> Optional[Signal]:
-        self._bars_seen += 1
+        if self._session_open is None:
+            self._session_open = bar.timestamp
 
-        if self._bars_seen <= self.config.range_bars:
+        # Measured in minutes from the open, not in bars: the same range comes
+        # out on any timeframe, and a missing bar at the open cannot shift it.
+        minutes_in = (bar.timestamp - self._session_open).total_seconds() / 60.0
+        if minutes_in < self.config.range_minutes:
             self._range_high = bar.high if self._range_high is None else max(self._range_high, bar.high)
             self._range_low = bar.low if self._range_low is None else min(self._range_low, bar.low)
-            return None  # the range candle itself never trades
+            return None  # the range candles themselves never trade
+        self._range_complete = True
 
         if self._range_high is None or self._range_low is None:
             return None

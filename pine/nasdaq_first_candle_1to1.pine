@@ -34,7 +34,8 @@ strategy(
      default_qty_value  = 1,
      pyramiding         = 0,
      calc_on_every_tick = false,
-     close_entries_rule = "ANY")
+     close_entries_rule = "ANY",
+     max_boxes_count    = 500)
 
 // ----------------------------------------------------------------------------
 //  Entradas
@@ -43,8 +44,10 @@ gSes = "1 · Sesión"
 sessionSpec = input.session("0930-1600", "Sesión (apertura americana)", group = gSes)
 sessionTz   = input.string("America/New_York", "Zona horaria", group = gSes,
      options = ["America/New_York", "Europe/Madrid", "Europe/London", "UTC", "Etc/GMT-2", "Etc/GMT-3"])
-rangeBars   = input.int(1,   "Velas que forman el rango", minval = 1, group = gSes,
-     tooltip = "1 = solo la primera vela de la apertura, que es la estrategia descrita.")
+rangeMinutes = input.int(15, "Minutos que forman el rango", minval = 1, group = gSes,
+     tooltip = "15 = la primera vela de 15m de la apertura. Se mide en MINUTOS, no en " +
+               "velas, así que el rango es el mismo aunque cambies de temporalidad o " +
+               "falte una vela al abrir.")
 cutoffMins  = input.int(330, "Sin entradas tras (min desde apertura)", minval = 1, group = gSes)
 flatMins    = input.int(375, "Cerrar todo a (min desde apertura)", minval = 1, group = gSes,
      tooltip = "Menor que la duración de la sesión: el cierre se ejecuta en la vela siguiente.")
@@ -62,6 +65,9 @@ maxRangePts = input.float(0.0,  "Rango máximo (puntos, 0 = sin tope)", minval =
 allowLong   = input.bool(true, "Permitir largos",  group = gStr)
 allowShort  = input.bool(true, "Permitir cortos",  group = gStr)
 maxPerDay   = input.int(1,   "Máx. operaciones por sesión", minval = 1, group = gStr)
+
+gViz = "4 · Visual"
+showRangeBox = input.bool(true, "Dibujar la caja del rango", group = gViz)
 
 gRsk = "3 · Riesgo"
 riskPct     = input.float(0.5, "Riesgo por operación (% del capital)", minval = 0.01, step = 0.05, group = gRsk)
@@ -82,14 +88,11 @@ newSession = inSession and not prevInSession
 prevInSession := inSession
 
 var int sessionOpenTime = 0
-var int barsThisSession = 0
+var int rangeStartBar   = 0
 
 if newSession
     sessionOpenTime := time
-    barsThisSession := 0
-
-if inSession
-    barsThisSession := barsThisSession + 1
+    rangeStartBar   := bar_index
 
 barMs        = timeframe.in_seconds(timeframe.period) * 1000
 minsFromOpen = sessionOpenTime > 0 ? (time - sessionOpenTime) / 60000.0 : -1.0
@@ -108,7 +111,10 @@ if newSession
     rangeHigh := na
     rangeLow  := na
 
-buildingRange = inSession and barsThisSession <= rangeBars
+// El rango se define por tiempo transcurrido desde la apertura, no por conteo
+// de velas: así sale idéntico en 5m, 15m o 1h, y no se descoloca si falta una
+// vela justo en la apertura.
+buildingRange = inSession and minsFromOpen < rangeMinutes
 if buildingRange
     rangeHigh := na(rangeHigh) ? high : math.max(rangeHigh, high)
     rangeLow  := na(rangeLow)  ? low  : math.min(rangeLow,  low)
@@ -215,29 +221,56 @@ goShort = baseOk and closedBelow and allowShort and not na(estRiskShort) and est
 qtyLong  = goLong  ? sizeFor(estRiskLong)  : 0.0
 qtyShort = goShort ? sizeFor(estRiskShort) : 0.0
 
+// El bracket se envía EN LA MISMA VELA que la entrada. Pine acepta un exit
+// para una entrada que aún no se ha llenado: queda activo desde el instante
+// del llenado. Si se esperase a ver la posición abierta, el exit no entraría
+// en vigor hasta la vela siguiente y la vela de entrada correría SIN stop ni
+// objetivo — cualquier toque del objetivo ahí se perdería, y el 1:1 dejaría de
+// serlo. Ese era el fallo que hundía el profit factor por debajo de 1.
 if goLong and qtyLong > 0
     strategy.entry("L", strategy.long, qty = qtyLong, comment = "cierre sobre el rango")
+    strategy.exit("L-x", from_entry = "L", stop = longStop,
+         limit = close + estRiskLong * rrRatio,
+         comment_loss = "stop", comment_profit = "objetivo")
 
 if goShort and qtyShort > 0
     strategy.entry("S", strategy.short, qty = qtyShort, comment = "cierre bajo el rango")
+    strategy.exit("S-x", from_entry = "S", stop = shortStop,
+         limit = close - estRiskShort * rrRatio,
+         comment_loss = "stop", comment_profit = "objetivo")
 
-// El objetivo se mide desde el precio de entrada REAL, así el 1:1 es exacto
-// aunque la apertura nos dé un llenado peor que el cierre que confirmó.
+// Con la posición ya abierta se conoce el llenado real, así que el objetivo se
+// recoloca a la distancia exacta. El stop no se mueve: es estructural.
+var float openEntry  = na
+var float openStop   = na
+var float openTarget = na
+
 if strategy.position_size > 0
-    entryPrice = strategy.opentrades.entry_price(strategy.opentrades - 1)
-    risk       = entryPrice - longStop
+    entry = strategy.opentrades.entry_price(0)
+    risk  = entry - longStop
     if risk > 0
         strategy.exit("L-x", from_entry = "L", stop = longStop,
-             limit = entryPrice + risk * rrRatio,
+             limit = entry + risk * rrRatio,
              comment_loss = "stop", comment_profit = "objetivo")
+        openEntry  := entry
+        openStop   := longStop
+        openTarget := entry + risk * rrRatio
 
 if strategy.position_size < 0
-    entryPrice = strategy.opentrades.entry_price(strategy.opentrades - 1)
-    risk       = shortStop - entryPrice
+    entry = strategy.opentrades.entry_price(0)
+    risk  = shortStop - entry
     if risk > 0
         strategy.exit("S-x", from_entry = "S", stop = shortStop,
-             limit = entryPrice - risk * rrRatio,
+             limit = entry - risk * rrRatio,
              comment_loss = "stop", comment_profit = "objetivo")
+        openEntry  := entry
+        openStop   := shortStop
+        openTarget := entry - risk * rrRatio
+
+if strategy.position_size == 0
+    openEntry  := na
+    openStop   := na
+    openTarget := na
 
 if mustBeFlat or not inSession or accountBlown
     strategy.cancel("L")
@@ -253,6 +286,28 @@ plot(hasRange ? rangeHigh : na, "Máx. primera vela", color = color.new(color.te
 plot(hasRange ? rangeLow : na,  "Mín. primera vela", color = color.new(color.orange, 0),
      style = plot.style_linebr, linewidth = 2)
 
+// Caja del rango: dibuja exactamente las velas y los precios que lo formaron,
+// para poder comprobar de un vistazo que el rango es el que debe ser.
+var box rangeBox = na
+if showRangeBox
+    if newSession
+        rangeBox := na
+    if hasRange and na(rangeBox)
+        rangeBox := box.new(rangeStartBar, rangeHigh, bar_index, rangeLow,
+             border_color = color.new(color.gray, 40), border_width = 1,
+             bgcolor = color.new(color.blue, 92))
+    if not na(rangeBox) and inSession
+        box.set_right(rangeBox, bar_index)
+
+// Niveles de la operación viva: entrada, stop y objetivo. Si las distancias
+// arriba y abajo no se ven iguales, el 1:1 no se está cumpliendo.
+plot(openEntry,  "Entrada",  color = color.new(color.white, 0),
+     style = plot.style_linebr, linewidth = 1)
+plot(openStop,   "Stop",     color = color.new(color.red, 0),
+     style = plot.style_linebr, linewidth = 2)
+plot(openTarget, "Objetivo", color = color.new(color.lime, 0),
+     style = plot.style_linebr, linewidth = 2)
+
 bgcolor(buildingRange ? color.new(color.blue, 90) : na, title = "Vela del rango")
 bgcolor(hasRange and leftRange and not returned ? color.new(color.yellow, 93) : na,
      title = "Fuera del rango, esperando regreso")
@@ -266,7 +321,7 @@ plotshape(goShort and qtyShort > 0, "Entrada corta", shape.triangledown,
 // ----------------------------------------------------------------------------
 //  Tabla
 // ----------------------------------------------------------------------------
-var table info = table.new(position.top_right, 2, 6, border_width = 1)
+var table info = table.new(position.top_right, 2, 8, border_width = 1)
 if barstate.islast
     table.cell(info, 0, 0, "Rango 1ª vela", text_size = size.small)
     table.cell(info, 1, 0, hasRange ? str.tostring(rangeSize, "#.##") + " pts" : "—",
@@ -286,6 +341,16 @@ if barstate.islast
     table.cell(info, 1, 5, accountBlown ? "DD MÁXIMO" : dailyLossHit ? "límite diario" :
          canTrade ? "operando" : "bloqueado", text_size = size.small,
          text_color = accountBlown or dailyLossHit ? color.red : color.teal)
+    // Diagnóstico del rango: si estos valores no cuadran con lo que ves en el
+    // gráfico, el problema es la sesión o la zona horaria, no la estrategia.
+    table.cell(info, 0, 6, "Máx / mín rango", text_size = size.small)
+    table.cell(info, 1, 6, hasRange ?
+         str.tostring(rangeHigh, format.mintick) + " / " + str.tostring(rangeLow, format.mintick) : "—",
+         text_size = size.small)
+    table.cell(info, 0, 7, "Apertura detectada", text_size = size.small)
+    table.cell(info, 1, 7, sessionOpenTime > 0 ?
+         str.format_time(sessionOpenTime, "yyyy-MM-dd HH:mm", sessionTz) : "—",
+         text_size = size.small)
 
 alertcondition(goLong,  "Cierre sobre el rango", "1ª VELA 1:1 — entrada larga")
 alertcondition(goShort, "Cierre bajo el rango", "1ª VELA 1:1 — entrada corta")

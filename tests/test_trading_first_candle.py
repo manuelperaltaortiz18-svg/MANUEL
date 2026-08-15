@@ -81,11 +81,31 @@ def test_session_start_clears_the_previous_day_range():
 
 
 def test_the_range_can_span_more_than_one_candle():
-    strategy = make_strategy(range_bars=2)
+    strategy = make_strategy(range_minutes=30)
     rows = [OPENING_CANDLE, (time(9, 45), 20050, 20200, 19900, 20100)]
     assert feed(strategy, rows) is None  # both candles build the range
     assert strategy.range_high == 20200
     assert strategy.range_low == 19900
+
+
+def test_the_range_is_measured_in_minutes_not_bars():
+    """
+    The same 15 minutes of the open must give the same range whatever the bar
+    size — three 5m candles produce the range one 15m candle would.
+    """
+    strategy = make_strategy(range_minutes=15)
+    five_minute_open = [
+        (time(9, 30), 20000, 20050, 19950, 20020),
+        (time(9, 35), 20020, 20080, 20000, 20050),
+        (time(9, 40), 20050, 20060, 19980, 20050),
+    ]
+    assert feed(strategy, five_minute_open) is None  # all three build the range
+    assert strategy.range_high == 20080  # same as the 15m OPENING_CANDLE
+    assert strategy.range_low == 19950
+    assert not strategy.armed  # 15 minutes have not elapsed until the next bar
+
+    signal = strategy.on_bar(bar((time(9, 45), 20050, 20130, 20040, 20120)))
+    assert signal is not None and signal.side is Side.LONG
 
 
 # ---------------------------------------------------------------------------
@@ -305,3 +325,29 @@ def test_no_position_is_carried_overnight():
     trade = bot.broker.trades[0]
     assert trade.entry_time.date() == trade.exit_time.date()
     assert bot.broker.position is None
+
+
+def test_every_target_hit_pays_exactly_one_r_in_price_terms():
+    """
+    The property the whole strategy rests on: reward distance equals risk
+    distance on every winner, measured from the real fill, whatever the open
+    gave us. Costs are separate — they come out of the money, not the levels.
+    """
+    from src.trading.data import synthetic_bars
+
+    bars = synthetic_bars(
+        days=120, minutes=15, start_price=20_000.0, bar_volatility_points=18.0,
+        gap_volatility_points=45.0, trend_points_per_day=6.0, seed=21, tick_size=0.25,
+    )
+    bot = first_candle_bot(equity=250_000.0)
+    bot.run([b for b in bars if time(9, 30) <= b.timestamp.time() < time(16, 0)])
+
+    winners = [t for t in bot.broker.trades if t.exit_reason is ExitReason.TAKE_PROFIT]
+    assert len(winners) >= 10, "expected a meaningful number of target hits"
+    for trade in winners:
+        risk = abs(trade.entry_price - 0) and abs(trade.entry_price - trade.exit_price)
+        planned = trade.planned_risk_points
+        # Reward distance == planned risk distance, within one tick of rounding.
+        assert risk == pytest.approx(planned, abs=0.25), (
+            f"{trade.entry_time}: reward {risk} vs risk {planned}"
+        )

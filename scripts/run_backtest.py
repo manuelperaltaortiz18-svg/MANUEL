@@ -63,7 +63,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="first-candle: exigir que salga del rango y vuelva antes de entrar",
     )
-    p.add_argument("--range-bars", type=int, default=1, help="velas que forman el rango")
+    p.add_argument("--range-minutes", type=int, default=15,
+                   help="minutos que forman el rango de apertura")
     p.add_argument("--stop-buffer-ticks", type=float, default=2.0)
     p.add_argument("--max-range-points", type=float, default=0.0)
     p.add_argument("--lookback", type=int, default=12, help="Donchian lookback in bars")
@@ -106,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
     is_reclaim = args.mode == "first-candle"
     strategy_config = (
         FirstCandleBreakConfig(
-            range_bars=args.range_bars,
+            range_minutes=args.range_minutes,
             require_excursion=args.require_excursion,
             reward_risk_ratio=args.reward_risk,
             stop_buffer_ticks=args.stop_buffer_ticks,
