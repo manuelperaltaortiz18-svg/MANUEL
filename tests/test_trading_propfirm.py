@@ -95,3 +95,65 @@ def test_required_hit_rate_rises_with_the_target():
 def test_impossible_targets_return_none():
     # 500% on 20 trades at 0.5% risk cannot happen at any hit rate.
     assert required_hit_rate_for_return(500.0, 0.5, trades=20, cost_r=0.12) is None
+
+
+# ---------------------------------------------------------------------------
+#  Year outcomes and sample-size requirements
+# ---------------------------------------------------------------------------
+
+from src.trading.propfirm import simulate_year, trades_needed_to_detect  # noqa: E402
+
+
+def test_a_one_to_two_payoff_breaks_even_at_a_third():
+    """The whole appeal of 1:2 — the hit rate hurdle drops from 50% to 33%."""
+    assert StrategyStats(hit_rate=0.4, reward_risk=2.0).breakeven_hit_rate == pytest.approx(
+        1 / 3
+    )
+    assert StrategyStats(hit_rate=0.4, reward_risk=2.0, cost_r=0.06).breakeven_hit_rate == (
+        pytest.approx(1.06 / 3)
+    )
+
+
+def test_a_better_edge_shifts_the_whole_distribution_up():
+    weak = simulate_year(StrategyStats(0.36, reward_risk=2.0, cost_r=0.05), 1.0, trials=800)
+    strong = simulate_year(StrategyStats(0.46, reward_risk=2.0, cost_r=0.05), 1.0, trials=800)
+    assert strong.median_return_pct > weak.median_return_pct
+    assert strong.prob_target_pct > weak.prob_target_pct
+    assert strong.prob_loss_pct < weak.prob_loss_pct
+
+
+def test_the_reported_band_is_ordered_and_wide():
+    outcome = simulate_year(StrategyStats(0.42, reward_risk=2.0, cost_r=0.05), 1.0, trials=800)
+    assert outcome.p10_return_pct < outcome.median_return_pct < outcome.p90_return_pct
+    assert outcome.median_max_dd_pct > 0
+    assert outcome.worst_max_dd_pct >= outcome.median_max_dd_pct
+    assert outcome.trades == 500  # 2 per day over 250 sessions
+
+
+def test_bigger_size_raises_both_the_return_and_the_drawdown():
+    stats = StrategyStats(0.42, reward_risk=2.0, cost_r=0.05)
+    small = simulate_year(stats, 0.5, trials=800)
+    large = simulate_year(stats, 2.0, trials=800)
+    assert large.median_return_pct > small.median_return_pct
+    assert large.median_max_dd_pct > small.median_max_dd_pct
+
+
+def test_a_losing_edge_loses_most_years():
+    outcome = simulate_year(StrategyStats(0.30, reward_risk=2.0, cost_r=0.05), 1.0, trials=800)
+    assert outcome.median_return_pct < 0
+    assert outcome.prob_loss_pct > 60
+
+
+def test_sample_size_grows_as_the_edge_shrinks():
+    wide = trades_needed_to_detect(0.50, 0.35)
+    narrow = trades_needed_to_detect(0.38, 0.35)
+    assert narrow > wide > 0
+
+
+def test_an_edge_of_zero_can_never_be_detected():
+    assert trades_needed_to_detect(0.35, 0.35) is None
+
+
+def test_sample_size_rejects_non_probabilities():
+    with pytest.raises(ValueError):
+        trades_needed_to_detect(1.4, 0.35)

@@ -138,6 +138,7 @@ def optimise(
     min_trades: int = 20,
     top: int = 10,
     seed: int = 5,
+    reward_risk: float = 1.0,
 ) -> OptimizationOutcome:
     """
     Score every parameter set in-sample, then re-score the survivors out-of-sample.
@@ -167,30 +168,45 @@ def optimise(
     outcome.candidates = survivors
     if survivors:
         trades = survivors[0].in_sample.trades
+        # El nulo depende del pago: 50 % en 1:1, 33 % en 1:2.
+        null_rate = 1.0 / (1.0 + reward_risk)
         outcome.chance_hit_rate = best_of_n_by_chance(
-            outcome.combinations_tested, trades, seed=seed
+            outcome.combinations_tested, trades, seed=seed, null_rate=null_rate
         )
-        outcome.chance_expectancy_r = 2 * outcome.chance_hit_rate - 1
+        outcome.chance_expectancy_r = (
+            outcome.chance_hit_rate * reward_risk - (1 - outcome.chance_hit_rate)
+        )
     return outcome
 
 
 def best_of_n_by_chance(
-    trials: int, trades: int, simulations: int = 4_000, seed: int = 5
+    trials: int,
+    trades: int,
+    simulations: int = 4_000,
+    seed: int = 5,
+    null_rate: float = 0.5,
 ) -> float:
     """
-    Hit rate the luckiest of `trials` coin-flippers would post over `trades`.
+    Hit rate the luckiest of `trials` edge-less strategies would post.
 
     This is the bar a grid search has to clear before its winner means anything:
     search hard enough and something always looks good.
 
-    Each flipper's hit rate is drawn from the normal approximation to the
-    binomial, which is accurate well below the trade counts that matter here.
+    `null_rate` is the hit rate of no edge at all, which depends on the payoff:
+    0.5 for a 1:1 bracket, 1/3 for 1:2, 1/(1+rr) in general. Using 0.5 for a
+    1:2 strategy would compare it against the wrong coin entirely.
+
+    Each draw uses the normal approximation to the binomial, accurate well
+    below the trade counts that matter here.
     """
     if trials <= 0 or trades <= 0:
         return 0.0
+    if not 0.0 < null_rate < 1.0:
+        raise ValueError("null_rate must be a probability")
     rng = random.Random(seed)
-    sigma = math.sqrt(0.25 / trades)
+    sigma = math.sqrt(null_rate * (1.0 - null_rate) / trades)
     best_rates = [
-        max(rng.gauss(0.5, sigma) for _ in range(trials)) for _ in range(simulations)
+        max(rng.gauss(null_rate, sigma) for _ in range(trials))
+        for _ in range(simulations)
     ]
     return min(1.0, statistics.mean(best_rates))

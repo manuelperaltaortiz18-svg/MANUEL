@@ -13,6 +13,7 @@ the chance of passing.
 """
 from __future__ import annotations
 
+import math
 import random
 import statistics
 from dataclasses import dataclass
@@ -224,3 +225,103 @@ def required_hit_rate_for_return(
         return None
     p = (needed_r - loss_r) / denominator
     return p if 0.0 <= p <= 1.0 else None
+
+
+@dataclass
+class YearOutcome:
+    """Distribution of a year's result, not a single number."""
+
+    median_return_pct: float = 0.0
+    p10_return_pct: float = 0.0
+    p90_return_pct: float = 0.0
+    median_max_dd_pct: float = 0.0
+    worst_max_dd_pct: float = 0.0
+    prob_target_pct: float = 0.0
+    prob_loss_pct: float = 0.0
+    trades: int = 0
+
+    def summary(self) -> str:
+        return (
+            f"mediana {self.median_return_pct:+.1f}%  "
+            f"(p10 {self.p10_return_pct:+.1f}% / p90 {self.p90_return_pct:+.1f}%)  "
+            f"DD mediano {self.median_max_dd_pct:.1f}%  "
+            f"P(objetivo) {self.prob_target_pct:.0f}%  "
+            f"P(pérdida) {self.prob_loss_pct:.0f}%"
+        )
+
+
+def simulate_year(
+    stats: StrategyStats,
+    risk_per_trade_pct: float,
+    sessions: int = 250,
+    target_return_pct: float = 70.0,
+    trials: int = 5_000,
+    seed: int = 13,
+) -> YearOutcome:
+    """
+    Percentiles of a year's outcome for a given edge and position size.
+
+    A single expected return is a misleading answer: the same edge produces a
+    wide band of results, and the drawdown along the way is what decides
+    whether an account survives to collect the average.
+    """
+    rng = random.Random(seed)
+    risk = risk_per_trade_pct / 100.0
+    trades = max(1, round(stats.trades_per_day)) * sessions
+    returns: list[float] = []
+    drawdowns: list[float] = []
+    hits = 0
+    losses = 0
+
+    for _ in range(trials):
+        equity = 1.0
+        peak = 1.0
+        worst = 0.0
+        reached = False
+        for _ in range(trades):
+            r = stats.win_r if rng.random() < stats.hit_rate else stats.loss_r
+            equity = max(1e-9, equity * (1.0 + risk * r))
+            peak = max(peak, equity)
+            worst = max(worst, (peak - equity) / peak)
+            if equity >= 1.0 + target_return_pct / 100.0:
+                reached = True
+        returns.append((equity - 1.0) * 100.0)
+        drawdowns.append(worst * 100.0)
+        hits += 1 if reached else 0
+        losses += 1 if equity < 1.0 else 0
+
+    returns.sort()
+    drawdowns.sort()
+
+    def pct(values, q):
+        return values[min(len(values) - 1, int(q * len(values)))]
+
+    return YearOutcome(
+        median_return_pct=statistics.median(returns),
+        p10_return_pct=pct(returns, 0.10),
+        p90_return_pct=pct(returns, 0.90),
+        median_max_dd_pct=statistics.median(drawdowns),
+        worst_max_dd_pct=drawdowns[-1],
+        prob_target_pct=100.0 * hits / trials,
+        prob_loss_pct=100.0 * losses / trials,
+        trades=trades,
+    )
+
+
+def trades_needed_to_detect(
+    hit_rate: float, breakeven: float, z: float = 1.96
+) -> Optional[int]:
+    """
+    Trades required before a hit rate can be told apart from break-even.
+
+    Below this count a backtest cannot distinguish an edge from luck, so tuning
+    parameters on it is fitting noise. Returns None when the two rates are
+    equal — no sample size can separate them.
+    """
+    if not 0.0 < hit_rate < 1.0 or not 0.0 < breakeven < 1.0:
+        raise ValueError("Both rates must be probabilities")
+    gap = abs(hit_rate - breakeven)
+    if gap < 1e-9:
+        return None
+    variance = hit_rate * (1.0 - hit_rate)
+    return int(math.ceil((z ** 2) * variance / (gap ** 2)))

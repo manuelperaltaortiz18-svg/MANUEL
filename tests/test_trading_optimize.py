@@ -162,3 +162,31 @@ def test_a_surviving_result_still_asks_for_confirmation():
 
 def test_an_empty_search_says_so():
     assert "No candidate" in OptimizationOutcome().verdict()
+
+
+def test_the_null_rate_follows_the_payoff():
+    """
+    With no edge a 1:2 bracket wins a third of the time, not half. Judging a
+    1:2 search against a 50% coin would set an impossibly high bar and reject
+    a real edge.
+    """
+    coin = best_of_n_by_chance(20, 400, simulations=800, null_rate=0.5)
+    one_to_two = best_of_n_by_chance(20, 400, simulations=800, null_rate=1 / 3)
+    assert one_to_two < coin
+    assert 1 / 3 < one_to_two < 0.45
+
+
+def test_the_null_rate_must_be_a_probability():
+    with pytest.raises(ValueError):
+        best_of_n_by_chance(10, 100, null_rate=1.5)
+
+
+def test_the_optimiser_uses_the_payoff_aware_null():
+    bars = bars_over(20)
+
+    def evaluate(subset, params):
+        return report(200, 0.1, 45.0)
+
+    coin = optimise(bars, {"k": (1, 2)}, evaluate, min_trades=10, reward_risk=1.0)
+    rr2 = optimise(bars, {"k": (1, 2)}, evaluate, min_trades=10, reward_risk=2.0)
+    assert rr2.chance_hit_rate < coin.chance_hit_rate
