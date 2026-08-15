@@ -27,7 +27,7 @@
 
 strategy(
      title              = "NASDAQ — Cierre fuera del rango 1:1",
-     shorttitle         = "1ª VELA 1:1",
+     shorttitle         = "VELA1 1:1",
      overlay            = true,
      initial_capital    = 100000,
      default_qty_type   = strategy.fixed,
@@ -75,7 +75,11 @@ maxDdPct    = input.float(0.0, "Drawdown máx. total (%, 0 = off)", minval = 0.0
 //  Sesión
 // ----------------------------------------------------------------------------
 inSession  = not na(time(timeframe.period, sessionSpec, sessionTz))
-newSession = inSession and not nz(inSession[1], false)
+// El estado anterior se guarda en una variable persistente: nz() solo acepta
+// fuentes numéricas, e `inSession[1]` es na en la primera vela.
+var bool prevInSession = false
+newSession = inSession and not prevInSession
+prevInSession := inSession
 
 var int sessionOpenTime = 0
 var int barsThisSession = 0
@@ -170,7 +174,7 @@ if maxDdPct > 0 and not na(peakEquity)
 
 dayPnl       = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
 dailyLossHit = dailyLossPct > 0 and not na(dayStartEquity) and
-                dayPnl <= -dayStartEquity * dailyLossPct / 100.0
+                 dayPnl <= -dayStartEquity * dailyLossPct / 100.0
 
 canTrade = not accountBlown and tradesToday < maxPerDay and
            consecLosses < maxLosses and not dailyLossHit

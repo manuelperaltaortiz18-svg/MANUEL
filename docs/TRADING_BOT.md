@@ -323,6 +323,28 @@ de sesión y el hecho de que nunca se mantenga riesgo de un día para otro.
 
 ## 10. TradingView (Pine) y prop firms
 
+### Comprobar el Pine antes de pegarlo
+
+El compilador de Pine vive dentro de TradingView, así que estos scripts no se
+pueden construir desde el repo. `scripts/lint_pine.py` cubre esa ceguera con
+las reglas que ya han fallado de verdad:
+
+```bash
+python scripts/lint_pine.py          # revisa pine/*.pine
+```
+
+| regla | error que da TradingView |
+|---|---|
+| `shorttitle` de más de 10 caracteres | `SHORT_TITLE_TOO_LONG` |
+| `nz()` con una fuente booleana | `CE10123` — espera `simple int` |
+| línea de continuación con sangría múltiplo de 4 | `CE10156` — *end of line without line continuation* |
+| tabuladores, paréntesis desbalanceados | varios |
+
+La tercera es la menos evidente: **Pine distingue una línea partida de un
+bloque nuevo por la sangría**. Un múltiplo de 4 abre bloque; cualquier otra
+cantidad continúa la expresión. Un test comprueba que los scripts publicados
+pasan todas las reglas.
+
 ### El script
 
 `pine/sp500_orb_1to1.pine` es el mismo bot en Pine v6: mismo rango de apertura,

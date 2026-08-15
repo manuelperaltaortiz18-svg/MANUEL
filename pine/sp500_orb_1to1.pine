@@ -77,7 +77,11 @@ showLevels   = input.bool(true, "Dibujar niveles", group = gViz)
 //  Sesión: todo relativo a la apertura, en minutos
 // ----------------------------------------------------------------------------
 inSession   = not na(time(timeframe.period, sessionSpec, sessionTz))
-newSession  = inSession and not nz(inSession[1], false)
+// El estado anterior se guarda en una variable persistente: nz() solo acepta
+// fuentes numéricas, e `inSession[1]` es na en la primera vela.
+var bool prevInSession = false
+newSession  = inSession and not prevInSession
+prevInSession := inSession
 
 var int sessionOpenTime = 0
 if newSession
