@@ -607,3 +607,55 @@ Con 62 operaciones y 53,23 % de aciertos, el intervalo de confianza del 95 % va
 del **40,8 % al 65,6 %**. Cualquier ajuste de parámetros sobre esa muestra
 está moviendo ruido. Antes de tocar un solo parámetro hacen falta más datos:
 exporta 2-3 años de M1 y vuelve a medir.
+
+## 14. Rift Volume Profile — de indicador a estrategia
+
+`pine/rift_volume_profile_strategy.pine` convierte el indicador *Rift Volume
+Profile Engine* en una `strategy()` que ejecuta órdenes de verdad, para que
+TradingView pueda darle profit factor, drawdown y curva de resultados. El
+indicador original solo dibujaba y lanzaba webhooks: **no tenía ni una sola
+`strategy.entry`**, así que no había nada que medir.
+
+**La lógica de señales no se ha tocado.** Perfil anclado, POC / Value Area /
+POV, divergencia de CVD, delta de barra y los tres modelos (Sweep & Reclaim,
+POC Bounce, POV Void) van línea por línea como estaban. El ratio por defecto
+sigue siendo **1:2**.
+
+### Lo que se ha añadido
+
+| añadido | por qué |
+|---|---|
+| Órdenes reales con bracket SL/TP | sin ellas no hay backtest |
+| Entrada a mercado en la vela siguiente | la señal es un cierre; entrar a ese mismo cierre falsea el resultado |
+| **Bracket congelado en la entrada** | el SL salía de `dVal`/`dPoc`, que cambian cada vela y valen `na` al abrirse un perfil nuevo |
+| Tamaño derivado del stop | riesgo constante por operación; respeta el modo VOL del webhook |
+| Cortacircuitos de cuenta | operaciones/día, pérdidas seguidas, pérdida diaria, drawdown máximo |
+| `Next Node Target` implementado | en el original era un input muerto: solo existía el múltiplo de R |
+| Contador "NO BRACKET" en el panel | si alguna vez marca distinto de 0, la posición corrió desprotegida |
+
+El bracket congelado es la lección de los fallos anteriores aplicada por
+adelantado: este código traía exactamente el mismo patrón peligroso —niveles de
+salida derivados de variables vivas del perfil— que dejó operaciones sin stop
+ni objetivo en la estrategia del Nasdaq.
+
+### Inputs que estaban muertos en el original
+
+`i_tpMode`, `i_profText`, `i_colVa`, `i_colVoid`, `i_dbLoc` e `i_dbSize` se
+declaraban pero no se usaban en ningún sitio. Ahora funcionan. `i_v_outline`,
+`i_v_stat` e `i_v_zig` también estaban muertos y se han sustituido por
+`i_v_levels`, que dibuja POC / VAH / VAL / POV sobre el precio. Sigue sin usarse
+`i_hist` (perfiles históricos retenidos), que tampoco hacía nada en el original.
+
+### Limitación importante del backtest
+
+El perfil se construye con `request.security_lower_tf`, y **la cantidad de datos
+intrabar que TradingView entrega está limitada por tu plan**. El backtest puede
+cubrir muchas menos velas de las que ves en el gráfico. Antes de sacar
+conclusiones, mira el número de operaciones y el rango de fechas que reporta la
+pestaña de resultados: si son pocas, el profit factor no significa nada. Con un
+feed intrabar de 1 minuto la cobertura es la más corta de todas; subirlo a 5
+minutos alarga el histórico a costa de resolución en el perfil.
+
+Esta estrategia vive solo en Pine. El motor Python de `src/trading/` no la
+replica: necesitaría datos intrabar por vela, que es justo lo que no se puede
+exportar cómodamente a CSV.

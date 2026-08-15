@@ -32,6 +32,10 @@ Dos estrategias, ambas con bracket 1:1:
 - **Ruptura del rango de apertura** (S&P 500) — [`pine/sp500_orb_1to1.pine`](pine/sp500_orb_1to1.pine)
 - **Cierre fuera del rango de la primera vela** (Nasdaq) — [`pine/nasdaq_first_candle_1to1.pine`](pine/nasdaq_first_candle_1to1.pine)
 
+Y una tercera, solo en Pine: **Rift Volume Profile** (POC / Value Area / POV con
+divergencia de CVD, ratio 1:2) — [`pine/rift_volume_profile_strategy.pine`](pine/rift_volume_profile_strategy.pine).
+Comprueba los scripts con `python scripts/lint_pine.py` antes de pegarlos.
+
 ```
 src/config/trading_config.py   src/trading/   scripts/   pine/
 ```
