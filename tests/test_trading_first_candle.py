@@ -351,3 +351,57 @@ def test_every_target_hit_pays_exactly_one_r_in_price_terms():
         assert risk == pytest.approx(planned, abs=0.25), (
             f"{trade.entry_time}: reward {risk} vs risk {planned}"
         )
+
+
+def test_bracket_levels_are_frozen_at_the_fill_and_never_recomputed():
+    """
+    The Pine port lost trades because its stop was recomputed every bar from
+    live session state: one bar where the range read `na` left the position
+    with no stop and no target, so it ran to the session close. The engine must
+    freeze both levels at the fill.
+    """
+    bot = first_candle_bot()
+    bars = day_bars_15m(BREAK_DAY)
+
+    frozen = None
+    for candle in bars:
+        bot.on_bar(candle)
+        position = bot.broker.position
+        if position is None:
+            continue
+        levels = (position.stop_loss, position.take_profit)
+        if frozen is None:
+            frozen = levels
+        assert levels == frozen, "bracket levels moved while the position was open"
+    assert frozen is not None, "expected a position to have been opened"
+
+
+def test_trades_are_resolved_by_the_bracket_not_by_the_session_close():
+    """
+    Behavioural guard for the same failure. With no working bracket every trade
+    survives to the forced close, which reads as a ~50% hit rate and a profit
+    factor of 1.0 — exactly the signature seen on the broken Pine run.
+    """
+    from src.trading.data import synthetic_bars
+
+    bars = synthetic_bars(
+        days=200, minutes=15, start_price=20_000.0, bar_volatility_points=18.0,
+        gap_volatility_points=45.0, trend_points_per_day=6.0, seed=33, tick_size=0.25,
+    )
+    bot = first_candle_bot(equity=250_000.0)
+    bot.run([b for b in bars if time(9, 30) <= b.timestamp.time() < time(16, 0)])
+
+    trades = bot.broker.trades
+    assert len(trades) > 50
+    by_reason = {}
+    for trade in trades:
+        by_reason[trade.exit_reason] = by_reason.get(trade.exit_reason, 0) + 1
+
+    bracket_exits = by_reason.get(ExitReason.TAKE_PROFIT, 0) + by_reason.get(
+        ExitReason.STOP_LOSS, 0
+    )
+    session_exits = by_reason.get(ExitReason.SESSION_CLOSE, 0)
+    assert bracket_exits > 3 * session_exits, (
+        f"bracket resolved {bracket_exits} trades but {session_exits} ran to the "
+        "session close — the stop/target are not being applied"
+    )

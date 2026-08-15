@@ -498,7 +498,44 @@ Un backtest real sobre Nasdaq devolvió **53,23 % de aciertos con profit factor
 profit factor debería ser 1,14. Que saliera 0,998 significa que las ganadoras
 medían **0,88 veces** las perdedoras — el objetivo no estaba a 1R.
 
-### El fallo: el bracket llegaba una vela tarde
+### El fallo de fondo: el bracket ni siquiera se colocaba
+
+El stop se derivaba del estado vivo de la sesión, **en cada vela**:
+
+```pine
+longStop = hasRange ? rangeLow - stopBuffer : na
+```
+
+`rangeLow` se pone a `na` al empezar cada sesión. Basta con que `hasRange` sea
+falso un instante para que `longStop` valga `na`, que `risk = entryPrice -
+longStop` valga `na`, que el guard `if risk > 0` sea falso y que
+**`strategy.exit` no llegue a llamarse**. La posición se queda entonces sin
+stop *y* sin objetivo, y lo único que la cierra es el `close_all` del final de
+la sesión.
+
+Eso explica el síntoma completo: el objetivo no actuaba y la operación corría
+hasta el cierre. Y explica las cifras: **profit factor 0,998 con 53 % de
+aciertos es la firma de salidas aleatorias al cierre de sesión**, no la de un
+1:1.
+
+Corregido **congelando el bracket en la entrada**. Los niveles se guardan en
+variables persistentes al enviar la orden y no se recalculan nunca desde el
+estado de la sesión; solo el objetivo se ajusta una vez, cuando se conoce el
+precio real de llenado. El script lleva además un contador de velas en posición
+sin bracket que se muestra en rojo en la tabla: si no marca 0, algo va mal.
+
+Con el bracket funcionando, sobre 250 sesiones sintéticas de Nasdaq:
+
+| salida | proporción |
+|---|---|
+| objetivo | 52 % |
+| stop | 44 % |
+| cierre de sesión | **4 %** |
+
+y el profit factor vuelve a seguir al acierto (52 % → PF 1,11), en vez de
+quedarse clavado en 1,0.
+
+### El fallo secundario: el bracket llegaba una vela tarde
 
 El `strategy.exit` se colocaba dentro de `if strategy.position_size != 0`, es
 decir al cierre de la vela de entrada. En Pine, una orden colocada en esa vela

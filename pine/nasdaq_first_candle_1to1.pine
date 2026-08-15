@@ -221,56 +221,70 @@ goShort = baseOk and closedBelow and allowShort and not na(estRiskShort) and est
 qtyLong  = goLong  ? sizeFor(estRiskLong)  : 0.0
 qtyShort = goShort ? sizeFor(estRiskShort) : 0.0
 
-// El bracket se envía EN LA MISMA VELA que la entrada. Pine acepta un exit
-// para una entrada que aún no se ha llenado: queda activo desde el instante
-// del llenado. Si se esperase a ver la posición abierta, el exit no entraría
-// en vigor hasta la vela siguiente y la vela de entrada correría SIN stop ni
-// objetivo — cualquier toque del objetivo ahí se perdería, y el 1:1 dejaría de
-// serlo. Ese era el fallo que hundía el profit factor por debajo de 1.
+// ----------------------------------------------------------------------------
+//  Bracket CONGELADO
+//
+//  Los niveles se fijan al enviar la entrada y se guardan en variables
+//  persistentes. NUNCA se recalculan desde el estado vivo de la sesión.
+//
+//  Por qué importa: el stop salía de `rangeLow`, que se pone a na en cada
+//  sesión nueva. Bastaba con que `hasRange` fuese falso un instante para que el
+//  stop valiese na, el guard `risk > 0` fallara y strategy.exit NO SE LLAMASE.
+//  La posición se quedaba sin stop y sin objetivo, y solo la cerraba el
+//  close_all del final de sesión: ni el objetivo actuaba, ni el stop.
+// ----------------------------------------------------------------------------
+var float armedStop   = na
+var float armedTarget = na
+var bool  targetFixed = false   // ¿ya se ajustó el objetivo al llenado real?
+var int   nakedBars   = 0       // velas en posición SIN bracket (debe ser 0)
+
 if goLong and qtyLong > 0
+    armedStop   := longStop
+    armedTarget := close + estRiskLong * rrRatio   // estimación hasta el llenado
+    targetFixed := false
     strategy.entry("L", strategy.long, qty = qtyLong, comment = "cierre sobre el rango")
-    strategy.exit("L-x", from_entry = "L", stop = longStop,
-         limit = close + estRiskLong * rrRatio,
+    strategy.exit("L-x", from_entry = "L", stop = armedStop, limit = armedTarget,
          comment_loss = "stop", comment_profit = "objetivo")
 
 if goShort and qtyShort > 0
+    armedStop   := shortStop
+    armedTarget := close - estRiskShort * rrRatio
+    targetFixed := false
     strategy.entry("S", strategy.short, qty = qtyShort, comment = "cierre bajo el rango")
-    strategy.exit("S-x", from_entry = "S", stop = shortStop,
-         limit = close - estRiskShort * rrRatio,
+    strategy.exit("S-x", from_entry = "S", stop = armedStop, limit = armedTarget,
          comment_loss = "stop", comment_profit = "objetivo")
 
-// Con la posición ya abierta se conoce el llenado real, así que el objetivo se
-// recoloca a la distancia exacta. El stop no se mueve: es estructural.
-var float openEntry  = na
-var float openStop   = na
-var float openTarget = na
+if strategy.position_size != 0
+    // Una sola vez, con el llenado ya conocido, el objetivo pasa de estimado a
+    // exacto. El stop no se toca: es estructural.
+    if not targetFixed and strategy.opentrades > 0 and not na(armedStop)
+        fill = strategy.opentrades.entry_price(0)
+        risk = math.abs(fill - armedStop)
+        if risk > 0
+            armedTarget := strategy.position_size > 0 ? fill + risk * rrRatio
+                 : fill - risk * rrRatio
+            targetFixed := true
 
-if strategy.position_size > 0
-    entry = strategy.opentrades.entry_price(0)
-    risk  = entry - longStop
-    if risk > 0
-        strategy.exit("L-x", from_entry = "L", stop = longStop,
-             limit = entry + risk * rrRatio,
-             comment_loss = "stop", comment_profit = "objetivo")
-        openEntry  := entry
-        openStop   := longStop
-        openTarget := entry + risk * rrRatio
+    // El bracket se reenvía cada vela desde los valores congelados, que no
+    // pueden ser na mientras haya posición.
+    if not na(armedStop) and not na(armedTarget)
+        if strategy.position_size > 0
+            strategy.exit("L-x", from_entry = "L", stop = armedStop, limit = armedTarget,
+                 comment_loss = "stop", comment_profit = "objetivo")
+        else
+            strategy.exit("S-x", from_entry = "S", stop = armedStop, limit = armedTarget,
+                 comment_loss = "stop", comment_profit = "objetivo")
+    else
+        nakedBars := nakedBars + 1   // alarma: esto nunca debería incrementarse
+else
+    targetFixed := false
+    armedStop   := na
+    armedTarget := na
 
-if strategy.position_size < 0
-    entry = strategy.opentrades.entry_price(0)
-    risk  = shortStop - entry
-    if risk > 0
-        strategy.exit("S-x", from_entry = "S", stop = shortStop,
-             limit = entry - risk * rrRatio,
-             comment_loss = "stop", comment_profit = "objetivo")
-        openEntry  := entry
-        openStop   := shortStop
-        openTarget := entry - risk * rrRatio
-
-if strategy.position_size == 0
-    openEntry  := na
-    openStop   := na
-    openTarget := na
+openEntry  = strategy.position_size != 0 and strategy.opentrades > 0 ?
+     strategy.opentrades.entry_price(0) : na
+openStop   = strategy.position_size != 0 ? armedStop   : na
+openTarget = strategy.position_size != 0 ? armedTarget : na
 
 if mustBeFlat or not inSession or accountBlown
     strategy.cancel("L")
@@ -347,10 +361,12 @@ if barstate.islast
     table.cell(info, 1, 6, hasRange ?
          str.tostring(rangeHigh, format.mintick) + " / " + str.tostring(rangeLow, format.mintick) : "—",
          text_size = size.small)
-    table.cell(info, 0, 7, "Apertura detectada", text_size = size.small)
-    table.cell(info, 1, 7, sessionOpenTime > 0 ?
+    table.cell(info, 0, 7, nakedBars > 0 ? "SIN BRACKET" : "Apertura detectada",
+         text_size = size.small, text_color = nakedBars > 0 ? color.red : color.gray)
+    table.cell(info, 1, 7, nakedBars > 0 ? str.tostring(nakedBars) + " velas" :
+         sessionOpenTime > 0 ?
          str.format_time(sessionOpenTime, "yyyy-MM-dd HH:mm", sessionTz) : "—",
-         text_size = size.small)
+         text_size = size.small, text_color = nakedBars > 0 ? color.red : color.gray)
 
 alertcondition(goLong,  "Cierre sobre el rango", "1ª VELA 1:1 — entrada larga")
 alertcondition(goShort, "Cierre bajo el rango", "1ª VELA 1:1 — entrada corta")
