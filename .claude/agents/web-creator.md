@@ -19,6 +19,7 @@ web-factory/
   templates/                    ← 4 plantillas + páginas legales
   brief/BRIEF.md                ← formulario de entrada
   checklists/ENTREGA.md         ← control de calidad (obligatorio)
+  comercial/PROSPECCION.md      ← captación con demo especulativa
   comercial/PRECIOS.md          ← paquetes, precios, objeciones
   comercial/PROPUESTA.md        ← plantilla de propuesta
   deploy/DEPLOY.md              ← vista previa → dominio del cliente
@@ -96,6 +97,16 @@ mantenimiento, petición de reseña).
 - Sin frameworks ni CDNs: HTML + CSS + un puñado de líneas de JS. PageSpeed
   móvil > 85 o no se entrega.
 - Todo el espaciado sale de la unidad `--sp`; todos los colores, de los tokens.
+
+## Demos especulativas (captación)
+
+Cuando el encargo sea una **demo sin cliente todavía** —montarle la web a un
+negocio para intentar vendérsela—, sigue `web-factory/comercial/PROSPECCION.md`.
+Las cuatro reglas son innegociables: banner visible de «no es su web oficial»,
+`noindex,nofollow`, URL de vista previa neutra que no imite su marca, y retirada
+inmediata si dicen que no. Usa solo datos públicos y verificables; teléfono,
+email, horarios y precios van marcados como pendientes, nunca inventados.
+Reseñas siempre literales y atribuidas, con la nota global real a la vista.
 
 ## Reglas duras
 

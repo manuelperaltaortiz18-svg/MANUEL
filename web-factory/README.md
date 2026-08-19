@@ -21,6 +21,7 @@ Todo lo que hay aquí existe para eliminar decisiones repetidas.
 | `templates/_legal/` | Aviso legal, privacidad y cookies (LSSI-CE + RGPD) |
 | `brief/BRIEF.md` | Formulario de entrada. Sin esto no se arranca. |
 | `checklists/ENTREGA.md` | Control de calidad. Obligatorio antes de enseñar nada. |
+| `comercial/PROSPECCION.md` | Captación con demo especulativa: a quién buscar, qué datos usar, mensaje y ritmo |
 | `comercial/PRECIOS.md` | Tres paquetes, extras, mantenimiento, cómo poner precio |
 | `comercial/PROPUESTA.md` | Plantilla de propuesta + respuestas a objeciones |
 | `deploy/DEPLOY.md` | Vista previa → dominio del cliente. Formularios. |
@@ -38,7 +39,8 @@ El agente `.claude/agents/web-creator.md` orquesta todo esto. En Claude Code:
 ## El ciclo, de principio a fin
 
 ```
-Llamada (20 min)
+Prospección con demo especulativa (PROSPECCION.md)  ← opcional, para captar
+   └─ Llamada (20 min)
    └─ BRIEF.md relleno, campos 🔴 obligatorios
         └─ PROPUESTA.md enviada en 24 h
              └─ 50 % cobrado ← no se escribe código antes de esto
