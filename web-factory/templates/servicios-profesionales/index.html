@@ -1,0 +1,273 @@
+<!doctype html>
+<!--
+  PLANTILLA: Servicios profesionales (asesoría, abogados, dentista, fisio,
+  arquitecto, consultor, reformas…)
+  Objetivo comercial: conseguir que pidan una primera cita/presupuesto.
+
+  TOKENS a sustituir:
+    [[MARCA]]        Nombre del despacho/profesional
+    [[CLAIM]]        Qué problema resuelve, en una línea
+    [[SERVICIO]]     Categoría principal (ej. "Asesoría fiscal")
+    [[TELEFONO]] / [[TEL_E164]] / [[EMAIL]]
+    [[DIRECCION]] / [[CIUDAD]] / [[DOMINIO]]
+    [[FORM_ACTION]]  URL del endpoint del formulario (ver deploy/DEPLOY.md)
+
+  ANTES DE ENTREGAR: checklists/ENTREGA.md
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[[MARCA]] — [[SERVICIO]] en [[CIUDAD]]</title>
+<meta name="description" content="[[CLAIM]] Primera consulta sin compromiso. [[MARCA]], [[SERVICIO]] en [[CIUDAD]].">
+<link rel="canonical" href="https://[[DOMINIO]]/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[MARCA]] — [[SERVICIO]] en [[CIUDAD]]">
+<meta property="og:description" content="[[CLAIM]]">
+<meta property="og:image" content="https://[[DOMINIO]]/img/og.jpg">
+<meta name="theme-color" content="#12403a">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/base.css">
+<style>
+  /* --- Tema: sobrio, confianza, verde profundo --- */
+  :root {
+    --bg:#ffffff; --surface:#f4f7f5; --surface-2:#e7efeb;
+    --text:#111a18; --text-muted:#55655f;
+    --accent:#12403a; --accent-text:#fff; --accent-soft:#e0ece8;
+    --border:#dde6e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0c1210; --surface:#131c19; --surface-2:#1b2724;
+      --text:#eef4f1; --text-muted:#9aaba5;
+      --accent:#5fc0aa; --accent-text:#0c1210; --accent-soft:#152722;
+      --border:#22302c;
+    }
+  }
+  .hero { background:linear-gradient(160deg, var(--surface) 0%, var(--bg) 70%); }
+  .hero .split { padding-block:var(--sp-12); }
+  .hero__portrait { border-radius:var(--radius); aspect-ratio:4/5; object-fit:cover; width:100%; box-shadow:var(--shadow); }
+  .trust { display:flex; flex-wrap:wrap; gap:var(--sp-4); align-items:center; opacity:.75; }
+  .trust span { font-size:var(--step--1); font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+  .step { display:grid; grid-template-columns:auto 1fr; gap:var(--sp-3); align-items:start; }
+  .step__n {
+    width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+    background:var(--accent); color:var(--accent-text); font-weight:700; flex:none;
+  }
+  details.faq { border-bottom:1px solid var(--border); padding-block:var(--sp-2); }
+  details.faq summary { cursor:pointer; font-weight:600; font-size:var(--step-1); list-style:none; padding-right:var(--sp-3); position:relative; }
+  details.faq summary::-webkit-details-marker { display:none; }
+  details.faq summary::after { content:"+"; position:absolute; right:0; font-weight:400; color:var(--text-muted); }
+  details.faq[open] summary::after { content:"–"; }
+  details.faq p { margin-top:var(--sp-2); color:var(--text-muted); }
+  .quote { border-left:3px solid var(--accent); padding-left:var(--sp-3); font-size:var(--step-1); font-style:italic; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top">[[MARCA]]</a>
+    <nav class="nav nav--main" aria-label="Principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#proceso">Cómo trabajamos</a>
+      <a href="#sobre">Quiénes somos</a>
+      <a href="#faq">Preguntas</a>
+    </nav>
+    <a class="btn" href="#contacto">Pedir cita</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">[[SERVICIO]] · [[CIUDAD]]</p>
+        <h1>[[CLAIM]]</h1>
+        <p class="lead">Primera consulta de 30 minutos sin coste ni compromiso. Te decimos qué se puede hacer, cuánto cuesta y en cuánto tiempo — antes de que contrates nada.</p>
+        <div class="cluster">
+          <a class="btn btn--lg" href="#contacto">Pedir cita gratuita</a>
+          <a class="btn btn--lg btn--ghost" href="tel:[[TEL_E164]]">[[TELEFONO]]</a>
+        </div>
+        <!-- ⚠️ Datos de ejemplo: sustituir por los reales del cliente o borrar el bloque. -->
+        <div class="trust" style="margin-top:var(--sp-4)">
+          <span>+15 años de ejercicio</span>
+          <span>Respuesta en 24 h</span>
+          <span>Colegiado nº 0000</span>
+        </div>
+      </div>
+      <img class="hero__portrait" src="img/equipo.jpg" alt="Equipo de [[MARCA]] en su despacho de [[CIUDAD]]">
+    </div>
+  </section>
+
+  <section class="section section--alt" id="servicios">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Servicios</p>
+        <h2>En qué te podemos ayudar</h2>
+        <p class="lead">Trabajamos con particulares y con pymes. Si tu caso no encaja en ninguno de estos, llámanos y te decimos si podemos ayudarte o a quién acudir.</p>
+      </div>
+      <div class="grid grid--3">
+        <article class="card stack">
+          <h3>Primer servicio</h3>
+          <p class="muted">Describe aquí el problema concreto del cliente y cómo lo resuelves. Habla de su situación, no de tu metodología.</p>
+          <p><strong>Desde 000 €</strong></p>
+        </article>
+        <article class="card stack">
+          <h3>Segundo servicio</h3>
+          <p class="muted">Segundo bloque de servicio. Máximo tres líneas — quien lee está comparando, no estudiando.</p>
+          <p><strong>Desde 000 €</strong></p>
+        </article>
+        <article class="card stack">
+          <h3>Tercer servicio</h3>
+          <p class="muted">Tercer bloque. Si tienes más de seis servicios, agrúpalos: una lista larga no vende, confunde.</p>
+          <p><strong>Cuota mensual</strong></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="proceso">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Cómo trabajamos</p>
+        <h2>Tres pasos, sin sorpresas</h2>
+      </div>
+      <div class="grid grid--3">
+        <div class="step"><div class="step__n">1</div>
+          <div><h3 style="font-size:var(--step-1)">Nos cuentas el caso</h3>
+          <p class="muted">30 minutos por teléfono o en el despacho. Sin coste y sin compromiso.</p></div></div>
+        <div class="step"><div class="step__n">2</div>
+          <div><h3 style="font-size:var(--step-1)">Presupuesto cerrado</h3>
+          <p class="muted">Por escrito, con plazos y precio final. Lo que firmas es lo que pagas.</p></div></div>
+        <div class="step"><div class="step__n">3</div>
+          <div><h3 style="font-size:var(--step-1)">Nos ocupamos</h3>
+          <p class="muted">Un interlocutor único y actualizaciones cada vez que hay novedades.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="sobre">
+    <div class="container split">
+      <img class="hero__portrait" src="img/despacho.jpg" alt="Despacho de [[MARCA]] en [[DIRECCION]]" loading="lazy">
+      <div class="stack">
+        <p class="eyebrow">Quiénes somos</p>
+        <h2>Gente concreta, no una marca</h2>
+        <p>Dos párrafos sobre quién está detrás: años de experiencia, tipo de casos que más se llevan, por qué se montó el despacho. Con nombres y apellidos — es lo que genera confianza en un servicio profesional.</p>
+        <blockquote class="quote">Sustituir por una reseña REAL del cliente (Google, email con permiso). Nunca inventar testimonios.
+          <footer class="muted" style="font-style:normal;font-size:var(--step--1);margin-top:var(--sp)">— Nombre real, cargo</footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container container--narrow">
+      <div class="section-head center">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2>Lo que nos preguntan antes de contratar</h2>
+      </div>
+      <details class="faq" open>
+        <summary>¿Cuánto cuesta la primera consulta?</summary>
+        <p>Nada. Media hora para entender el caso y decirte si podemos ayudarte. Si no podemos, te lo decimos igual.</p>
+      </details>
+      <details class="faq">
+        <summary>¿En cuánto tiempo tengo respuesta?</summary>
+        <p>Contestamos en menos de 24 horas laborables, siempre con una persona concreta al otro lado.</p>
+      </details>
+      <details class="faq">
+        <summary>¿Trabajáis fuera de [[CIUDAD]]?</summary>
+        <p>Sí. Buena parte del trabajo se hace en remoto; las reuniones presenciales solo cuando aportan algo.</p>
+      </details>
+      <details class="faq">
+        <summary>¿Cómo se factura?</summary>
+        <p>Presupuesto cerrado por servicio o cuota mensual, según el caso. Sin cargos que no estén en el presupuesto firmado.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="contacto">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">Contacto</p>
+        <h2>Cuéntanos tu caso</h2>
+        <p class="lead">Rellena el formulario o llámanos directamente. Te respondemos en menos de 24 horas laborables.</p>
+        <p><strong>Teléfono</strong><br><a href="tel:[[TEL_E164]]">[[TELEFONO]]</a></p>
+        <p><strong>Email</strong><br><a href="mailto:[[EMAIL]]">[[EMAIL]]</a></p>
+        <p><strong>Despacho</strong><br><span class="muted">[[DIRECCION]], [[CIUDAD]]</span></p>
+      </div>
+
+      <form class="card card--raised stack" action="[[FORM_ACTION]]" method="POST">
+        <div class="field">
+          <label for="nombre">Nombre y apellidos</label>
+          <input id="nombre" name="nombre" type="text" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="tel">Teléfono <span class="muted">(opcional)</span></label>
+          <input id="tel" name="telefono" type="tel" autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="mensaje">¿Qué necesitas?</label>
+          <textarea id="mensaje" name="mensaje" rows="4" required></textarea>
+        </div>
+        <!-- Anti-spam sin cookies ni captcha -->
+        <div class="sr-only" aria-hidden="true">
+          <label for="empresa-hp">No rellenar</label>
+          <input id="empresa-hp" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="field" style="grid-template-columns:auto 1fr;display:grid;gap:var(--sp)">
+          <input id="rgpd" name="rgpd" type="checkbox" required style="width:auto;margin-top:4px">
+          <label for="rgpd" style="font-weight:400">
+            He leído y acepto la <a href="privacidad.html">política de privacidad</a>.
+          </label>
+        </div>
+        <button class="btn btn--lg" type="submit">Enviar consulta</button>
+        <p class="muted" style="font-size:var(--step--1)">Tus datos se usan solo para responderte. No los cedemos a nadie.</p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="grid grid--3">
+      <div class="stack">
+        <p class="brand">[[MARCA]]</p>
+        <p class="muted">[[SERVICIO]] en [[CIUDAD]]</p>
+      </div>
+      <div class="stack">
+        <p><strong>Contacto</strong></p>
+        <p><a href="tel:[[TEL_E164]]">[[TELEFONO]]</a></p>
+        <p><a href="mailto:[[EMAIL]]">[[EMAIL]]</a></p>
+        <p class="muted">[[DIRECCION]]</p>
+      </div>
+      <div class="stack">
+        <p><strong>Legal</strong></p>
+        <p><a href="aviso-legal.html">Aviso legal</a></p>
+        <p><a href="privacidad.html">Política de privacidad</a></p>
+        <p><a href="cookies.html">Política de cookies</a></p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:var(--sp-6)">© <span id="year">2026</span> [[MARCA]].</p>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org","@type":"ProfessionalService",
+  "name":"[[MARCA]]","url":"https://[[DOMINIO]]/","telephone":"[[TEL_E164]]","email":"[[EMAIL]]",
+  "areaServed":"[[CIUDAD]]",
+  "address":{"@type":"PostalAddress","streetAddress":"[[DIRECCION]]","addressLocality":"[[CIUDAD]]","addressCountry":"ES"}
+}
+</script>
+</body>
+</html>

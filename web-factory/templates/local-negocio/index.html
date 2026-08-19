@@ -1,0 +1,296 @@
+<!doctype html>
+<!--
+  PLANTILLA: Negocio local (restaurante, peluquería, taller, clínica, gimnasio…)
+  Objetivo comercial: que el visitante llame, reserve o vaya al local.
+
+  TOKENS a sustituir (buscar y reemplazar en TODO el archivo):
+    [[MARCA]]      Nombre del negocio
+    [[CLAIM]]        Frase de una línea que dice qué es y para quién
+    [[TELEFONO]]     Formato visible: 600 00 00 00
+    [[TEL_E164]]     Formato enlace: +34600000000
+    [[EMAIL]]        hola@negocio.es
+    [[DIRECCION]]    Calle, número, CP Ciudad
+    [[CIUDAD]]       Ciudad (para SEO local)
+    [[DOMINIO]]      negocio.es (sin https)
+    [[MAPS_EMBED]]   URL del iframe de Google Maps (Compartir > Insertar un mapa)
+    [[MAPS_LINK]]    URL "Cómo llegar" de Google Maps
+
+  ANTES DE ENTREGAR: revisar checklists/ENTREGA.md
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[[MARCA]] — [[CLAIM]] en [[CIUDAD]]</title>
+<meta name="description" content="[[MARCA]] en [[CIUDAD]]. [[CLAIM]] Reserva por teléfono o pásate por [[DIRECCION]].">
+<link rel="canonical" href="https://[[DOMINIO]]/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[MARCA]] — [[CLAIM]]">
+<meta property="og:description" content="[[MARCA]] en [[CIUDAD]]. [[CLAIM]]">
+<meta property="og:image" content="https://[[DOMINIO]]/img/og.jpg">
+<meta property="og:url" content="https://[[DOMINIO]]/">
+<meta name="theme-color" content="#b4451f">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/base.css">
+<style>
+  /* --- Tema del proyecto: cálido, terroso, hostelería --- */
+  :root {
+    --bg:#fdfaf6; --surface:#f5ede3; --surface-2:#eee2d4;
+    --text:#241c16; --text-muted:#6b5c50;
+    --accent:#b4451f; --accent-text:#fff; --accent-soft:#f7e5dc;
+    --border:#e4d7c8;
+    --font-display: "Georgia", "Iowan Old Style", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#171310; --surface:#211b16; --surface-2:#2c241d;
+      --text:#f5eee6; --text-muted:#b3a396;
+      --accent:#e97b4e; --accent-text:#171310; --accent-soft:#2e1f18;
+      --border:#332a22;
+    }
+  }
+  .hero { position:relative; min-height:min(78vh,640px); display:grid; align-items:end;
+          background:var(--surface-2); overflow:hidden; }
+  .hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .hero__scrim { position:absolute; inset:0;
+          background:linear-gradient(to top, rgb(15 10 7 / .88) 0%, rgb(15 10 7 / .45) 45%, rgb(15 10 7 / .1) 100%); }
+  .hero__body { position:relative; padding-block:var(--sp-8); color:#fff; }
+  .hero__body h1 { color:#fff; max-width:14ch; }
+  .hero__body .lead { color:rgb(255 255 255 / .85); max-width:46ch; }
+  .info-bar { background:var(--text); color:var(--bg); font-size:var(--step--1); }
+  .info-bar .container { display:flex; flex-wrap:wrap; gap:var(--sp-3); justify-content:center;
+                         padding-block:calc(var(--sp)*1.4); }
+  .info-bar a { color:inherit; text-decoration:none; font-weight:600; }
+  .menu-item { display:flex; justify-content:space-between; gap:var(--sp-3);
+               padding-block:var(--sp-2); border-bottom:1px dashed var(--border); }
+  .menu-item:last-child { border-bottom:0; }
+  .menu-item h4 { font-size:var(--step-0); font-weight:700; }
+  .menu-item p { font-size:var(--step--1); color:var(--text-muted); margin-top:2px; }
+  .menu-item .price { font-weight:700; color:var(--accent); white-space:nowrap; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--sp-2); }
+  .gallery img { aspect-ratio:4/3; object-fit:cover; border-radius:var(--radius); width:100%; }
+  .hours { list-style:none; padding:0; }
+  .hours li { display:flex; justify-content:space-between; gap:var(--sp-2);
+              padding-block:calc(var(--sp)*1.2); border-bottom:1px solid var(--border); max-width:none; }
+  .hours li:last-child { border-bottom:0; }
+  .map { border:0; width:100%; aspect-ratio:16/10; border-radius:var(--radius); }
+  .fab {
+    position:fixed; right:var(--sp-2); bottom:var(--sp-2); z-index:60;
+    box-shadow:0 6px 20px rgb(0 0 0 / .25);
+  }
+  @media (min-width:720px) { .fab { display:none; } }
+  @media (max-width:719px) { body { padding-bottom:var(--sp-8); } }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<div class="info-bar">
+  <div class="container">
+    <span>📍 [[DIRECCION]]</span>
+    <a href="tel:[[TEL_E164]]">📞 [[TELEFONO]]</a>
+    <span>🕑 Abierto hoy hasta las 23:30</span>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top">[[MARCA]]</a>
+    <nav class="nav nav--main" aria-label="Principal">
+      <a href="#carta">Carta</a>
+      <a href="#galeria">El local</a>
+      <a href="#horarios">Horarios</a>
+      <a href="#contacto">Cómo llegar</a>
+    </nav>
+    <a class="btn" href="tel:[[TEL_E164]]">Reservar</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <img class="hero__img" src="img/hero.jpg" alt="Interior de [[MARCA]] con las mesas preparadas">
+    <div class="hero__scrim"></div>
+    <div class="hero__body">
+      <div class="container stack">
+        <p class="eyebrow" style="color:#f0c9b6">[[CIUDAD]]</p>
+        <h1>[[CLAIM]]</h1>
+        <p class="lead">Producto de mercado, cocina a la vista y una carta corta que cambia cada semana. Reserva es recomendable de jueves a domingo.</p>
+        <div class="cluster">
+          <a class="btn btn--lg" href="tel:[[TEL_E164]]">Llamar y reservar</a>
+          <a class="btn btn--lg btn--ghost" style="color:#fff;border-color:rgb(255 255 255 / .4)" href="#carta">Ver la carta</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Prueba social inmediata: lo primero que valida la decisión.
+       ⚠️ LAS TRES CIFRAS DE ABAJO SON DE EJEMPLO. Sustituir por los datos
+       REALES del cliente (reseñas de su ficha de Google, año de apertura) o
+       BORRAR la sección entera. Inventar prueba social es publicidad
+       engañosa y responsabilidad del cliente. -->
+  <section class="section section--tight">
+    <div class="container grid grid--3">
+      <div class="card center">
+        <p style="font-size:var(--step-2);font-weight:700">4,8 ★</p>
+        <p class="muted">Media de 312 reseñas en Google</p>
+      </div>
+      <div class="card center">
+        <p style="font-size:var(--step-2);font-weight:700">Desde 2011</p>
+        <p class="muted">Catorce años en el mismo barrio</p>
+      </div>
+      <div class="card center">
+        <p style="font-size:var(--step-2);font-weight:700">Km 0</p>
+        <p class="muted">Proveedores locales, carta de temporada</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="carta">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">La carta</p>
+        <h2>Corta, de temporada y sin trampas</h2>
+        <p class="lead">Cambiamos platos cada semana según lo que llega del mercado. Esto es lo que hay ahora mismo.</p>
+      </div>
+      <div class="grid grid--2">
+        <div class="card">
+          <h3 style="margin-bottom:var(--sp-2)">Para empezar</h3>
+          <div class="menu-item">
+            <div><h4>Tomate de temporada</h4><p>Ventresca, cebolleta y aceite de arbequina</p></div>
+            <span class="price">12 €</span>
+          </div>
+          <div class="menu-item">
+            <div><h4>Croquetas de jamón</h4><p>Seis unidades, masa cremosa del día</p></div>
+            <span class="price">9 €</span>
+          </div>
+          <div class="menu-item">
+            <div><h4>Alcachofas confitadas</h4><p>Con jugo de sus hojas y avellana</p></div>
+            <span class="price">14 €</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:var(--sp-2)">Principales</h3>
+          <div class="menu-item">
+            <div><h4>Pescado del día a la brasa</h4><p>Según lonja, pregunta al camarero</p></div>
+            <span class="price">S/M</span>
+          </div>
+          <div class="menu-item">
+            <div><h4>Arroz de carabineros</h4><p>Mínimo dos personas, 35 min</p></div>
+            <span class="price">26 €/pax</span>
+          </div>
+          <div class="menu-item">
+            <div><h4>Presa ibérica</h4><p>Puré de manzana asada y pimienta negra</p></div>
+            <span class="price">21 €</span>
+          </div>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:var(--sp-3)">
+        Menú del día de martes a viernes, 16 €. Opciones vegetarianas y sin gluten disponibles —
+        avísanos al reservar. <a href="tel:[[TEL_E164]]">Consultar alérgenos</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="galeria">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">El local</p>
+        <h2>Veinticuatro mesas y una barra</h2>
+      </div>
+      <div class="gallery">
+        <img src="img/local-1.jpg" alt="Sala principal con mesas de madera" loading="lazy">
+        <img src="img/local-2.jpg" alt="Barra con taburetes altos" loading="lazy">
+        <img src="img/local-3.jpg" alt="Plato de pescado a la brasa" loading="lazy">
+        <img src="img/local-4.jpg" alt="Terraza exterior al atardecer" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="horarios">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">Horarios</p>
+        <h2>Cuándo estamos</h2>
+        <ul class="hours">
+          <li><span>Lunes</span> <strong class="muted">Cerrado</strong></li>
+          <li><span>Martes a jueves</span> <strong>13:00–16:00 · 20:00–23:00</strong></li>
+          <li><span>Viernes y sábado</span> <strong>13:00–16:30 · 20:00–23:30</strong></li>
+          <li><span>Domingo</span> <strong>13:00–16:30</strong></li>
+        </ul>
+        <p class="muted">Cocina cierra 30 minutos antes. Cerramos por vacaciones la segunda quincena de agosto.</p>
+      </div>
+      <div class="card card--raised stack">
+        <h3>Reservar</h3>
+        <p>Para grupos de más de 6 personas, llámanos: organizamos la mesa con antelación.</p>
+        <a class="btn btn--lg" href="tel:[[TEL_E164]]">📞 [[TELEFONO]]</a>
+        <a class="btn btn--ghost" href="mailto:[[EMAIL]]">Escribir un email</a>
+        <p class="muted" style="font-size:var(--step--1)">Respondemos el mismo día en horario de apertura.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contacto">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">Cómo llegar</p>
+        <h2>[[DIRECCION]]</h2>
+        <p class="lead">En pleno centro de [[CIUDAD]], a cinco minutos andando de la plaza mayor. Parking público a 200 m.</p>
+        <div class="cluster">
+          <a class="btn" href="[[MAPS_LINK]]" target="_blank" rel="noopener">Abrir en Google Maps</a>
+          <a class="btn btn--ghost" href="tel:[[TEL_E164]]">Llamar</a>
+        </div>
+      </div>
+      <iframe class="map" src="[[MAPS_EMBED]]" title="Mapa con la ubicación de [[MARCA]]"
+              loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="grid grid--3">
+      <div class="stack">
+        <p class="brand">[[MARCA]]</p>
+        <p class="muted">[[CLAIM]]</p>
+      </div>
+      <div class="stack">
+        <p><strong>Contacto</strong></p>
+        <p><a href="tel:[[TEL_E164]]">[[TELEFONO]]</a></p>
+        <p><a href="mailto:[[EMAIL]]">[[EMAIL]]</a></p>
+        <p class="muted">[[DIRECCION]]</p>
+      </div>
+      <div class="stack">
+        <p><strong>Legal</strong></p>
+        <p><a href="aviso-legal.html">Aviso legal</a></p>
+        <p><a href="privacidad.html">Política de privacidad</a></p>
+        <p><a href="cookies.html">Política de cookies</a></p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:var(--sp-6)">© <span id="year">2026</span> [[MARCA]]. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<a class="btn fab" href="tel:[[TEL_E164]]" aria-label="Llamar a [[MARCA]]">📞 Llamar ahora</a>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<!-- SEO local: ficha estructurada. Google la usa para el panel lateral y el mapa. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "[[MARCA]]",
+  "url": "https://[[DOMINIO]]/",
+  "telephone": "[[TEL_E164]]",
+  "email": "[[EMAIL]]",
+  "priceRange": "€€",
+  "address": { "@type": "PostalAddress", "streetAddress": "[[DIRECCION]]", "addressLocality": "[[CIUDAD]]", "addressCountry": "ES" },
+  "openingHours": ["Tu-Th 13:00-16:00","Tu-Th 20:00-23:00","Fr-Sa 13:00-16:30","Fr-Sa 20:00-23:30","Su 13:00-16:30"]
+}
+</script>
+</body>
+</html>

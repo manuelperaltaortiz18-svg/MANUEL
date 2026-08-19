@@ -1,0 +1,232 @@
+<!doctype html>
+<!--
+  PLANTILLA: Landing de producto / SaaS / infoproducto / curso / app
+  Objetivo comercial: una única conversión (registro, compra o demo).
+
+  TOKENS a sustituir:
+    [[MARCA]]   Nombre del producto
+    [[CLAIM]]      Qué hace y para quién, en una línea sin jerga
+    [[CTA]]        Texto del botón principal (el MISMO en toda la página)
+    [[CTA_URL]]    Destino de la conversión (checkout, registro, Calendly…)
+    [[EMAIL]] / [[DOMINIO]]
+
+  REGLA DE ORO: una landing, una acción. Si hay dos CTAs distintas
+  compitiendo, la conversión baja. Ver checklists/ENTREGA.md.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[[MARCA]] — [[CLAIM]]</title>
+<meta name="description" content="[[CLAIM]] Pruébalo hoy: sin tarjeta y sin permanencia.">
+<link rel="canonical" href="https://[[DOMINIO]]/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[MARCA]] — [[CLAIM]]">
+<meta property="og:description" content="[[CLAIM]]">
+<meta property="og:image" content="https://[[DOMINIO]]/img/og.jpg">
+<meta name="theme-color" content="#0f0f14">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/base.css">
+<style>
+  /* --- Tema: producto, denso, acento eléctrico --- */
+  :root {
+    --bg:#ffffff; --surface:#f5f5f8; --surface-2:#eaeaf0;
+    --text:#0f0f14; --text-muted:#5a5a68;
+    --accent:#4a2fe0; --accent-text:#fff; --accent-soft:#eeeaff;
+    --border:#e3e3ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b0b10; --surface:#131319; --surface-2:#1b1b23;
+      --text:#f3f3f7; --text-muted:#a0a0b0;
+      --accent:#9d8bff; --accent-text:#0b0b10; --accent-soft:#1a1730;
+      --border:#242430;
+    }
+  }
+  .hero { padding-block:var(--sp-16) var(--sp-8); text-align:center; }
+  .hero h1 { max-width:18ch; margin-inline:auto; }
+  .hero .lead { max-width:56ch; margin-inline:auto; }
+  .shot {
+    margin-top:var(--sp-8); border-radius:var(--radius); border:1px solid var(--border);
+    box-shadow:var(--shadow); width:100%; aspect-ratio:16/9; object-fit:cover; background:var(--surface-2);
+  }
+  .feature { display:grid; gap:var(--sp-2); }
+  .feature__icon {
+    width:40px; height:40px; border-radius:var(--radius-sm); background:var(--accent-soft);
+    color:var(--accent); display:grid; place-items:center; font-weight:700;
+  }
+  .price-grid { display:grid; gap:var(--sp-4); align-items:start; }
+  @media (min-width:820px) { .price-grid { grid-template-columns:repeat(3,1fr); } }
+  .plan { border:1px solid var(--border); border-radius:var(--radius); padding:var(--sp-4); background:var(--bg); }
+  .plan--featured { border-color:var(--accent); border-width:2px; box-shadow:var(--shadow); position:relative; }
+  .plan--featured::before {
+    content:"El más elegido"; position:absolute; top:-13px; left:var(--sp-4);
+    background:var(--accent); color:var(--accent-text); font-size:var(--step--1);
+    font-weight:600; padding:2px var(--sp); border-radius:999px;
+  }
+  .plan__price { font-size:var(--step-3); font-weight:700; letter-spacing:-.03em; }
+  .plan__price small { font-size:var(--step-0); font-weight:400; color:var(--text-muted); }
+  .plan ul { list-style:none; padding:0; display:grid; gap:var(--sp); }
+  .plan li { display:grid; grid-template-columns:auto 1fr; gap:var(--sp); font-size:var(--step--1); max-width:none; }
+  .plan li::before { content:"✓"; color:var(--accent); font-weight:700; }
+  details.faq { border-bottom:1px solid var(--border); padding-block:var(--sp-2); }
+  details.faq summary { cursor:pointer; font-weight:600; list-style:none; }
+  details.faq summary::-webkit-details-marker { display:none; }
+  details.faq p { margin-top:var(--sp); color:var(--text-muted); }
+  .final-cta { background:var(--text); color:var(--bg); border-radius:var(--radius); padding:var(--sp-12) var(--sp-4); text-align:center; }
+  .final-cta h2 { color:var(--bg); }
+  .final-cta .btn { background:var(--bg); color:var(--text); }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top">[[MARCA]]</a>
+    <nav class="nav nav--main" aria-label="Principal">
+      <a href="#como">Cómo funciona</a>
+      <a href="#precios">Precios</a>
+      <a href="#faq">Preguntas</a>
+    </nav>
+    <a class="btn" href="[[CTA_URL]]">[[CTA]]</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="container stack">
+      <p class="eyebrow">Para [describe el perfil exacto del cliente]</p>
+      <h1>[[CLAIM]]</h1>
+      <p class="lead">Segunda línea: el beneficio concreto y medible. Cuánto tiempo ahorra, cuánto dinero, qué deja de hacer a mano. Sin adjetivos.</p>
+      <div class="cluster" style="justify-content:center">
+        <a class="btn btn--lg" href="[[CTA_URL]]">[[CTA]]</a>
+        <a class="btn btn--lg btn--ghost" href="#como">Ver cómo funciona</a>
+      </div>
+      <p class="muted" style="font-size:var(--step--1)">Sin tarjeta · Cancela cuando quieras · Datos alojados en la UE</p>
+      <img class="shot" src="img/producto.jpg" alt="Captura de la pantalla principal de [[MARCA]]">
+    </div>
+  </section>
+
+  <!-- El problema antes que la solución: el lector se tiene que reconocer -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">El problema</p>
+        <h2>Si esto te suena, [[MARCA]] es para ti</h2>
+      </div>
+      <div class="grid grid--3">
+        <div class="card"><p>«Primer dolor del cliente, dicho con sus propias palabras.»</p></div>
+        <div class="card"><p>«Segundo dolor. Sale de entrevistas reales, no de la imaginación.»</p></div>
+        <div class="card"><p>«Tercer dolor, el que hace que busquen una solución hoy.»</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="como">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Cómo funciona</p>
+        <h2>Listo en menos de cinco minutos</h2>
+      </div>
+      <div class="grid grid--3">
+        <div class="feature"><div class="feature__icon">1</div>
+          <h3 style="font-size:var(--step-1)">Conecta tus datos</h3>
+          <p class="muted">Qué hace el usuario en el paso uno y qué obtiene a cambio.</p></div>
+        <div class="feature"><div class="feature__icon">2</div>
+          <h3 style="font-size:var(--step-1)">Configura una vez</h3>
+          <p class="muted">Paso dos. Habla de resultados, no de funcionalidades.</p></div>
+        <div class="feature"><div class="feature__icon">3</div>
+          <h3 style="font-size:var(--step-1)">Olvídate</h3>
+          <p class="muted">Paso tres: el estado final en el que quiere estar el cliente.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="precios">
+    <div class="container">
+      <div class="section-head center">
+        <p class="eyebrow">Precios</p>
+        <h2>Sin letra pequeña</h2>
+        <p class="lead">Todos los planes incluyen soporte por email y actualizaciones. IVA no incluido.</p>
+      </div>
+      <div class="price-grid">
+        <div class="plan stack">
+          <h3>Básico</h3>
+          <p class="plan__price">19 €<small>/mes</small></p>
+          <p class="muted">Para empezar en solitario.</p>
+          <ul><li>Primera característica</li><li>Segunda característica</li><li>Soporte por email</li></ul>
+          <a class="btn btn--ghost" href="[[CTA_URL]]">[[CTA]]</a>
+        </div>
+        <div class="plan plan--featured stack">
+          <h3>Profesional</h3>
+          <p class="plan__price">49 €<small>/mes</small></p>
+          <p class="muted">Para equipos pequeños que ya facturan.</p>
+          <ul><li>Todo lo del plan Básico</li><li>Tercera característica</li><li>Cuarta característica</li><li>Soporte prioritario</li></ul>
+          <a class="btn" href="[[CTA_URL]]">[[CTA]]</a>
+        </div>
+        <div class="plan stack">
+          <h3>Empresa</h3>
+          <p class="plan__price">A medida</p>
+          <p class="muted">Volumen alto y requisitos propios.</p>
+          <ul><li>Todo lo del plan Profesional</li><li>Onboarding guiado</li><li>Acuerdo de nivel de servicio</li></ul>
+          <a class="btn btn--ghost" href="mailto:[[EMAIL]]">Hablar con ventas</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container container--narrow">
+      <div class="section-head center"><h2>Preguntas frecuentes</h2></div>
+      <details class="faq" open><summary>¿Necesito tarjeta para probarlo?</summary>
+        <p>No. La prueba dura 14 días y no pedimos datos de pago hasta que decidas seguir.</p></details>
+      <details class="faq"><summary>¿Puedo cancelar cuando quiera?</summary>
+        <p>Sí, desde tu panel y sin llamar a nadie. Mantienes el acceso hasta el final del periodo pagado.</p></details>
+      <details class="faq"><summary>¿Dónde están mis datos?</summary>
+        <p>En servidores de la Unión Europea, cifrados y exportables en cualquier momento.</p></details>
+      <details class="faq"><summary>¿Hacéis factura con IVA?</summary>
+        <p>Sí, automática cada mes con tus datos fiscales.</p></details>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="final-cta stack">
+        <h2>[[CLAIM]]</h2>
+        <p style="opacity:.8;max-width:48ch;margin-inline:auto">Empieza hoy. Si en dos semanas no te sirve, lo dejas y no pagas nada.</p>
+        <p><a class="btn btn--lg" href="[[CTA_URL]]">[[CTA]]</a></p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="grid grid--3">
+      <div class="stack">
+        <p class="brand">[[MARCA]]</p>
+        <p class="muted">[[CLAIM]]</p>
+      </div>
+      <div class="stack">
+        <p><strong>Producto</strong></p>
+        <p><a href="#como">Cómo funciona</a></p>
+        <p><a href="#precios">Precios</a></p>
+        <p><a href="mailto:[[EMAIL]]">Soporte</a></p>
+      </div>
+      <div class="stack">
+        <p><strong>Legal</strong></p>
+        <p><a href="aviso-legal.html">Aviso legal</a></p>
+        <p><a href="privacidad.html">Privacidad</a></p>
+        <p><a href="condiciones.html">Condiciones de contratación</a></p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:var(--sp-6)">© <span id="year">2026</span> [[MARCA]].</p>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

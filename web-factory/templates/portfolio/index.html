@@ -1,0 +1,189 @@
+<!doctype html>
+<!--
+  PLANTILLA: Portfolio / marca personal (fotógrafo, diseñador, arquitecto,
+  interiorista, ilustrador, videógrafo, músico…)
+  Objetivo comercial: que el trabajo hable y que el visitante escriba.
+
+  TOKENS a sustituir:
+    [[MARCA]]     Nombre de la persona o estudio
+    [[OFICIO]]     Ej. "Fotógrafa de arquitectura"
+    [[CLAIM]]      Una línea con punto de vista, no un eslogan vacío
+    [[EMAIL]] / [[TELEFONO]] / [[TEL_E164]]
+    [[CIUDAD]] / [[DOMINIO]]
+    [[INSTAGRAM]]  URL del perfil (o borrar el enlace)
+
+  REGLA: en un portfolio manda la obra. Si el cliente no da imágenes buenas,
+  la web no se entrega — se pide sesión de fotos. Ver comercial/PRECIOS.md.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[[MARCA]] — [[OFICIO]]</title>
+<meta name="description" content="[[MARCA]], [[OFICIO]] en [[CIUDAD]]. [[CLAIM]]">
+<link rel="canonical" href="https://[[DOMINIO]]/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[MARCA]] — [[OFICIO]]">
+<meta property="og:description" content="[[CLAIM]]">
+<meta property="og:image" content="https://[[DOMINIO]]/img/og.jpg">
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/base.css">
+<style>
+  /* --- Tema: editorial, alto contraste, la obra manda --- */
+  :root {
+    --bg:#fbfbfa; --surface:#f0f0ee; --surface-2:#e6e6e3;
+    --text:#111111; --text-muted:#6a6a68;
+    --accent:#111111; --accent-text:#fbfbfa; --accent-soft:#eeeeec;
+    --border:#dcdcd8;
+    --container: 1280px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b0b0b; --surface:#141414; --surface-2:#1c1c1c;
+      --text:#f4f4f2; --text-muted:#9a9a97;
+      --accent:#f4f4f2; --accent-text:#0b0b0b; --accent-soft:#1a1a1a;
+      --border:#262626;
+    }
+  }
+  .site-header { border-bottom:0; }
+  .intro { padding-block:var(--sp-16) var(--sp-8); }
+  .intro h1 { font-size:clamp(2.4rem,1.4rem+4.6vw,5.6rem); letter-spacing:-.045em; max-width:16ch; }
+  .intro .lead { max-width:52ch; margin-top:var(--sp-4); }
+
+  /* Retícula asimétrica: evita el look "grid de tarjetas de IA" */
+  .works { display:grid; gap:var(--sp-6); }
+  @media (min-width:900px) {
+    .works { grid-template-columns:repeat(12,1fr); gap:var(--sp-8) var(--sp-4); }
+    .work:nth-child(4n+1) { grid-column:1 / 8; }
+    .work:nth-child(4n+2) { grid-column:9 / 13; align-self:end; }
+    .work:nth-child(4n+3) { grid-column:1 / 5; }
+    .work:nth-child(4n+4) { grid-column:6 / 13; }
+  }
+  .work { text-decoration:none; color:inherit; display:block; }
+  .work img {
+    width:100%; object-fit:cover; background:var(--surface-2);
+    transition:opacity .3s ease, transform .5s cubic-bezier(.2,.7,.3,1);
+  }
+  .work:nth-child(odd) img  { aspect-ratio:4/3; }
+  .work:nth-child(even) img { aspect-ratio:3/4; }
+  .work:hover img { opacity:.88; transform:scale(1.012); }
+  .work__meta { display:flex; justify-content:space-between; gap:var(--sp-2); margin-top:var(--sp-2);
+                border-top:1px solid var(--border); padding-top:var(--sp); }
+  .work__meta h3 { font-size:var(--step-0); font-weight:600; letter-spacing:0; }
+  .work__meta span { font-size:var(--step--1); color:var(--text-muted); white-space:nowrap; }
+
+  .contact-cta h2 { font-size:clamp(2rem,1.2rem+3.6vw,4.4rem); }
+  .contact-cta a.big {
+    font-size:var(--step-2); text-decoration:none; border-bottom:2px solid var(--accent);
+    padding-bottom:2px; display:inline-block;
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top">[[MARCA]]</a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#trabajos">Trabajos</a>
+      <a href="#sobre">Info</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="intro" id="top">
+    <div class="container">
+      <p class="eyebrow">[[OFICIO]] · [[CIUDAD]]</p>
+      <h1>[[CLAIM]]</h1>
+      <p class="lead">Una o dos frases con criterio propio: qué tipo de encargos aceptas, qué te interesa del oficio, con quién trabajas. Nada de "apasionado por lo que hago".</p>
+    </div>
+  </section>
+
+  <section class="section" id="trabajos">
+    <div class="container">
+      <div class="works">
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-1.jpg" alt="Descripción concreta de la primera obra" >
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Cliente · 2026</span></div>
+        </a>
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-2.jpg" alt="Descripción concreta de la segunda obra" loading="lazy">
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Personal · 2025</span></div>
+        </a>
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-3.jpg" alt="Descripción concreta de la tercera obra" loading="lazy">
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Cliente · 2025</span></div>
+        </a>
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-4.jpg" alt="Descripción concreta de la cuarta obra" loading="lazy">
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Editorial · 2024</span></div>
+        </a>
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-5.jpg" alt="Descripción concreta de la quinta obra" loading="lazy">
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Cliente · 2024</span></div>
+        </a>
+        <a class="work" href="proyecto.html">
+          <img src="img/trabajo-6.jpg" alt="Descripción concreta de la sexta obra" loading="lazy">
+          <div class="work__meta"><h3>Título del proyecto</h3><span>Cliente · 2023</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="sobre">
+    <div class="container split">
+      <img src="img/retrato.jpg" alt="Retrato de [[MARCA]]" loading="lazy"
+           style="aspect-ratio:4/5;object-fit:cover;width:100%">
+      <div class="stack">
+        <p class="eyebrow">Info</p>
+        <h2>Sobre [[MARCA]]</h2>
+        <p>Párrafo de biografía: formación, trayectoria, dónde trabajas, qué encargos buscas. En primera persona si es marca personal.</p>
+        <p class="muted">Trabajo en [[CIUDAD]] y disponible para desplazamientos.</p>
+        <div class="stack" style="margin-top:var(--sp-4)">
+          <p><strong>Clientes</strong><br><span class="muted">Lista real de clientes o publicaciones, separados por · . Si no hay, borrar el bloque entero.</span></p>
+          <p><strong>Servicios</strong><br><span class="muted">Encargo comercial · Editorial · Producto · Dirección de arte</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section contact-cta" id="contacto">
+    <div class="container stack-lg">
+      <h2>¿Hablamos de un encargo?</h2>
+      <div class="stack">
+        <p><a class="big" href="mailto:[[EMAIL]]">[[EMAIL]]</a></p>
+        <p><a class="big" href="tel:[[TEL_E164]]">[[TELEFONO]]</a></p>
+      </div>
+      <p class="muted">Cuéntame el proyecto, las fechas y el presupuesto orientativo. Respondo en 48 h.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container cluster" style="justify-content:space-between">
+    <p class="muted">© <span id="year">2026</span> [[MARCA]] — [[OFICIO]]</p>
+    <nav class="cluster" aria-label="Legal y redes">
+      <a href="[[INSTAGRAM]]" target="_blank" rel="noopener">Instagram</a>
+      <a href="aviso-legal.html">Aviso legal</a>
+      <a href="privacidad.html">Privacidad</a>
+    </nav>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org","@type":"Person",
+  "name":"[[MARCA]]","jobTitle":"[[OFICIO]]","url":"https://[[DOMINIO]]/",
+  "email":"[[EMAIL]]","address":{"@type":"PostalAddress","addressLocality":"[[CIUDAD]]","addressCountry":"ES"}
+}
+</script>
+</body>
+</html>
