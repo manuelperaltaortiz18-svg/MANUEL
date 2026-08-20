@@ -34,7 +34,15 @@ Dos estrategias, ambas con bracket 1:1:
 
 Y una tercera, solo en Pine: **Rift Volume Profile** (POC / Value Area / POV con
 divergencia de CVD, ratio 1:2) — [`pine/rift_volume_profile_strategy.pine`](pine/rift_volume_profile_strategy.pine).
-Comprueba los scripts con `python scripts/lint_pine.py` antes de pegarlos.
+Esa misma estrategia como Expert Advisor de MetaTrader 5:
+[`mql5/RiftVolumeProfile.mq5`](mql5/RiftVolumeProfile.mq5).
+
+Comprueba los scripts antes de compilarlos:
+
+```bash
+python scripts/lint_pine.py     # pine/*.pine
+python scripts/lint_mql5.py     # mql5/*.mq5
+```
 
 ```
 src/config/trading_config.py   src/trading/   scripts/   pine/

@@ -659,3 +659,57 @@ minutos alarga el histórico a costa de resolución en el perfil.
 Esta estrategia vive solo en Pine. El motor Python de `src/trading/` no la
 replica: necesitaría datos intrabar por vela, que es justo lo que no se puede
 exportar cómodamente a CSV.
+
+## 15. Versión MetaTrader 5 (MQL5)
+
+`mql5/RiftVolumeProfile.mq5` es el mismo motor como Expert Advisor. Misma
+lógica de señales, mismo bracket 1:2, mismos cortacircuitos.
+
+### Instalación
+
+1. Copia el `.mq5` a `MQL5/Experts/` (en MT5: Archivo › Abrir carpeta de datos).
+2. Compílalo en MetaEditor (F7).
+3. **Descarga el histórico M1** del símbolo, o el perfil no tendrá con qué
+   construirse.
+4. En el Probador de estrategias usa modelado **"Cada tick"** u **"OHLC M1"**.
+
+### Tres cosas que MT5 hace mejor que TradingView aquí
+
+**Sin límite de datos intrabar.** El perfil se construye con `CopyRates()` sobre
+M1. El alcance del backtest lo marca tu histórico descargado, no la cuota de un
+plan. Es la diferencia entre 60 operaciones y las ~1.000 que hacen falta para
+optimizar sin engañarse.
+
+**El bracket vive en el servidor del bróker.** SL y TP se envían con la orden,
+así que sobreviven a que se cierre el terminal o se caiga la conexión. El fallo
+que tuvimos en Pine —la posición quedándose sin stop porque un nivel valía
+`na`— es estructuralmente imposible aquí.
+
+**Volumen calculado con el valor real del tick.** `SYMBOL_TRADE_TICK_VALUE` y
+`SYMBOL_TRADE_TICK_SIZE` dan el riesgo exacto por lote de tu símbolo y tu
+divisa de cuenta, en vez de un `pointvalue` genérico.
+
+### Diferencias inevitables con el Pine
+
+| aspecto | Pine | MQL5 |
+|---|---|---|
+| Volumen | el que sirva TradingView | `tick_volume`, o `real_volume` si el bróker lo da |
+| Distancia mínima de stops | no existe | `SYMBOL_TRADE_STOPS_LEVEL`: si el stop queda más cerca, **la operación se descarta** en vez de moverse |
+| Sesión | cadena `input.session` con zona horaria | horas de inicio/fin en **hora del servidor** del bróker |
+| Pico de capital | se pierde al recargar | guardado en `GlobalVariable`, sobrevive a reinicios |
+
+La cuarta es deliberada: una regla de drawdown máximo que se reinicia al
+recargar el EA no protege de nada en una cuenta de prop firm.
+
+### Comprobación estática
+
+MetaEditor solo existe en Windows, así que aquí tampoco se puede compilar.
+`scripts/lint_mql5.py` cubre esa ceguera: llaves y paréntesis desbalanceados
+(ignorando comentarios y cadenas), manejadores `OnInit`/`OnTick` ausentes,
+restos de sintaxis Pine (`strategy.`, `ta.`, `math.`, `na()`, `:=`) e inputs
+declarados que nadie usa. Un test comprueba que el EA publicado pasa todas las
+reglas.
+
+```bash
+python scripts/lint_mql5.py
+```
