@@ -34,8 +34,10 @@ Dos estrategias, ambas con bracket 1:1:
 
 Y una tercera, solo en Pine: **Rift Volume Profile** (POC / Value Area / POV con
 divergencia de CVD, ratio 1:2) — [`pine/rift_volume_profile_strategy.pine`](pine/rift_volume_profile_strategy.pine).
-Esa misma estrategia como Expert Advisor de MetaTrader 5:
-[`mql5/RiftVolumeProfile.mq5`](mql5/RiftVolumeProfile.mq5).
+Versiones para MetaTrader 5 (Expert Advisors):
+
+- [`mql5/NasdaqFirstCandle.mq5`](mql5/NasdaqFirstCandle.mq5) — cierre fuera del rango de la primera vela, 1:1
+- [`mql5/RiftVolumeProfile.mq5`](mql5/RiftVolumeProfile.mq5) — perfil de volumen, 1:2
 
 Comprueba los scripts antes de compilarlos:
 

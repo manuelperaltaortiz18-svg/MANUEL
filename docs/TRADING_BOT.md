@@ -713,3 +713,65 @@ reglas.
 ```bash
 python scripts/lint_mql5.py
 ```
+
+## 16. Primera vela en MetaTrader 5
+
+`mql5/NasdaqFirstCandle.mq5` es la estrategia del cierre fuera del rango de la
+primera vela como Expert Advisor. Misma regla, mismo bracket 1:1, mismos
+cortacircuitos.
+
+### La hora: el único fallo que no da error
+
+Si la sesión se configura mal, el EA calcula "el rango de la primera vela"
+sobre otra hora del día. No salta ningún aviso: simplemente opera un rango que
+no es el que quieres.
+
+Por eso las horas van **en hora de Nueva York** (09:30–16:00 por defecto) y el
+EA las convierte al reloj de tu bróker. Solo tienes que darle dos datos que
+conoces:
+
+| entrada | qué es |
+|---|---|
+| `InpBrokerGmtOffset` | desfase GMT del bróker **en invierno** (mira su reloj) |
+| `InpBrokerUsesDst` | si tu bróker cambia de hora en verano (casi todos los europeos, sí) |
+
+Y el EA imprime en el registro la hora resuelta, al arrancar y en cada sesión:
+
+```
+Sesion: 09:30-16:00 Nueva York = 16:30-23:00 en el servidor
+(desfase +420 min | verano EEUU: no | verano broker: no).
+```
+
+Compruébalo una vez contra el gráfico y olvídate.
+
+Esa conversión tiene su propio test de paridad (`tests/test_mql5_session_mapping.py`),
+porque hay un detalle que rompe las conversiones ingenuas: **los calendarios de
+horario de verano de EEUU y Europa no coinciden**. Estados Unidos adelanta el
+segundo domingo de marzo, Europa el último; Europa retrasa el último domingo de
+octubre, Estados Unidos el primero de noviembre. Durante esas tres semanas de
+marzo y esa de octubre, la apertura americana cae una hora antes en el reloj de
+tu bróker:
+
+| fecha (2026) | bróker GMT+2 con horario europeo |
+|---|---|
+| 15 enero | 16:30 |
+| 20 marzo | **15:30** |
+| 15 julio | 16:30 |
+| 28 octubre | **15:30** |
+
+Si prefieres poner las horas del servidor a mano, cambia `InpTimeRef` a "Hora
+del servidor" y se usan tal cual.
+
+### Diferencias con el Pine
+
+**El objetivo se ajusta al llenado real.** MT5 devuelve el precio de apertura
+de la posición justo después de ejecutar, así que el EA recoloca el TP con ese
+precio: el 1:1 sale exacto, no estimado desde el cierre que confirmó.
+
+**Red de seguridad tras abrir.** Si la posición queda sin stop-loss en el
+servidor, el EA la cierra de inmediato y lo escribe en el registro. Es el
+equivalente al contador "SIN BRACKET" del Pine, pero actuando en vez de avisar.
+
+**Si el stop cae dentro de la distancia mínima del bróker, la operación se
+descarta.** No se ensancha el stop para que entre: eso rompería el 1:1 en
+silencio.
