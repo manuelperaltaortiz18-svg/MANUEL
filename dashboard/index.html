@@ -1,0 +1,697 @@
+<title>Panel de Red Comercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EFF3F3; --surface:#FFFFFF; --surface-2:#F6F9F9;
+  --ink:#11201F; --ink-2:#475958; --muted:#7C8D8C; --line:#DBE4E3; --line-2:#C6D3D2;
+  --accent:#0089A0; --accent-soft:#E2F0F3; --accent-ink:#04606F;
+  --good:#2F7D4F; --warn:#B07A0C; --crit:#C0392F;
+  --good-bg:#E7F2EB; --warn-bg:#F8EFDC; --crit-bg:#FAE9E7;
+  --residual:#A9B8B7;
+  --shadow:0 1px 2px rgba(17,32,31,.06),0 8px 24px -16px rgba(17,32,31,.28);
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1415; --surface:#161F20; --surface-2:#1B2526;
+    --ink:#E7EEED; --ink-2:#A7B7B6; --muted:#7C8D8C; --line:#26302F; --line-2:#33403F;
+    --accent:#2A9DB0; --accent-soft:#123035; --accent-ink:#5FC0D0;
+    --good:#4E9E6B; --warn:#BB8631; --crit:#E05A5F;
+    --good-bg:#152A1F; --warn-bg:#2C2313; --crit-bg:#301A1B;
+    --residual:#4A5958;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1415; --surface:#161F20; --surface-2:#1B2526;
+  --ink:#E7EEED; --ink-2:#A7B7B6; --muted:#7C8D8C; --line:#26302F; --line-2:#33403F;
+  --accent:#2A9DB0; --accent-soft:#123035; --accent-ink:#5FC0D0;
+  --good:#4E9E6B; --warn:#BB8631; --crit:#E05A5F;
+  --good-bg:#152A1F; --warn-bg:#2C2313; --crit-bg:#301A1B;
+  --residual:#4A5958;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 24px 80px;display:flex;flex-direction:column;gap:34px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* ---- header ---- */
+header{display:flex;flex-direction:column;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:20px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,6vw,62px);line-height:.98;
+   margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--accent-ink)}
+.sub{color:var(--ink-2);max-width:64ch;margin:0}
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--crit);
+  border-radius:0 var(--r) var(--r) 0;padding:16px 20px;box-shadow:var(--shadow)}
+.verdict p{margin:0;max-width:78ch}
+.verdict strong{color:var(--crit)}
+
+/* ---- kpi ---- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:18px 20px 20px;display:flex;flex-direction:column;gap:5px}
+.kpi .k-val{font-family:var(--mono);font-size:27px;font-weight:500;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .k-note{font-size:12.5px;color:var(--muted);line-height:1.4}
+.k-good{color:var(--good)} .k-warn{color:var(--warn)} .k-crit{color:var(--crit)}
+
+/* ---- panels ---- */
+section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:26px 26px 24px;box-shadow:var(--shadow)}
+h2{font-family:var(--serif);font-weight:400;font-size:27px;margin:0 0 4px;letter-spacing:-.01em}
+.lede{color:var(--ink-2);font-size:14px;margin:0 0 22px;max-width:72ch}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* ---- charts ---- */
+.chart{width:100%;overflow-x:auto}
+svg{display:block;max-width:100%;height:auto}
+.ax{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+.axv{font-family:var(--mono);font-size:11px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.gridline{stroke:var(--line);stroke-width:1}
+.bar{fill:var(--accent);transition:opacity .12s}
+.bar:hover{opacity:.8}
+.bar-proj{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:11px;height:11px;border-radius:2px;flex:none}
+
+/* ---- concentration ---- */
+.conc-row{display:grid;grid-template-columns:44px 1fr 62px;align-items:center;gap:12px;padding:5px 0}
+.conc-bar{display:flex;height:19px;border-radius:3px;overflow:hidden;gap:2px;background:transparent}
+.conc-bar i{display:block;height:100%;border-radius:2px}
+.conc-year{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.conc-pct{font-family:var(--mono);font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- table ---- */
+.tbl-scroll{overflow-x:auto;margin:0 -26px;padding:0 26px}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px}
+th{text-align:right;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+   color:var(--muted);font-weight:500;padding:0 10px 9px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+th:last-child,td:last-child{padding-right:0}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:right;
+   font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.rep{font-weight:600;font-size:14px;letter-spacing:.01em}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap;font-weight:500}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.c-good{background:var(--good-bg);color:var(--good)}
+.c-warn{background:var(--warn-bg);color:var(--warn)}
+.c-crit{background:var(--crit-bg);color:var(--crit)}
+.c-flat{background:var(--surface-2);color:var(--ink-2)}
+.delta-pos{color:var(--good)} .delta-neg{color:var(--crit)}
+
+/* ---- madrid ---- */
+.gapbar{position:relative;height:46px;border-radius:4px;background:var(--surface-2);
+  border:1px solid var(--line);overflow:hidden;display:flex}
+.gapbar .fill{background:var(--accent);height:100%}
+.gapbar .rest{flex:1;background:repeating-linear-gradient(135deg,transparent 0 5px,var(--line-2) 5px 6px)}
+.gap-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-2);margin-top:8px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13.5px;margin:18px 0 0}
+.dl dt{color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  align-self:center}
+.dl dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---- conversations ---- */
+.convos{display:flex;flex-direction:column;gap:16px}
+.convo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden}
+.convo-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 22px;
+  background:var(--surface-2);border-bottom:1px solid var(--line)}
+.convo-head .rank{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em}
+.convo-head h3{font-family:var(--serif);font-weight:400;font-size:25px;margin:0;letter-spacing:-.01em}
+.convo-head .fig{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;text-align:right}
+.convo-body{padding:20px 22px 22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.block h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 8px;font-weight:500}
+.block p{margin:0 0 8px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+.block p:last-child{margin-bottom:0}
+.quote{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.42;color:var(--ink);
+  border-left:2px solid var(--accent);padding-left:14px;margin:0}
+.asks{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.asks li{display:grid;grid-template-columns:20px 1fr;gap:9px;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.asks li b{font-family:var(--mono);font-size:11.5px;color:var(--accent-ink);font-weight:500;padding-top:2px}
+.risk{font-size:13px;color:var(--ink-2);background:var(--warn-bg);border-radius:4px;padding:10px 12px;
+  border-left:2px solid var(--warn)}
+.risk b{color:var(--warn);font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;display:block;margin-bottom:3px;font-weight:500}
+
+footer{border-top:1px solid var(--line-2);padding-top:20px;color:var(--muted);font-size:12.5px;line-height:1.65}
+footer p{margin:0 0 8px;max-width:80ch}
+footer b{color:var(--ink-2);font-weight:600}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);
+  color:var(--bg);font-family:var(--mono);font-size:11.5px;padding:6px 9px;border-radius:4px;
+  z-index:9;white-space:nowrap;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Red comercial · ene 2022 – ago 2026 · 9 comerciales</div>
+  <h1>Panel de <em>Red Comercial</em></h1>
+  <p class="sub">Facturación por comercial en ventana homogénea, concentración, plazas con relevo
+  y la conversación que toca tener con cada uno. Los totales cuadran al euro con la hoja de ventas.</p>
+</header>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="kpis" id="kpis"></div>
+
+<section>
+  <h2>La casa lleva cuatro años encogiendo</h2>
+  <p class="lede">Facturación anual cerrada, y la proyección de 2026 aplicando el peso estacional
+  real de 2023–2025 sobre los ocho meses cerrados. La barra rayada es estimación, no dato.</p>
+  <div class="chart" id="anual"></div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--accent)"></i>Año cerrado</span>
+    <span><i class="sw" style="background:var(--accent-soft);border:1.5px dashed var(--accent)"></i>Proyección 2026 (mediana 864k–911k)</span>
+  </div>
+</section>
+
+<div class="grid2">
+  <section>
+    <h2>Concentración</h2>
+    <p class="lede">Peso de ESPIN sobre el total. Cuatro años sin moverse del 40–45%.
+    El descenso de 2026 no es diversificación: baja porque ESPIN cae, no porque el resto suba.</p>
+    <div id="conc"></div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--accent)"></i>ESPIN</span>
+      <span><i class="sw" style="background:var(--residual)"></i>Resto de la red</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Plaza Madrid</h2>
+    <p class="lede">Ángel → Manuel. El techo de la plaza no es 2024 (123.059 €): ese año Ángel ya
+    venía desconectando. La referencia real es la media 2022–2023.</p>
+    <div class="gapbar" id="gapbar"></div>
+    <div class="gap-labels"><span id="gl-a"></span><span id="gl-b"></span></div>
+    <dl class="dl" id="madrid-dl"></dl>
+  </section>
+</div>
+
+<section>
+  <h2>Comercial por comercial</h2>
+  <p class="lede">Ordenado por facturación de los últimos doce meses (sep 2025 – ago 2026). Los 12 meses
+  móviles neutralizan la estacionalidad y son la única comparación justa para quien arrancó a mitad de año.
+  La trayectoria son cinco puntos: 2022, 2023, 2024, 2025 y los 12m móviles actuales.</p>
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr>
+        <th>Comercial</th><th>Trayectoria 2022 → hoy</th><th>12m móviles</th>
+        <th>vs. 2025</th><th>ene–ago 25</th><th>ene–ago 26</th><th>Δ ventana</th><th>Estado</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="k-note" style="margin-top:14px">* Manuel entró en mayo de 2025: su «vs. 2025» compara doce meses
+  completos contra ocho, así que exagera. La comparación válida para él es la plaza, arriba.
+  «Intermitente» = tres o más meses sin facturar en 2026; «Parado» = cinco o más.</p>
+</section>
+
+<section style="background:transparent;border:none;box-shadow:none;padding:0">
+  <h2 style="font-size:32px">Las nueve conversaciones</h2>
+  <p class="lede" style="margin-bottom:22px">Por orden de urgencia, no de facturación. Cada una lleva el dato que la
+  justifica, cómo la abriría, qué pediría exactamente y cómo sabrás en 90 días si funcionó.
+  Lo que se pide es siempre un documento o una lista, nunca una promesa.</p>
+  <div class="convos" id="convos"></div>
+</section>
+
+<footer>
+  <p><b>Método.</b> Ventana homogénea: el año en curso se compara siempre contra los mismos meses del
+  anterior, nunca contra su total. Proyección de cierre: peso estacional real de 2023, 2024 y 2025
+  aplicado al acumulado, mediana de las tres. 12 meses móviles: sep 2025 – ago 2026.</p>
+  <p><b>Lo que estos datos no dicen.</b> La hoja es facturación por comercial, no por cliente. Todo lo que
+  aquí se atribuye a un cliente concreto, a una pérdida de cartera o a desconexión es inferencia, no dato —
+  incluido el potencial de 168.860 € de Madrid, que asume que la cartera de 2023 sigue disponible.
+  Ese supuesto sólo lo confirma el listado de clientes.</p>
+  <p><b>Actualización.</b> Añadir los meses nuevos a <span class="num">sales/data.py</span> y ejecutar
+  <span class="num">python -m sales.report</span>.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const D = {
+ "rows": [
+  {
+   "n": "ESPIN",
+   "serie": [
+    533025.0,
+    399424.0,
+    399906.0,
+    385250.0,
+    352434.0
+   ],
+   "r12": 352434.0,
+   "y25": 385250.0,
+   "vs25": -0.08518105126541209,
+   "m8_25": 267995.0,
+   "m8_26": 235179.0,
+   "peso": 0.4013501556163672,
+   "ceros": 0
+  },
+  {
+   "n": "DM",
+   "serie": [
+    180531.0,
+    129982.0,
+    130898.0,
+    116060.0,
+    150241.0
+   ],
+   "r12": 150241.0,
+   "y25": 116060.0,
+   "vs25": 0.29451145958986724,
+   "m8_25": 70370.0,
+   "m8_26": 104551.0,
+   "peso": 0.17109373309600842,
+   "ceros": 0
+  },
+  {
+   "n": "MANUEL",
+   "serie": [
+    0.0,
+    0.0,
+    0.0,
+    66012.0,
+    108510.0
+   ],
+   "r12": 108510.0,
+   "y25": 66012.0,
+   "vs25": 0.6437920378113071,
+   "m8_25": 26949.0,
+   "m8_26": 69447.0,
+   "peso": 0.12357066964575497,
+   "ceros": 0
+  },
+  {
+   "n": "ANTONIO",
+   "serie": [
+    144777.0,
+    104583.0,
+    100375.0,
+    78531.0,
+    79309.0
+   ],
+   "r12": 79309.0,
+   "y25": 78531.0,
+   "vs25": 0.009906915740280908,
+   "m8_25": 49880.0,
+   "m8_26": 50658.0,
+   "peso": 0.09031671033946347,
+   "ceros": 0
+  },
+  {
+   "n": "LOMBARTE",
+   "serie": [
+    73148.0,
+    71003.0,
+    65606.0,
+    76626.0,
+    63319.0
+   ],
+   "r12": 63319.0,
+   "y25": 76626.0,
+   "vs25": -0.17366168141361937,
+   "m8_25": 49031.0,
+   "m8_26": 35724.0,
+   "peso": 0.07210737472398451,
+   "ceros": 0
+  },
+  {
+   "n": "CORESUR",
+   "serie": [
+    79845.0,
+    56433.0,
+    56089.0,
+    47808.0,
+    53295.0
+   ],
+   "r12": 53295.0,
+   "y25": 47808.0,
+   "vs25": 0.11477158634538154,
+   "m8_25": 34239.0,
+   "m8_26": 39726.0,
+   "peso": 0.06069209140881496,
+   "ceros": 0
+  },
+  {
+   "n": "BENAT",
+   "serie": [
+    52350.0,
+    59622.0,
+    41929.0,
+    45695.0,
+    46872.0
+   ],
+   "r12": 46872.0,
+   "y25": 45695.0,
+   "vs25": 0.025757741547215218,
+   "m8_25": 26937.0,
+   "m8_26": 28114.0,
+   "peso": 0.053377609691602865,
+   "ceros": 1
+  },
+  {
+   "n": "ONDIVELA",
+   "serie": [
+    0.0,
+    0.0,
+    18835.0,
+    9185.0,
+    15939.0
+   ],
+   "r12": 15939.0,
+   "y25": 9185.0,
+   "vs25": 0.7353293413173652,
+   "m8_25": 4528.0,
+   "m8_26": 11282.0,
+   "peso": 0.01815125705910689,
+   "ceros": 3
+  },
+  {
+   "n": "JUAN ANTONIO",
+   "serie": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    8202.0
+   ],
+   "r12": 8202.0,
+   "y25": 0.0,
+   "vs25": null,
+   "m8_25": 0.0,
+   "m8_26": 8202.0,
+   "peso": 0.009340398418896712,
+   "ceros": 6
+  }
+ ],
+ "anual": {
+  "2022": 1232957.0,
+  "2023": 989486.0,
+  "2024": 936697.0,
+  "2025": 860313.0
+ },
+ "acum26": 582883.0,
+ "proy": 887425.2486466399,
+ "rango": [
+  864466.212758041,
+  911434.0701202119
+ ],
+ "conc": {
+  "2022": 0.43231434672904245,
+  "2023": 0.40366816710898384,
+  "2024": 0.4269320815589246,
+  "2025": 0.4478021371291611,
+  "2026": 0.4034754830729323
+ },
+ "madrid": {
+  "potencial": 168860.0,
+  "actual": 108510.0,
+  "gap": 60350.0,
+  "hist": {
+   "2022": 169281.0,
+   "2023": 168439.0,
+   "2024": 123059.0,
+   "2025": 101158.0
+  }
+ },
+ "ventana": {
+  "base": 565075.0,
+  "actual": 582883.0
+ },
+ "r12_total": 878121.0
+} ;
+
+const CONVOS=[
+{n:"LOMBARTE",tag:"urgente",prio:"1",cab:"Esta semana",
+ fig:"63.319 € · 12m móviles · −17,4%",
+ dato:"Viene de su mejor año de la serie (76.626 € en 2025) y lleva −27,1% en ventana homogénea. Es la caída activa más fuerte de la red y nadie la ha mirado.",
+ quote:"«Vienes de tu mejor año y llevas ocho meses cayendo un 27%. No te lo pregunto para juzgarte, te lo pregunto porque no lo entiendo y quiero entenderlo antes de que sea de doce meses.»",
+ asks:[["01","Su cartera de 2025 frente a la de 2026, cliente a cliente, en una hoja."],
+       ["02","Que clasifique cada baja en tres cubos: cliente perdido, cliente que compra menos, o menos actividad suya. Los tres se arreglan distinto."],
+       ["03","Una causa concreta en dos semanas. No un plan: una causa."]],
+ riesgo:"Si esperas al cierre de año, esto se consolida como su nueva base y ya no se recupera, se asume. Ángel también empezó con un año malo que nadie preguntó a tiempo.",
+ mido:"Causa identificada en 14 días. Facturación mensual por encima de 5.500 € a partir de noviembre."},
+
+{n:"ESPIN",tag:"estructural",prio:"2",cab:"Este trimestre",
+ fig:"352.434 € · 12m móviles · 40% de la casa",
+ dato:"En 2023 su cifra cayó 133.601 € de golpe (−25%) y desde entonces está en meseta: índice 100 → 75 → 75 → 72. Este año lleva −12,2%. Nunca se preguntó qué pasó en 2023.",
+ quote:"«Eres el 40% de esta casa y no tenemos plan B. Eso es un fallo mío de gestión, no un problema tuyo. Quiero arreglarlo contigo, no a tu espalda.»",
+ asks:[["01","Qué pasó en 2023. Su facturación por cliente de 2022 frente a la de hoy: qué cuenta se cayó y por qué."],
+       ["02","Sus cinco mayores clientes y qué porcentaje representa cada uno. Si uno solo es más del 30%, el riesgo no es él: es ese cliente."],
+       ["03","Que un segundo comercial conozca sus tres cuentas principales antes de fin de año. Plan de continuidad, y así hay que llamarlo."]],
+ riesgo:"Es la conversación con más probabilidad de salir mal. Si la lee como desconfianza o como preparación para sustituirlo, puedes provocar exactamente la desconexión que intentas prevenir. Ábrela por el lado de la empresa, no por el suyo, y hazlo tú, no por escrito.",
+ mido:"% de facturación fuera de ESPIN por encima del 60% a doce meses. Segundo comercial con contacto real en sus tres cuentas top en 90 días."},
+
+{n:"MANUEL",tag:"oportunidad",prio:"3",cab:"Arrancar ya",
+ fig:"108.510 € · 12m móviles · plaza al 64% de su potencial",
+ dato:"Ha parado la hemorragia de Madrid: +11,8% en ventana homogénea y 108.510 € en doce meses, por encima del año natural de la plaza en 2025. Pero la plaza facturaba 168.860 € antes de que Ángel desconectara.",
+ quote:"«Lo de estabilizar la plaza ya está hecho, y era lo difícil. Ahora el listón no es lo que hizo Ángel su último año: es lo que hacía la plaza cuando funcionaba.»",
+ asks:[["01","El listado de clientes que facturaban en 2023 y no facturan en 2026. Ese es el activo, no el número."],
+       ["02","Una llamada a cada uno. No una oferta: una llamada."],
+       ["03","Un veredicto en seis semanas, cliente a cliente: recuperable, perdido, o nunca fue real."]],
+ riesgo:"Los 60.350 € de recorrido son mi estimación, no una cartera confirmada. Han pasado unos treinta meses desde la desconexión y parte de esos clientes ya compran a otro. Si le pones el número como objetivo antes de tener la lista, le estás poniendo una cuota inventada.",
+ mido:"Número de clientes de 2023 recontactados a las seis semanas. Después, euros/mes recuperados sobre la base actual."},
+
+{n:"JUAN ANTONIO",tag:"decision",prio:"4",cab:"Decisión pendiente",
+ fig:"8.202 € · seis de ocho meses a cero",
+ dato:"Facturó en enero y febrero, y desde marzo nada. No es un comercial en rampa: es un comercial parado que sigue contando en la red.",
+ quote:"«Llevas seis meses sin facturar y no te lo ha preguntado nadie. Eso también es cosa nuestra. Antes de hablar de objetivos: ¿sigues dentro?»",
+ asks:[["01","Una respuesta clara a si continúa o no. Primero eso; lo demás depende."],
+       ["02","Si continúa: plan de 90 días con un mínimo mensual explícito y acompañamiento las primeras semanas."],
+       ["03","Si no: cerrar limpio y recuperar sus contactos antes de que se enfríen del todo."]],
+ riesgo:"Mantener a alguien parado en la lista distorsiona tus métricas y le hace un flaco favor a él. No decidir también es decidir, sólo que peor.",
+ mido:"Decisión tomada en 15 días. Si sigue: facturación en el mes siguiente, distinta de cero."},
+
+{n:"ANTONIO",tag:"vigilar",prio:"5",cab:"Vigilar",
+ fig:"79.309 € · 12m móviles · −45% desde 2022",
+ dato:"Plano frente a 2025 (+1,0%), pero viene de 144.777 € en 2022. Cuatro años de bajada y una estabilización. El patrón de meseta tras caída es el mismo que tuvo Ángel en su primera fase.",
+ quote:"«Te has estabilizado, y eso es mejor que seguir cayendo. Pero estable a menos 45% no es estable: es haber tocado fondo. ¿Qué haría falta para volver a subir?»",
+ asks:[["01","Si la caída fue de cartera (clientes que se fueron) o de actividad (menos visitas). Son problemas distintos."],
+       ["02","Número de clientes activos y de visitas al mes, hoy frente a 2022. Si el dato no existe, empezar a llevarlo."],
+       ["03","Un objetivo de recuperación suyo, propuesto por él, no impuesto."]],
+ riesgo:"Es fácil dejarlo correr porque ya no empeora. Ahí está el error: lo que no empeora tampoco avisa.",
+ mido:"Clientes activos y visitas/mes con dato desde el mes que viene. 12m móviles por encima de 85.000 € en un año."},
+
+{n:"DM",tag:"proteger",prio:"6",cab:"Proteger y replicar",
+ fig:"150.241 € · 12m móviles · +29,5%",
+ dato:"El único crecimiento genuino de 2026: +48,6% en ventana homogénea, +34.181 €. Lo de Manuel es cartera heredada; esto es nuevo.",
+ quote:"«Eres el único que ha traído facturación nueva este año, 34.000 € netos. Quiero saber qué estás haciendo distinto, porque si sólo lo haces tú, la casa no aprende nada.»",
+ asks:[["01","Que cuente qué ha cambiado: canal, tipo de cliente, precio, frecuencia. Por escrito, aunque sea media página."],
+       ["02","Que se lo explique al resto en una reunión de treinta minutos. Y que alguien lo pruebe."],
+       ["03","Qué necesita para que esto no se le sature. Preguntar antes de que él lo pida."]],
+ riesgo:"Ya pesa un 17% de la red. Si el crecimiento le viene de esfuerzo personal sin estructura detrás, se quema y pierdes el único motor que tienes. Y ahora mismo no hay nada que le retenga salvo la inercia.",
+ mido:"Método documentado este mes. Al menos un comercial probándolo en el trimestre siguiente."},
+
+{n:"CORESUR",tag:"mantener",prio:"7",cab:"Mantener",
+ fig:"53.295 € · 12m móviles · +11,5%",
+ dato:"Sube +16,0% en ventana homogénea, con la serie más regular de la red: cero meses en blanco. Pero viene de 79.845 € en 2022 y aún está lejos.",
+ quote:"«Llevas el año más regular de toda la red y eso vale más de lo que parece. La pregunta es si esto es recuperación o rebote.»",
+ asks:[["01","Si el crecimiento viene de clientes nuevos o de que los de siempre están comprando más."],
+       ["02","Qué haría falta para volver al nivel de 2022. Que ponga él el número."]],
+ riesgo:"Ninguno inmediato. La tentación aquí es no tener la conversación por ser el que menos ruido hace.",
+ mido:"12m móviles por encima de 60.000 € dentro de un año."},
+
+{n:"BEÑAT",tag:"mantener",prio:"8",cab:"Regularidad",
+ fig:"46.872 € · 12m móviles · +2,6%",
+ dato:"Estable en volumen, pero enormemente irregular: meses de 207 € junto a meses de 15.019 €, y un mes en blanco en 2026. El problema no es cuánto factura, es que no se puede prever.",
+ quote:"«Tu cifra anual está bien. Lo que no está bien es que no pueda saber en enero qué vas a hacer en marzo.»",
+ asks:[["01","Qué provoca los meses en blanco: estacionalidad de sus clientes, o baches de actividad suya."],
+       ["02","Un mínimo mensual que se comprometa a no bajar, aunque sea modesto."]],
+ riesgo:"La irregularidad esconde tendencia. Con esa varianza no vas a detectar una caída real hasta que lleve medio año en marcha.",
+ mido:"Ningún mes por debajo de 1.500 € en los próximos seis."},
+
+{n:"ONDIVELA",tag:"decision",prio:"9",cab:"Definir el encaje",
+ fig:"15.939 € · 12m móviles · tres de ocho meses a cero",
+ dato:"Dieciocho meses dentro y 28.020 € acumulados en total. Crece en porcentaje (+73%), pero sobre una base tan pequeña que el porcentaje no significa nada.",
+ quote:"«Llevas año y medio y seguimos sin haber definido qué eres para nosotros. Eso lo tengo que aclarar yo, no tú.»",
+ asks:[["01","Definir el encaje: comercial con expectativa de cartera, o colaborador puntual. Hoy está en tierra de nadie."],
+       ["02","Si es lo primero: una expectativa mensual explícita y una fecha de revisión."],
+       ["03","Si es lo segundo: sacarlo del seguimiento de red comercial, donde sólo distorsiona los números."]],
+ riesgo:"Dieciocho meses sin definir expectativa es el síntoma de que el embudo de incorporación no funciona. Es el mismo fallo que con Juan Antonio, dos veces seguidas.",
+ mido:"Encaje definido por escrito este mes. Si es comercial: expectativa mensual y revisión a los 90 días."}
+];
+
+const nf=new Intl.NumberFormat("es-ES",{maximumFractionDigits:0,useGrouping:"always"});
+const NOM={BENAT:"BEÑAT"};
+const nom=n=>NOM[n]||n;
+const eur=v=>nf.format(Math.round(v))+" €";
+const pc=(v,d=1)=>(v>=0?"+":"−")+Math.abs(v*100).toFixed(d).replace(".",",")+"%";
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const tip=document.getElementById("tip");
+function hookTip(node,text){
+  node.addEventListener("pointerenter",e=>{tip.textContent=text;tip.style.opacity="1";});
+  node.addEventListener("pointermove",e=>{tip.style.left=(e.clientX+14)+"px";tip.style.top=(e.clientY-32)+"px";});
+  node.addEventListener("pointerleave",()=>{tip.style.opacity="0";});
+}
+
+/* ---------- verdict ---------- */
+const caida=D.anual["2025"]/D.anual["2022"]-1;
+const vent=D.ventana.actual/D.ventana.base-1;
+document.getElementById("verdict").appendChild(el("p",null,
+  `<strong>La facturación ha caído un ${Math.abs(caida*100).toFixed(1).replace(".",",")}% desde 2022</strong> y el
+   ${pc(vent)} de 2026 en ventana homogénea no es recuperación: es sustitución. DM aporta
+   ${eur(D.rows.find(r=>r.n==="DM").m8_26 - D.rows.find(r=>r.n==="DM").m8_25)} de crecimiento nuevo;
+   el resto tapa el hueco que dejan ESPIN, LOMBARTE y la salida de Ángel. Igualar 2025 exige
+   ${eur(D.anual["2025"]-D.acum26)} en sep–dic, y los tres últimos años esa ventana dio entre 295.000 € y 357.000 €.
+   <b>El objetivo del año se cumple solo.</b>`));
+
+/* ---------- KPIs ---------- */
+const kpis=[
+ {v:eur(D.r12_total),l:"Facturación 12m móviles",n:"sep 2025 – ago 2026",cls:""},
+ {v:eur(D.proy),l:"Proyección cierre 2026",n:`Rango ${nf.format(Math.round(D.rango[0]/1000))}k – ${nf.format(Math.round(D.rango[1]/1000))}k por estacionalidad`,cls:"k-good"},
+ {v:(D.conc["2026"]*100).toFixed(1).replace(".",",")+"%",l:"Concentración en ESPIN",n:"Plano desde 2022. Baja porque ESPIN cae, no porque el resto suba.",cls:"k-crit"},
+ {v:eur(D.madrid.gap),l:"Recorrido en Madrid",n:"7,0% de la casa, con comercial ya puesto",cls:"k-warn"}
+];
+const kw=document.getElementById("kpis");
+kpis.forEach(k=>{const d=el("div","kpi");
+  d.appendChild(el("div","eyebrow",k.l));
+  d.appendChild(el("div","k-val "+k.cls,k.v));
+  d.appendChild(el("div","k-note",k.n));kw.appendChild(d);});
+
+/* ---------- annual bar chart ---------- */
+(function(){
+  const years=["2022","2023","2024","2025","2026"];
+  const vals=years.map(y=>y==="2026"?D.proy:D.anual[y]);
+  const W=780,H=290,ml=64,mr=16,mt=26,mb=40;
+  const iw=W-ml-mr, ih=H-mt-mb, max=1300000;
+  const bw=Math.min(96,iw/years.length-24);
+  const x=i=>ml+(iw/years.length)*(i+.5)-bw/2;
+  const y=v=>mt+ih-(v/max)*ih;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Facturación anual 2022 a 2026">`;
+  for(let t=0;t<=1300000;t+=325000){
+    s+=`<line class="gridline" x1="${ml}" x2="${W-mr}" y1="${y(t)}" y2="${y(t)}"/>`;
+    s+=`<text class="ax" x="${ml-10}" y="${y(t)+4}" text-anchor="end">${t?nf.format(t/1000)+"k":"0"}</text>`;
+  }
+  years.forEach((yr,i)=>{
+    const v=vals[i],proj=yr==="2026";
+    s+=`<rect class="${proj?"bar-proj":"bar"}" data-i="${i}" x="${x(i)}" y="${y(v)}" width="${bw}" height="${mt+ih-y(v)}" rx="4"/>`;
+    s+=`<text class="axv" x="${x(i)+bw/2}" y="${y(v)-9}" text-anchor="middle" ${proj?'fill="var(--accent-ink)"':''}>${nf.format(Math.round(v/1000))}k</text>`;
+    s+=`<text class="ax" x="${x(i)+bw/2}" y="${H-16}" text-anchor="middle">${yr}${proj?" est.":""}</text>`;
+  });
+  s+="</svg>";
+  const box=document.getElementById("anual");box.innerHTML=s;
+  box.querySelectorAll("rect").forEach(r=>{
+    const i=+r.dataset.i, yr=years[i];
+    hookTip(r, yr==="2026"
+      ? `2026 estimado ${eur(D.proy)} · acumulado real ${eur(D.acum26)} en 8 meses`
+      : `${yr} · ${eur(D.anual[yr])}` + (i? ` · ${pc(D.anual[yr]/D.anual[years[i-1]]-1)}`:""));
+  });
+})();
+
+/* ---------- concentration ---------- */
+(function(){
+  const box=document.getElementById("conc");
+  ["2022","2023","2024","2025","2026"].forEach(y=>{
+    const p=D.conc[y];
+    const row=el("div","conc-row");
+    row.appendChild(el("div","conc-year",y+(y==="2026"?"*":"")));
+    const bar=el("div","conc-bar");
+    const a=el("i");a.style.width=(p*100)+"%";a.style.background="var(--accent)";
+    const b=el("i");b.style.width=((1-p)*100)+"%";b.style.background="var(--residual)";
+    hookTip(a,`ESPIN ${y} · ${eur(y==="2026"?D.rows[0].m8_26:D.anual[y]*p)} · ${(p*100).toFixed(1).replace(".",",")}%`);
+    hookTip(b,`Resto de la red ${y} · ${((1-p)*100).toFixed(1).replace(".",",")}%`);
+    bar.appendChild(a);bar.appendChild(b);row.appendChild(bar);
+    row.appendChild(el("div","conc-pct",(p*100).toFixed(1).replace(".",",")+"%"));
+    box.appendChild(row);
+  });
+  box.appendChild(el("div","k-note","* 2026 sobre ocho meses cerrados."));
+})();
+
+/* ---------- madrid ---------- */
+(function(){
+  const m=D.madrid, r=m.actual/m.potencial;
+  const bar=document.getElementById("gapbar");
+  const f=el("div","fill");f.style.width=(r*100)+"%";
+  const rest=el("div","rest");
+  hookTip(f,`Manuel · 12m móviles ${eur(m.actual)}`);
+  hookTip(rest,`Recorrido pendiente ${eur(m.gap)}`);
+  bar.appendChild(f);bar.appendChild(rest);
+  document.getElementById("gl-a").textContent=`Manuel hoy · ${eur(m.actual)}`;
+  document.getElementById("gl-b").textContent=`Pendiente · ${eur(m.gap)}`;
+  const dl=document.getElementById("madrid-dl");
+  [["Potencial",eur(m.potencial)+"  (media 2022–23)"],
+   ["2024",eur(m.hist["2024"])+"  Ángel desconectando"],
+   ["2025",eur(m.hist["2025"])+"  relevo"],
+   ["Manuel 12m",eur(m.actual)+`  (${(r*100).toFixed(0)}% del potencial)`],
+   ["Recorrido",eur(m.gap)+"  = 7,0% de la casa"]]
+  .forEach(([k,v])=>{dl.appendChild(el("dt",null,k));dl.appendChild(el("dd",null,v));});
+})();
+
+/* ---------- table ---------- */
+(function(){
+  const tb=document.getElementById("tbody");
+  D.rows.forEach(r=>{
+    const dv=r.m8_25?(r.m8_26/r.m8_25-1):null;
+    let estado,cls;
+    if(r.ceros>=5){estado="Parado";cls="c-crit";}
+    else if(r.ceros>=3){estado="Intermitente";cls="c-warn";}
+    else if(dv!==null&&dv<=-.15){estado="Cayendo";cls="c-crit";}
+    else if(dv!==null&&dv<=-.05){estado="Deteriorando";cls="c-warn";}
+    else if(dv!==null&&dv>=.15){estado="Creciendo";cls="c-good";}
+    else{estado="Plano";cls="c-flat";}
+    // sparkline
+    const lo=Math.min(...r.serie), hi=Math.max(...r.serie), span=(hi-lo)||1;
+    const w=120,h=30,pts=r.serie.map((v,i)=>[6+i*((w-12)/4), h-5-((v-lo)/span)*(h-11)]);
+    const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+    const last=pts[pts.length-1];
+    const col=cls==="c-crit"?"var(--crit)":cls==="c-good"?"var(--good)":cls==="c-warn"?"var(--warn)":"var(--muted)";
+    const spark=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+      <path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.5" fill="${col}"/></svg>`;
+    const tr=el("tr");
+    tr.innerHTML=`<td class="rep">${nom(r.n)}</td>
+      <td style="text-align:left">${spark}</td>
+      <td class="num" style="font-weight:600">${eur(r.r12)}</td>
+      <td class="num ${r.vs25==null?"":r.vs25>=0?"delta-pos":"delta-neg"}">${r.vs25==null?"—":pc(r.vs25)+(r.n==="MANUEL"?"*":"")}</td>
+      <td class="num" style="color:var(--muted)">${eur(r.m8_25)}</td>
+      <td class="num" style="color:var(--muted)">${eur(r.m8_26)}</td>
+      <td class="num ${dv==null?"":dv>=0?"delta-pos":"delta-neg"}" style="font-weight:600">${dv==null?"nuevo":pc(dv)}</td>
+      <td><span class="chip ${cls}">${estado}</span></td>`;
+    hookTip(tr,`${nom(r.n)} · trayectoria ${r.serie.map(v=>nf.format(Math.round(v/1000))+"k").join(" → ")}`);
+    tb.appendChild(tr);
+  });
+})();
+
+/* ---------- conversations ---------- */
+(function(){
+  const box=document.getElementById("convos");
+  const tags={urgente:["c-crit","Urgente"],estructural:["c-crit","Estructural"],
+    oportunidad:["c-good","Oportunidad"],decision:["c-warn","Decisión"],
+    vigilar:["c-warn","Vigilar"],proteger:["c-good","Proteger"],mantener:["c-flat","Mantener"]};
+  CONVOS.forEach(c=>{
+    const card=el("div","convo");
+    const [tc,tl]=tags[c.tag];
+    card.appendChild(el("div","convo-head",
+      `<span class="rank">${c.prio.padStart(2,"0")}</span>
+       <h3>${nom(c.n)}</h3>
+       <span class="chip ${tc}">${tl}</span>
+       <span class="eyebrow" style="letter-spacing:.1em">${c.cab}</span>
+       <span class="fig">${c.fig}</span>`));
+    const body=el("div","convo-body");
+    body.appendChild(el("div","block",`<h4>El dato</h4><p>${c.dato}</p>
+      <h4 style="margin-top:16px">Cómo lo mido</h4><p>${c.mido}</p>`));
+    body.appendChild(el("div","block",`<h4>Cómo abriría</h4><p class="quote">${c.quote}</p>`));
+    body.appendChild(el("div","block",`<h4>Qué le pido</h4>
+      <ul class="asks">${c.asks.map(a=>`<li><b>${a[0]}</b><span>${a[1]}</span></li>`).join("")}</ul>
+      <div class="risk" style="margin-top:14px"><b>Riesgo</b>${c.riesgo}</div>`));
+    card.appendChild(body);box.appendChild(card);
+  });
+})();
+</script>

@@ -14,3 +14,6 @@ python -m sales.report
 Para actualizar: añadir los meses nuevos a `sales/data.py`. Las listas de
 meses pueden ser más cortas que 12 — el año en curso se compara siempre contra
 los mismos meses del año anterior, nunca contra su total.
+
+El panel visual (mismos datos, más las conversaciones por comercial) está en
+`dashboard/index.html`.
