@@ -14,9 +14,15 @@ MESES = [
 # Comercial dominante: su peso es el principal riesgo de concentración (§ver informe).
 COMERCIAL_DOMINANTE = "ESPIN"
 
-# Plazas con relevo de comercial. plaza -> {comercial: (año_alta, año_baja|None)}
+# Plazas con relevo de comercial: comerciales en orden cronológico, y los años
+# que sirven de referencia de potencial. Se toman los años previos al deterioro
+# del comercial saliente: la caída de Madrid en 2024 fue desconexión de ANGEL
+# antes de su baja, no pérdida de clientes, así que 2024 no marca el techo.
 PLAZAS = {
     "MADRID": ["ANGEL", "MANUEL"],
+}
+ANOS_POTENCIAL_PLAZA = {
+    "MADRID": [2022, 2023],
 }
 
 VENTAS: dict[int, dict[str, list[float]]] = {

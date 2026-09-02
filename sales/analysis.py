@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from sales.data import COMERCIAL_DOMINANTE, PLAZAS, VENTAS, meses_cerrados
+from sales.data import (
+    ANOS_POTENCIAL_PLAZA,
+    COMERCIAL_DOMINANTE,
+    PLAZAS,
+    VENTAS,
+    meses_cerrados,
+)
 
 
 def total_year(year: int, hasta_mes: int | None = None) -> float:
@@ -149,3 +155,18 @@ def rolling_12m(comercial: str, year_fin: int, mes_fin: int) -> float:
         meses = VENTAS.get(year_fin - 1, {}).get(comercial, [])
         total += float(sum(meses[mes_fin:mes_fin + restantes]))
     return total
+
+
+def potencial_plaza(plaza: str) -> float:
+    """
+    Facturación de referencia de una plaza: media de los años previos al
+    deterioro del comercial saliente. Es el listón correcto para su sucesor —
+    el último año del que se iba ya venía tocado por la desconexión.
+    """
+    years = ANOS_POTENCIAL_PLAZA[plaza]
+    return sum(total_plaza(plaza, y) for y in years) / len(years)
+
+
+def recorrido_plaza(plaza: str, year_fin: int, mes_fin: int) -> float:
+    """Diferencia entre el potencial de la plaza y los 12m móviles de su comercial actual."""
+    return potencial_plaza(plaza) - rolling_12m(PLAZAS[plaza][-1], year_fin, mes_fin)

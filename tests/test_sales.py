@@ -86,3 +86,11 @@ def test_ningun_mes_negativo():
     for year, comerciales in VENTAS.items():
         for comercial, meses in comerciales.items():
             assert all(m >= 0 for m in meses), f"{year} {comercial}"
+
+
+def test_potencial_plaza_ignora_el_ano_de_desconexion():
+    from sales.analysis import potencial_plaza, recorrido_plaza
+
+    # 2024 (123.059 €) no marca el techo: ANGEL ya venía desconectando.
+    assert potencial_plaza("MADRID") == (169281 + 168439) / 2
+    assert round(recorrido_plaza("MADRID", 2026, 8)) == 60350

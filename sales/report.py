@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from sales.analysis import (
     concentracion,
+    potencial_plaza,
     proyectar_cierre,
+    recorrido_plaza,
     rolling_12m,
     total_comercial,
     total_plaza,
@@ -84,9 +86,14 @@ def plazas_con_relevo() -> None:
         meses = meses_cerrados(ANO_CURSO)
         print(f"  {ANO_CURSO}  {eur(total_plaza(plaza, ANO_CURSO))}   ({meses} meses)")
         actual = comerciales[-1]
-        print(f"\n  12m móviles de {actual}: {eur(rolling_12m(actual, ANO_CURSO, meses))}")
-        print(f"  Referencia (último año completo del anterior, "
-              f"{ANOS_CERRADOS[-2]}): {eur(total_plaza(plaza, ANOS_CERRADOS[-2]))}")
+        potencial = potencial_plaza(plaza)
+        recorrido = recorrido_plaza(plaza, ANO_CURSO, meses)
+        print()
+        print(f"  Potencial de plaza:      {eur(potencial)}")
+        print(f"  {actual}, 12 meses móviles:{eur(rolling_12m(actual, ANO_CURSO, meses))}")
+        print(f"  Recorrido pendiente:     {eur(recorrido)}"
+              f"   ({recorrido / potencial:.0%} de la plaza, "
+              f"{recorrido / total_year(ANOS_CERRADOS[-1]):.1%} de la casa)")
 
 
 def incorporaciones() -> None:
