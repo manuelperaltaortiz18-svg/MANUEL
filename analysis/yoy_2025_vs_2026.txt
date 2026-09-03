@@ -1,0 +1,87 @@
+2025 completo (365d): 2,597,249 EUR | 3,756,479 ses | 106,566 uds | 852 ASINs
+2026 YTD     (246d): 2,174,255 EUR | 2,588,982 ses | 90,086 uds | 1038 ASINs
+Run-rate 2026 anualizado: 3,226,028 EUR (+24.2% vs 2025)
+AVISO: run-rate lineal ignora la estacionalidad de Q4. Con Q4 fuerte el cierre real sera superior.
+
+### YoY POR MARCA
+
+                  Vta2025  Vta26YTD Run-rate26    YoY%   Ses2025  Ses26YTD  SesYoY%  Conv25  Conv26 €/ses25 €/ses26   BB25   BB26
+---------------------------------------------------------------------------------------------------------------------------------
+Arcos           1,745,079 1,175,554  1,744,216     -0% 3,259,818 2,088,436      -5%    2.1%    2.3%    0.54    0.56  37.6%  37.3%
+Cuperinox         653,554   478,336    709,726     +9%   380,230   256,506      +0%    7.5%    7.2%    1.72    1.86  94.1%  96.9%
+Hendi             108,812   263,302    390,671   +259%    61,574    95,799    +131%    2.5%    4.9%    1.77    2.75  49.2%  61.6%
+Vinfermaton        65,675   192,801    286,066   +336%    25,444    66,394    +287%   17.5%   18.5%    2.58    2.90  74.9%  86.9%
+Wins                6,173    27,898     41,393   +571%     3,696    11,909    +378%   12.2%   18.4%    1.67    2.34  64.6%  69.3%
+Bioleaf               100    16,333     24,234 +24117%       232    46,643  +29730%    4.3%    3.1%    0.43    0.35  90.4%  96.7%
+Vinfer                928     8,361     12,405  +1236%     1,714     4,755    +312%    6.0%   18.1%    0.54    1.76  40.1%  92.0%
+Sin marca          10,671     7,869     11,675     +9%    13,081    12,533     +42%    6.4%    6.0%    0.82    0.63  77.4%  80.6%
+Vincare             1,617     1,884      2,795    +73%     1,901     1,449     +13%    7.3%   10.8%    0.85    1.30  78.0%  80.1%
+Tradineur           4,377       947      1,405    -68%     6,306     1,598     -62%    8.2%    6.5%    0.69    0.59  98.3%  98.6%
+La Garrafita            0       689      1,023   +inf%         0       310    +inf%    0.0%   23.2%    0.00    2.22   0.0%  98.7%
+Xpartan               204       222        329    +61%       202       220     +62%    6.4%    6.4%    1.01    1.01  96.6%  95.5%
+Maton                  59        60         89    +50%     2,281     2,430     +58%    0.3%    0.2%    0.03    0.02   0.0%   0.5%
+---------------------------------------------------------------------------------------------------------------------------------
+TOTAL           2,597,249 2,174,255  3,226,028    +24% 3,756,479 2,588,982      +2%    2.8%    3.5%    0.69    0.84  44.1%  46.9%
+
+### YoY POR PROVEEDOR
+
+                  Vta2025  Vta26YTD Run-rate26    YoY%   Ses2025  Ses26YTD  SesYoY%  Conv25  Conv26 €/ses25 €/ses26   BB25   BB26
+---------------------------------------------------------------------------------------------------------------------------------
+Arcos           1,745,079 1,175,554  1,744,216     -0% 3,259,818 2,088,436      -5%    2.1%    2.3%    0.54    0.56  37.6%  37.3%
+Cuperinox         653,554   478,336    709,726     +9%   380,230   256,506      +0%    7.5%    7.2%    1.72    1.86  94.1%  96.9%
+Hendi             108,812   263,302    390,671   +259%    61,574    95,799    +131%    2.5%    4.9%    1.77    2.75  49.2%  61.6%
+Vinfer (grupo)     74,493   247,276    366,893   +393%    32,987   131,150    +490%   15.7%   12.9%    2.26    1.89  72.2%  88.9%
+Otros              15,312     9,787     14,521     -5%    21,870    17,091     +16%    6.3%    5.5%    0.70    0.57  75.5%  71.4%
+---------------------------------------------------------------------------------------------------------------------------------
+TOTAL           2,597,249 2,174,255  3,226,028    +24% 3,756,479 2,588,982      +2%    2.8%    3.5%    0.69    0.84  44.1%  46.9%
+
+### ASINs que MAS CAEN (venta 2025 >5.000 EUR, run-rate 2026 por debajo)
+
+ Delta EUR     2025   RR2026   BB25   BB26    Ses25    Ses26  Marca       Titulo
+   -46,320   74,380   28,060  96.4%  89.8%   43,846    9,923  Cuperinox   CUPERINOX Jamonero Profesional | Soporte jamonero Ti
+   -39,978   42,317    2,339 100.0%  99.3%    9,978      720  Cuperinox   CUPERINOX Jamonero Inoxidable Giratorio | Jamonera b
+   -26,077  145,122  119,045  99.4%  99.6%   41,281   29,087  Arcos       Arcos Juego Cuchillos Carne | 6 Piezas | Cuchillos c
+   -23,713   97,124   73,411  99.0%  99.9%   98,064   22,564  Arcos       Arcos Juego Cuchillos Cocina Profesionales| Cuchillo
+   -21,171   36,224   15,053  33.3%  15.8%   78,349   36,275  Arcos       Arcos Estuche de 3 Cuchillos Básicos de Cocina. Pack
+   -20,336   34,329   13,993  97.9%  58.2%    5,694    5,523  Arcos       Arcos Set Cuchillos 5 piezas Acero Inoxidable Nitrum
+   -13,857   16,660    2,803  99.1%  99.5%    8,816    1,481  Cuperinox   CUPERINOX Navaja para Setas y Champiñones | Acero In
+   -13,006   19,706    6,700  99.1%  98.7%   12,699    5,437  Cuperinox   CUPERINOX Soporte Jamonero Plegable | Jamonero Girat
+   -12,041   21,382    9,341  99.7%  99.4%   10,555    4,663  Cuperinox   CUPERINOX Jamonero Profesional | Jamonero Giratorio 
+   -11,742   22,964   11,222  99.2%  98.2%   15,349    6,405  Arcos       Arcos Afiladores, Afilador de Cuchillos de Mano, Hec
+    -9,622    9,622        0  99.8%   0.0%   12,251        0  Cuperinox   CUPERINOX Soporte Jamonero Inoxidable Profesional co
+    -8,496   13,218    4,723  43.2%  80.9%   12,987    5,630  Cuperinox   CUPERINOX Soporte Jamonero Inoxidable | Jamonero Ple
+    -7,907   12,110    4,203  95.8%  94.8%    2,929      816  Arcos       Arcos Serie Samoa | Batería de Cocina 5 piezas | Alu
+    -7,787    9,096    1,309  98.9%  80.7%    8,062      767  Cuperinox   CUPERINOX Cafetera Italiana Induccion Espresso Acero
+    -7,656   11,253    3,597  65.9%  12.8%    4,542    5,140  Arcos       Arcos Set 5 Cuchillos Forjados Acero Inoxidable Nitr
+    -6,505   12,284    5,779  99.6%  99.9%    9,157    2,909  Arcos       Arcos | Juego Cuchillo Jamonero 3 Pzas | jamonero Ac
+    -6,328    6,779      451  48.3%   2.3%    7,471   15,470  Arcos       Arcos Serie Capri - Cubertería de 24 piezas en una C
+    -6,302   11,001    4,699   5.7%   5.7%  127,841   37,392  Arcos       ARCOS Afilador Profesional Manual Cerámica y Carbono
+    -6,203    9,278    3,076  99.2%  96.8%    6,987    2,003  Cuperinox   CUPERINOX Soporte Jamonero | Jamonero Profesional | 
+    -5,837   10,628    4,791  84.1%  55.5%    8,205    5,158  Arcos       Arcos Serie Clasica - Juego de Cuchillos de 5 piezas
+
+### ASINs que MAS SUBEN
+
+ Delta EUR     2025   RR2026   BB25   BB26    Ses25    Ses26  Marca       Titulo
+   138,528   50,994  189,523  93.6%  97.8%   12,839   28,392  Vinfermaton VINFERMATON – Insecticida Avispas y Avisperos Exteri
+    54,062    1,521   55,584 100.0%  99.7%      214    9,355  Cuperinox   CUPERINOX - Soporte Jamonero Profesional de Acero In
+    28,365   12,621   40,986  99.7%  99.3%    4,711    6,241  Cuperinox   CUPERINOX® Ventilador Portátil Silencioso y Recargab
+    28,222  104,412  132,634  99.4%  99.3%   72,604   50,140  Arcos       Arcos Juego Cuchillos Cocina Profesionales| Cuchillo
+    22,508    5,873   28,381  99.4%  99.1%    3,630    4,529  Cuperinox   CUPERINOX Ventilador Portatil, Camping, Exterior, Pl
+    17,874    2,251   20,125  86.3%  96.9%    1,500    4,310  Vinfermaton VINFERMATON Insecticida Hormigas y Cucarachas Residu
+    17,048    5,068   22,116  46.5%  81.6%    4,706    6,735  Hendi       HENDI Pasta combustible para Chafing Dish, 12 x 200 
+    15,235    3,552   18,787   4.7%  20.4%   35,638   21,934  Arcos       ARCOS Tijeras de Cocina Multiusos 200 mm
+    14,925    6,346   21,271  95.7%  93.9%    3,549    7,859  Arcos       Arcos Serie Samoa Iconic | Sarten Antiadherente Cerá
+    13,975    5,263   19,238  96.0%  92.9%    1,803    4,475  Arcos       Arcos Serie Samoa Iconic | Sarten Antiadherente Cerá
+    13,756        0   13,756   0.0%  98.7%        0    5,842  Vinfermaton VINFERMATON- Fregasuelos Insecticida Pack 2×1L | Ant
+    12,784    7,741   20,525  99.7%  99.6%    7,579    7,270  Arcos       Arcos Series Niza - Juego de Cuchillos Cocina, 6 Pie
+    12,402   25,949   38,351  99.1%  99.4%   11,239   11,766  Arcos       Arcos Juego de Cuchillos de Cocina Profesional y Afi
+    11,826   23,851   35,677  99.3%  98.0%    4,332    8,514  Cuperinox   CUPERINOX® Cuchillos de Mesa Acero Inoxidable – Set 
+    11,191        0   11,191   0.0%  93.8%        0    1,688  Vinfermaton VINFERMATÓN Pack 2 Insecticida Mosquitos y Moscas Co
+    10,932    1,117   12,050  43.6%  67.1%      773    3,012  Wins        WINS 007 - Friegasuelos Perfumado | Garrafa 5 L
+    10,267    7,884   18,151  73.9%  88.1%   15,791   13,321  Arcos       Pelador de Cocina ARCOS - Hoja de Acero Inoxidable |
+    10,089    3,293   13,382  97.6%  93.3%    3,924    5,963  Arcos       Arcos Serie Samoa Iconic | Sarten Antiadherente Cerá
+     9,036   51,429   60,465  25.8%  36.9%  120,119   59,999  Arcos       Arcos Juego de 6 Cuchillos de Mesa Chuleteros Hoja 1
+     8,704    2,395   11,099  30.3%  34.2%      932    2,397  Hendi       HENDI Batidora de Mano para Uso Profesional con Velo
+
+ASINs nuevos en 2026: 293 -> 154,022 EUR
+ASINs desaparecidos:  107 -> valian 52,874 EUR en 2025
