@@ -1,0 +1,104 @@
+TOTAL REAL: 1038 ASINs hijo / 1190 SKUs / 2,588,982 sesiones / 90,086 uds / 2,174,254.55 EUR
+(sumando filas sin deduplicar: 3,926,199 sesiones -> inflado 52%)
+
+### POR MARCA (deduplicado por ASIN)
+
+                 SKUs ASINs  Sesiones  %Ses     Uds Ventas EUR  %Vta  Conv% Ticket EUR/ses  BuyBox  B2B%
+--------------------------------------------------------------------------------------------------------
+Arcos             582   498 2,088,436 80.7%  48,985  1,175,554 54.1%   2.3%   24.0    0.56   37.3%  7.4%
+Cuperinox         154    98   256,506  9.9%  18,505    478,336 22.0%   7.2%   25.8    1.86   96.9%  7.6%
+Hendi             333   333    95,799  3.7%   4,701    263,302 12.1%   4.9%   56.0    2.75   61.6% 41.0%
+Vinfermaton        30    27    66,394  2.6%  12,316    192,801  8.9%  18.5%   15.7    2.90   86.9% 12.6%
+Wins               22    21    11,909  0.5%   2,187     27,898  1.3%  18.4%   12.8    2.34   69.3% 40.6%
+Bioleaf            26    22    46,643  1.8%   1,431     16,333  0.8%   3.1%   11.4    0.35   96.7%  3.0%
+Vinfer             14    13     4,755  0.2%     860      8,361  0.4%  18.1%    9.7    1.76   92.0% 23.1%
+Sin marca          16    13    12,533  0.5%     748      7,869  0.4%   6.0%   10.5    0.63   80.6% 24.6%
+Vincare             4     4     1,449  0.1%     157      1,884  0.1%  10.8%   12.0    1.30   80.1%  5.3%
+Tradineur           2     2     1,598  0.1%     104        947  0.0%   6.5%    9.1    0.59   98.6%  3.1%
+La Garrafita        4     4       310  0.0%      72        689  0.0%  23.2%    9.6    2.22   98.7%  7.0%
+Xpartan             2     2       220  0.0%      14        222  0.0%   6.4%   15.8    1.01   95.5%  0.0%
+Maton               1     1     2,430  0.1%       6         60  0.0%   0.2%   10.0    0.02    0.5% 49.9%
+--------------------------------------------------------------------------------------------------------
+TOTAL            1190  1038 2,588,982100.0%  90,086  2,174,255100.0%   3.5%   24.1    0.84   46.9% 12.5%
+
+### POR PROVEEDOR
+
+                 SKUs ASINs  Sesiones  %Ses     Uds Ventas EUR  %Vta  Conv% Ticket EUR/ses  BuyBox  B2B%
+--------------------------------------------------------------------------------------------------------
+Arcos             582   498 2,088,436 80.7%  48,985  1,175,554 54.1%   2.3%   24.0    0.56   37.3%  7.4%
+Cuperinox         154    98   256,506  9.9%  18,505    478,336 22.0%   7.2%   25.8    1.86   96.9%  7.6%
+Hendi             333   333    95,799  3.7%   4,701    263,302 12.1%   4.9%   56.0    2.75   61.6% 41.0%
+Vinfer (grupo)     96    87   131,150  5.1%  16,951    247,276 11.4%  12.9%   14.6    1.89   88.9% 15.5%
+Otros              25    22    17,091  0.7%     944      9,787  0.5%   5.5%   10.4    0.57   71.4% 20.9%
+--------------------------------------------------------------------------------------------------------
+TOTAL            1190  1038 2,588,982100.0%  90,086  2,174,255100.0%   3.5%   24.1    0.84   46.9% 12.5%
+
+### TOP 25 ASINs por venta
+
+ Ventas EUR    Uds  Sesiones  Conv%  BuyBox  Marca        Titulo
+    127,733  7,425    28,392  26.2%   97.8%  Vinfermaton  VINFERMATON – Insecticida Avispas y Avisperos Exterior Pack 2×
+    119,687  1,372    25,571   5.4%   99.2%  Cuperinox    CUPERINOX Soporte Jamonero Balancín | Jamonero Giratorio Profe
+     89,392  2,991    50,140   6.0%   99.3%  Arcos        Arcos Juego Cuchillos Cocina Profesionales| Cuchillos Cocina P
+     80,233  3,016    29,087  10.4%   99.6%  Arcos        Arcos Juego Cuchillos Carne | 6 Piezas | Cuchillos carne cuchi
+     49,477  1,523    22,564   6.7%   99.9%  Arcos        Arcos Juego Cuchillos Cocina Profesionales| Cuchillos Cocina P
+     40,752  3,430    59,999   5.7%   36.9%  Arcos        Arcos Juego de 6 Cuchillos de Mesa Chuleteros Hoja 110 mm Negr
+     37,462    413     9,355   4.4%   99.7%  Cuperinox    CUPERINOX - Soporte Jamonero Profesional de Acero Inoxidable |
+     30,412  1,178    15,321   7.7%   99.3%  Arcos        Arcos Juego Cuchillos Cocina Profesionales| Cuchillos Cocina P
+     27,624    470     6,241   7.5%   99.3%  Cuperinox    CUPERINOX® Ventilador Portátil Silencioso y Recargable con Pow
+     25,847    473    11,766   4.0%   99.4%  Arcos        Arcos Juego de Cuchillos de Cocina Profesional y Afilador | 7 
+     25,070  2,507   149,816   1.7%   14.8%  Arcos        Arcos Juego de Cuchillos Mondadores de 3 Piezas
+     24,045  1,176     8,514  13.8%   98.0%  Cuperinox    CUPERINOX® Cuchillos de Mesa Acero Inoxidable – Set 12 Cuchill
+     19,128    333     4,529   7.4%   99.1%  Cuperinox    CUPERINOX Ventilador Portatil, Camping, Exterior, Playa, Pisci
+     18,912  1,362     9,923  13.7%   89.8%  Cuperinox    CUPERINOX Jamonero Profesional | Soporte jamonero Tipo Gondola
+     16,405    978    67,759   1.4%   12.2%  Arcos        Arcos Juego de 6 Cuchillos Mondadores Acero Inoxidable 100 mm
+     16,383    567     8,828   6.4%   92.4%  Arcos        Arcos Cuchillos de Mesa - Caja de 12 uds Cuchillo Chuletero Cu
+     16,186  1,026    15,291   6.7%   62.9%  Arcos        ARCOS Bolsa para Cuchillos 100% Poliéster 460x275 mm
+     15,348  1,302    10,461  12.4%   87.5%  Cuperinox    CUPERINOX Aceiteras para Aceite Usado | Grasera Acero Inoxidab
+     14,906    748     6,735  11.1%   81.6%  Hendi        HENDI Pasta combustible para Chafing Dish, 12 x 200 g
+     14,826    312     3,709   8.4%   78.4%  Arcos        Arcos Cuchillos de Mesa Juego de Cuchillos Chuleteros Cuchillo
+     14,336    375     7,859   4.8%   93.9%  Arcos        Arcos Serie Samoa Iconic | Sarten Antiadherente Cerámico 24 cm
+     13,833    694     7,270   9.5%   99.6%  Arcos        Arcos Series Niza - Juego de Cuchillos Cocina, 6 Piezas, Cuchi
+     13,564    915     4,310  21.2%   96.9%  Vinfermaton  VINFERMATON Insecticida Hormigas y Cucarachas Residual | Antih
+     13,144    161    11,763   1.4%   97.7%  Arcos        Arcos Set Cocina Serie Manhattan
+     13,137    199    26,073   0.8%   22.6%  Arcos        ARCOS Afilador de Cuchillos Profesional ABS
+
+### BuyBox perdido: ASINs con demanda probada y BB bajo
+
+Regla: >3.000 sesiones y BB<70%. 'EUR en riesgo' = ventas * (1-BB) / BB, cap a 3x ventas.
+
+ EUR riesgo   Ventas  BuyBox  Sesiones  Conv%  Marca      Titulo
+     75,211   25,070   14.8%   149,816   1.7%  Arcos      Arcos Juego de Cuchillos Mondadores de 3 Piezas
+     69,657   40,752   36.9%    59,999   5.7%  Arcos      Arcos Juego de 6 Cuchillos de Mesa Chuleteros Hoja 110 mm 
+     49,214   16,405   12.2%    67,759   1.4%  Arcos      Arcos Juego de 6 Cuchillos Mondadores Acero Inoxidable 100
+     39,411   13,137   22.6%    26,073   0.8%  Arcos      ARCOS Afilador de Cuchillos Profesional ABS
+     37,986   12,662   20.4%    21,934   4.9%  Arcos      ARCOS Tijeras de Cocina Multiusos 200 mm
+     30,435   10,145   15.8%    36,275   0.6%  Arcos      Arcos Estuche de 3 Cuchillos Básicos de Cocina. Pack de Cu
+     24,694    8,231   11.8%    31,731   1.1%  Arcos      Arcos Juego Chuleteros Mango Madera 110 mm
+     21,252    7,084   22.4%    22,898   0.7%  Arcos      Arcos Juego de Cuchillos con Bloque Acero Inoxidable 6 pie
+     13,783    4,594   16.8%    30,065   1.3%  Arcos      ARCOS Pinzas para Emplatar Acero Inoxidable 200 mm
+     12,728    4,243   18.3%    12,467   1.3%  Arcos      Arcos Tacos - Bloque Universal para Cuchillos hasta 20 cm 
+     12,624    4,208   15.1%    10,957   0.6%  Arcos      Arcos Juego de Cuchillos de Cocina de 5 Piezas
+     12,405    4,135   11.6%    18,353   0.3%  Arcos      ARCOS Juego de Cubiertos de 24 Piezas para Mesa. Cuberterí
+     10,748    3,583   14.3%    11,989   0.4%  Arcos      Arcos Juego de Cuchillos de Cocina de 3 Piezas
+     10,685    3,998   27.2%    14,000   0.7%  Arcos      ARCOS Sacacorchos Eléctrico en ABS con Batería Interna Rec
+      9,555   16,186   62.9%    15,291   6.7%  Arcos      ARCOS Bolsa para Cuchillos 100% Poliéster 460x275 mm
+      9,501    3,167    5.7%    37,392   0.7%  Arcos      ARCOS Afilador Profesional Manual Cerámica y Carbono Rojo-
+      9,140    3,047   16.7%    12,531   1.0%  Arcos      Arcos Hachuela Macheta de Cocina Acero Inoxidable 160 mm
+      8,378    2,793   22.9%     8,028   1.9%  Arcos      Arcos Serie Ecopro - Tijeras de Cocina - Acero Inoxidable 
+      8,184    2,728    0.6%    39,685   1.1%  Arcos      ARCOS Pelador Profesional Acero Inoxidable Cromado 130 mm
+      8,069    2,690   22.9%     7,276   1.6%  Arcos      Arcos Universal Cuchillo Jamonero Acero Hoja Hueca Negro 2
+      8,066    4,219   34.3%     4,994   1.0%  Arcos      ARCOS Juego de Cubiertos de 24 Piezas para Mesa. Cuberterí
+      7,504    2,501   12.0%    18,751   0.4%  Arcos      Arcos Juego de Cuchillos de Cocina cuatro piezas. 3 Cuchil
+      7,350    2,450   19.9%     6,138   1.1%  Arcos      Arcos Cuchillo Cocina Acero Inoxidable Negro 180 mm
+      7,272    2,424   12.8%     5,140   0.4%  Arcos      Arcos Set 5 Cuchillos Forjados Acero Inoxidable Nitrum
+      7,175    2,392   23.2%     5,957   1.5%  Arcos      ARCOS Taco Ovalado Protector de Cuchillos hasta 20 cm
+
+113 ASINs afectados | ventas actuales 313,795 EUR | EUR en riesgo/recuperables 699,177
+
+### Concentracion
+  Top  10 ASINs =  28.9% de la venta
+  Top  25 ASINs =  40.4% de la venta
+  Top  50 ASINs =  52.5% de la venta
+  Top 100 ASINs =  66.8% de la venta
+  Top 200 ASINs =  81.0% de la venta
+  ASINs con 0 EUR: 0 de 1038 (0.0%), consumen 0 sesiones (0.0%)
