@@ -1,0 +1,543 @@
+<title>Panel Marketplace Cuperinox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#f2f4f6; --surface:#fbfcfd; --surface-2:#e9edf1; --sunk:#e2e7ec;
+  --line:#d2dae1; --line-soft:#e3e9ee;
+  --ink:#141a20; --ink-2:#4a5763; --ink-3:#76838f;
+  --brass:#8a6412; --brass-soft:#f0e6cf;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#76838f;
+  --good:#127a52; --bad:#b8442f; --warn:#8a6412;
+  --good-bg:#dcefe6; --bad-bg:#f8e2dc; --warn-bg:#f4ebd6;
+  --shadow:0 1px 2px rgba(20,26,32,.06), 0 4px 14px rgba(20,26,32,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1216; --surface:#161c22; --surface-2:#1e262e; --sunk:#11171c;
+  --line:#2b353f; --line-soft:#222b33;
+  --ink:#eef3f7; --ink-2:#a8b6c2; --ink-3:#7b8896;
+  --brass:#d7ac52; --brass-soft:#2e2717;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#8b98a5;
+  --good:#3fbd8c; --bad:#e77f68; --warn:#d7ac52;
+  --good-bg:#12291f; --bad-bg:#2c1a15; --warn-bg:#28210f;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1216; --surface:#161c22; --surface-2:#1e262e; --sunk:#11171c;
+  --line:#2b353f; --line-soft:#222b33;
+  --ink:#eef3f7; --ink-2:#a8b6c2; --ink-3:#7b8896;
+  --brass:#d7ac52; --brass-soft:#2e2717;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#8b98a5;
+  --good:#3fbd8c; --bad:#e77f68; --warn:#d7ac52;
+  --good-bg:#12291f; --bad-bg:#2c1a15; --warn-bg:#28210f;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:400 15px/1.55 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+h1,h2,h3{font-family:Archivo,"IBM Plex Sans",sans-serif;text-wrap:balance;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20}
+.hin{max-width:1180px;margin:0 auto;padding:16px 20px;display:flex;align-items:baseline;
+  gap:16px;flex-wrap:wrap}
+.mark{font-family:Archivo;font-weight:800;font-size:19px;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:9px}
+.mark::before{content:"";width:5px;height:20px;background:var(--brass);border-radius:1px;
+  display:block}
+.hmeta{margin-left:auto;display:flex;gap:18px;align-items:baseline}
+.hmeta span{font-size:12.5px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+.hmeta b{font-family:"IBM Plex Mono";font-weight:600;color:var(--ink);font-size:13px;
+  font-variant-numeric:tabular-nums}
+
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px}
+section{margin-top:40px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.shead h2{font-size:21px;font-weight:700;letter-spacing:-.015em}
+.shead p{margin:0;font-size:13.5px;color:var(--ink-2);max-width:62ch}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  margin-top:28px}
+.kpi{background:var(--surface);padding:15px 17px 16px}
+.kpi .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3)}
+.kpi .v{font-family:"IBM Plex Mono";font-weight:600;font-size:25px;letter-spacing:-.03em;
+  margin-top:5px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .d{font-size:12px;margin-top:5px;color:var(--ink-2);font-family:"IBM Plex Mono";
+  font-variant-numeric:tabular-nums}
+.up{color:var(--good)} .dn{color:var(--bad)}
+
+/* controls */
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);
+  border-radius:8px;padding:2px;gap:2px}
+.seg button{font:500 12.5px/1 "IBM Plex Sans",sans-serif;color:var(--ink-2);background:none;
+  border:0;padding:7px 11px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);
+  box-shadow:var(--shadow);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:18px 18px 12px;box-shadow:var(--shadow)}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.lg{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;padding:5px 10px 5px 8px;
+  border:1px solid var(--line);border-radius:99px;background:var(--surface);cursor:pointer;
+  color:var(--ink-2);font-family:inherit}
+.lg[aria-pressed="false"]{opacity:.42}
+.lg i{width:10px;height:10px;border-radius:2px;display:block;flex:none}
+.lg b{font-family:"IBM Plex Mono";font-weight:500;font-variant-numeric:tabular-nums;
+  color:var(--ink);font-size:12px}
+.lg:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+
+svg{display:block;width:100%;height:auto;overflow:visible}
+.gl{stroke:var(--line-soft);stroke-width:1}
+.ax{fill:var(--ink-3);font-family:"IBM Plex Mono";font-size:10.5px;
+  font-variant-numeric:tabular-nums}
+.q4{fill:var(--brass);opacity:.055}
+
+/* tooltip */
+.tip{position:fixed;pointer-events:none;z-index:60;background:var(--surface);
+  border:1px solid var(--line);border-radius:9px;padding:10px 12px;box-shadow:var(--shadow);
+  font-size:12.5px;min-width:184px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip h4{margin:0 0 7px;font:600 12px/1 "IBM Plex Mono";letter-spacing:.06em;color:var(--ink-3);
+  text-transform:uppercase}
+.tip .r{display:flex;align-items:center;gap:8px;margin-top:3px}
+.tip .r i{width:9px;height:9px;border-radius:2px;flex:none}
+.tip .r span{flex:1;color:var(--ink-2)}
+.tip .r b{font-family:"IBM Plex Mono";font-weight:600;font-variant-numeric:tabular-nums}
+.tip .tot{border-top:1px solid var(--line);margin-top:7px;padding-top:6px}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}
+th,td{padding:9px 13px;text-align:right;white-space:nowrap;
+  border-bottom:1px solid var(--line-soft)}
+th{font:600 11px/1.3 "IBM Plex Sans";letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--surface-2);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+td.n{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:600;background:var(--surface-2);border-top:2px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{width:9px;height:9px;border-radius:2px;flex:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:600;
+  font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+.pill.g{background:var(--good-bg);color:var(--good)}
+.pill.b{background:var(--bad-bg);color:var(--bad)}
+.pill.w{background:var(--warn-bg);color:var(--warn)}
+
+/* margin lab */
+.lab{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:20px;align-items:start}
+@media(max-width:820px){.lab{grid-template-columns:1fr}}
+.sl{padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.sl:last-child{border-bottom:0}
+.sl .top{display:flex;align-items:baseline;gap:9px;margin-bottom:7px}
+.sl .top i{width:10px;height:10px;border-radius:2px;flex:none;align-self:center}
+.sl .top strong{font-size:14px;font-weight:600;flex:1}
+.sl .top b{font-family:"IBM Plex Mono";font-size:14px;font-weight:600;
+  font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--brass);height:20px;cursor:pointer}
+input[type=range]:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.slnote{font-size:11.5px;color:var(--ink-3);font-family:"IBM Plex Mono";
+  font-variant-numeric:tabular-nums}
+
+.note{background:var(--surface-2);border-left:3px solid var(--brass);border-radius:0 8px 8px 0;
+  padding:13px 16px;font-size:13.5px;color:var(--ink-2);margin-top:14px}
+.note strong{color:var(--ink)}
+.finding{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.finding > div{background:var(--surface);padding:15px 17px}
+.finding h3{font-size:14.5px;font-weight:700;margin-bottom:5px;display:flex;gap:9px;
+  align-items:baseline}
+.finding p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.tag{font-family:"IBM Plex Mono";font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 7px;border-radius:4px;flex:none}
+.tag.c{background:var(--good-bg);color:var(--good)}
+.tag.i{background:var(--warn-bg);color:var(--warn)}
+footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;
+  color:var(--ink-3)}
+footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px;
+  border-radius:4px;color:var(--ink-2);font-size:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header><div class="hin">
+  <div class="mark">Panel Marketplace</div>
+  <div class="hmeta">
+    <div><span>Periodo</span> <b id="hPer">—</b></div>
+    <div><span>Meses</span> <b id="hN">—</b></div>
+    <div><span>Acumulado</span> <b id="hV">—</b></div>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<div class="kpis" id="kpis"></div>
+<p class="note" id="lflNote"></p>
+
+<section>
+  <div class="shead">
+    <h2>Serie mensual por proveedor</h2>
+    <p>Las bandas cálidas marcan noviembre y diciembre. Las cifras de la leyenda son el acumulado de los 20 meses.</p>
+  </div>
+  <div class="bar">
+    <div class="seg" id="metric" role="group" aria-label="Métrica"></div>
+  </div>
+  <div class="card">
+    <svg id="chart" viewBox="0 0 980 340" role="img" aria-label="Serie mensual por proveedor"></svg>
+    <div class="legend" id="legend"></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>Comparativa a ventana idéntica</h2>
+    <p>Solo los meses presentes en ambos años. Un run-rate anualizado sería
+       inválido: noviembre y diciembre valen un tercio del año.</p>
+  </div>
+  <div class="scroll"><table id="lfl"></table></div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>Laboratorio de margen</h2>
+    <p>Mueve el margen de cada proveedor y mira qué le pasa al rendimiento por sesión.
+       Los valores de partida son tus rangos reales.</p>
+  </div>
+  <div class="lab">
+    <div class="card" id="sliders"></div>
+    <div>
+      <div class="card">
+        <svg id="mchart" viewBox="0 0 620 260" role="img"
+             aria-label="Margen por sesión frente a cuota de tráfico"></svg>
+      </div>
+      <div class="scroll" style="margin-top:14px"><table id="mtab"></table></div>
+      <p class="note" id="mnote"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>BuyBox perdido</h2>
+    <p>ASINs de los últimos 8 meses con demanda probada (&gt;5.000 sesiones) y oferta
+       destacada por debajo del 70%. El riesgo es una cota superior, no una previsión.</p>
+  </div>
+  <div class="scroll"><table id="bb"></table></div>
+</section>
+
+<section>
+  <div class="shead"><h2>Lectura</h2></div>
+  <div class="finding" id="find"></div>
+</section>
+
+<footer id="foot"></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const D = /*__DATA__*/null;
+const $ = s => document.querySelector(s);
+const SC = ['--s1','--s2','--s3','--s4','--s5'];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const eur = n => n.toLocaleString('es-ES',{maximumFractionDigits:0})+' €';
+const int = n => n.toLocaleString('es-ES',{maximumFractionDigits:0});
+const dec = (n,d=2) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const MN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const lbl = m => MN[+m.slice(5,7)-1]+" '"+m.slice(2,4);
+const isQ4 = m => ['11','12'].includes(m.slice(5,7));
+const col = i => css(SC[i % SC.length]);
+
+const METRICS = [
+  {k:'v',    n:'Ventas',      stack:true,  fmt:eur,               ax:n=>int(n/1000)+'k'},
+  {k:'ses',  n:'Sesiones',    stack:true,  fmt:int,               ax:n=>int(n/1000)+'k'},
+  {k:'uds',  n:'Unidades',    stack:true,  fmt:int,               ax:int},
+  {k:'eur',  n:'€/sesión',    stack:false, fmt:n=>dec(n)+' €',    ax:n=>dec(n,2)},
+  {k:'conv', n:'Conversión',  stack:false, fmt:n=>dec(n,1)+'%',   ax:n=>dec(n,1)+'%'},
+  {k:'bb',   n:'BuyBox',      stack:false, fmt:n=>dec(n,1)+'%',   ax:n=>dec(n,0)+'%'}
+];
+const val = (a,k) => k==='eur' ? (a.ses?a.v/a.ses:0)
+                   : k==='conv'? (a.ses?100*a.uds/a.ses:0)
+                   : k==='bb'  ? (a.ses?a.bbw/a.ses:0) : a[k];
+
+let metric = 'v';
+const off = new Set();
+
+/* ---------- header + KPIs ---------- */
+const M = D.months, T = D.total, N = M.length;
+const sum = (arr,k) => arr.reduce((s,a)=>s+a[k],0);
+$('#hPer').textContent = lbl(M[0])+' – '+lbl(M[N-1]);
+$('#hN').textContent = N;
+$('#hV').textContent = eur(sum(T,'v'));
+
+/* ventana idéntica entre los dos últimos años presentes */
+const years = [...new Set(M.map(m=>m.slice(0,4)))].sort();
+const yB = years[years.length-1], yA = years[years.length-2];
+const mm = y => M.filter(m=>m.startsWith(y)).map(m=>m.slice(5));
+const win = yA ? mm(yB).filter(x=>mm(yA).includes(x)) : mm(yB);
+const idx = y => win.map(s=>M.indexOf(y+'-'+s)).filter(i=>i>=0);
+const iA = yA?idx(yA):[], iB = idx(yB);
+const pick = (rows,ii)=>ii.map(i=>rows[i]);
+const roll = rows => rows.reduce((a,r)=>({ses:a.ses+r.ses,uds:a.uds+r.uds,v:a.v+r.v,
+  bbw:a.bbw+r.bbw}),{ses:0,uds:0,v:0,bbw:0});
+const A = roll(pick(T,iA)), B = roll(pick(T,iB));
+const pct = (n,o) => o ? 100*(n-o)/o : null;
+const dSpan = p => p===null ? '' :
+  `<span class="${p>=0?'up':'dn'}">${p>=0?'▲':'▼'} ${dec(Math.abs(p),1)}%</span>`;
+
+const wLab = win.length ? `${MN[+win[0]-1]}–${MN[+win[win.length-1]-1]}` : '';
+$('#kpis').innerHTML = [
+  ['Ventas', eur(B.v), pct(B.v,A.v)],
+  ['Unidades', int(B.uds), pct(B.uds,A.uds)],
+  ['Sesiones', int(B.ses), pct(B.ses,A.ses)],
+  ['Conversión', dec(100*B.uds/B.ses,2)+'%', pct(B.uds/B.ses, A.uds/A.ses)],
+  ['€/sesión', dec(B.v/B.ses)+' €', pct(B.v/B.ses, A.v/A.ses)],
+  ['BuyBox', dec(B.bbw/B.ses,1)+'%', pct(B.bbw/B.ses, A.bbw/A.ses)]
+].map(([k,v,p])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+  <div class="d">${dSpan(p)} <span style="color:var(--ink-3)">vs ${yA||''}</span></div></div>`).join('');
+$('#lflNote').innerHTML = `Las cifras de arriba son <strong>${wLab} ${yB}</strong> frente a
+  <strong>${wLab} ${yA}</strong> — ventana idéntica, ${win.length} meses. El acumulado del
+  encabezado cubre los ${N} meses cargados.`;
+
+/* ---------- chart ---------- */
+const W=980, H=340, P={t:16,r:16,b:30,l:56};
+function draw(){
+  const m = METRICS.find(x=>x.k===metric);
+  const sups = D.suppliers.filter(s=>!off.has(s));
+  const iw = W-P.l-P.r, ih = H-P.t-P.b;
+  let max = 0;
+  if(m.stack) M.forEach((_,i)=>{max=Math.max(max, sups.reduce((s,k)=>s+val(D.series[k][i],m.k),0));});
+  else sups.forEach(k=>M.forEach((_,i)=>{max=Math.max(max, val(D.series[k][i],m.k));}));
+  if(!max) max=1;
+  const step = Math.pow(10,Math.floor(Math.log10(max)));
+  const top = Math.ceil(max/(step/2))*(step/2);
+  const y = v => P.t+ih-(v/top)*ih;
+  const bw = iw/M.length;
+  const ticks = [0,.25,.5,.75,1].map(f=>f*top);
+  let s = '';
+  M.forEach((mo,i)=>{ if(isQ4(mo)) s+=`<rect class="q4" x="${P.l+i*bw}" y="${P.t}"
+     width="${bw}" height="${ih}"/>`; });
+  ticks.forEach(t=>{ s+=`<line class="gl" x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}"/>
+    <text class="ax" x="${P.l-9}" y="${y(t)+3.5}" text-anchor="end">${m.ax(t)}</text>`; });
+  M.forEach((mo,i)=>{ if(i%(N>14?2:1)) return;
+    s+=`<text class="ax" x="${P.l+i*bw+bw/2}" y="${H-P.b+16}" text-anchor="middle">${lbl(mo)}</text>`;});
+
+  if(m.stack){
+    M.forEach((_,i)=>{ let acc=0;
+      sups.forEach(k=>{ const v=val(D.series[k][i],m.k); if(v<=0) return;
+        const y0=y(acc), y1=y(acc+v); acc+=v;
+        const h=Math.max(y0-y1-2,.8), x=P.l+i*bw+bw*.16, w=bw*.68;
+        s+=`<rect x="${x}" y="${y1}" width="${w}" height="${h}" rx="2"
+             fill="${col(D.suppliers.indexOf(k))}"/>`; });
+    });
+  } else {
+    sups.forEach(k=>{ const pts=M.map((_,i)=>[P.l+i*bw+bw/2, y(val(D.series[k][i],m.k))]);
+      s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none"
+           stroke="${col(D.suppliers.indexOf(k))}" stroke-width="2"
+           stroke-linejoin="round" stroke-linecap="round"/>`;
+      const last=pts[pts.length-1];
+      s+=`<circle cx="${last[0]}" cy="${last[1]}" r="4.5" fill="${col(D.suppliers.indexOf(k))}"
+           stroke="${css('--surface')}" stroke-width="2"/>`; });
+  }
+  M.forEach((_,i)=>{ s+=`<rect x="${P.l+i*bw}" y="${P.t}" width="${bw}" height="${ih}"
+    fill="transparent" data-i="${i}"/>`; });
+  $('#chart').innerHTML = s;
+  $('#legend').innerHTML = D.suppliers.map((k,i)=>{
+    const tv = m.stack ? sum(D.series[k], m.k) : val(roll(D.series[k]), m.k);
+    return `<button class="lg" data-s="${k}" aria-pressed="${!off.has(k)}">
+      <i style="background:${col(i)}"></i>${k} <b>${m.fmt(tv)}</b></button>`;}).join('');
+}
+$('#metric').innerHTML = METRICS.map(m=>
+  `<button data-m="${m.k}" aria-pressed="${m.k===metric}">${m.n}</button>`).join('');
+$('#metric').onclick = e => { const b=e.target.closest('button'); if(!b) return;
+  metric=b.dataset.m; [...$('#metric').children].forEach(x=>
+    x.setAttribute('aria-pressed', x.dataset.m===metric)); draw(); };
+$('#legend').onclick = e => { const b=e.target.closest('.lg'); if(!b) return;
+  const k=b.dataset.s; off.has(k)?off.delete(k):off.add(k);
+  if(off.size===D.suppliers.length) off.delete(k); draw(); };
+
+/* tooltip */
+const tip = $('#tip');
+$('#chart').addEventListener('mousemove', e => {
+  const r = e.target.closest('[data-i]'); if(!r){ tip.classList.remove('on'); return; }
+  const i = +r.dataset.i, m = METRICS.find(x=>x.k===metric);
+  const rows = D.suppliers.filter(s=>!off.has(s)).map(k=>({k,v:val(D.series[k][i],m.k),
+    c:col(D.suppliers.indexOf(k))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  tip.innerHTML = `<h4>${lbl(M[i])}${isQ4(M[i])?' · campaña':''}</h4>` +
+    rows.map(x=>`<div class="r"><i style="background:${x.c}"></i><span>${x.k}</span>
+      <b>${m.fmt(x.v)}</b></div>`).join('') +
+    (m.stack?`<div class="r tot"><span>Total</span>
+      <b>${m.fmt(rows.reduce((s,x)=>s+x.v,0))}</b></div>`:'');
+  tip.classList.add('on');
+  const bx = tip.getBoundingClientRect();
+  tip.style.left = Math.min(e.clientX+16, innerWidth-bx.width-12)+'px';
+  tip.style.top  = Math.min(e.clientY+16, innerHeight-bx.height-12)+'px';
+});
+$('#chart').addEventListener('mouseleave', ()=>tip.classList.remove('on'));
+
+/* ---------- like-for-like ---------- */
+(function(){
+  const rows = D.suppliers.map(k=>{
+    const a=roll(pick(D.series[k],iA)), b=roll(pick(D.series[k],iB));
+    return {k,a,b};}).filter(r=>r.a.v+r.b.v>1000).sort((x,y)=>y.b.v-x.b.v);
+  const cell = (a,b,f,rate) => {
+    const va = rate?rate(a):a, vb = rate?rate(b):b;
+    return `<td class="n">${f(va)}</td><td class="n">${f(vb)}</td>
+      <td class="n">${va?dSpan(pct(vb,va)):'<span style="color:var(--ink-3)">nueva</span>'}</td>`;};
+  $('#lfl').innerHTML = `<thead><tr><th>Proveedor</th>
+    <th>Ventas ${yA}</th><th>Ventas ${yB}</th><th>Δ</th>
+    <th>€/ses ${yA}</th><th>€/ses ${yB}</th><th>Δ</th>
+    <th>BuyBox ${yA}</th><th>BuyBox ${yB}</th><th>Δ</th>
+    <th>% ventas ${yB}</th></tr></thead><tbody>` +
+    rows.map(r=>`<tr><td><span class="chip"><i style="background:${col(D.suppliers.indexOf(r.k))}"></i>
+      ${r.k}</span></td>
+      ${cell(r.a.v,r.b.v,eur)}
+      ${cell(r.a,r.b,n=>dec(n)+' €',x=>x.ses?x.v/x.ses:0)}
+      ${cell(r.a,r.b,n=>dec(n,1)+'%',x=>x.ses?x.bbw/x.ses:0)}
+      <td class="n">${dec(100*r.b.v/B.v,1)}%</td></tr>`).join('') +
+    `<tr class="tot"><td>Total</td>${cell(A.v,B.v,eur)}
+      ${cell(A,B,n=>dec(n)+' €',x=>x.v/x.ses)}
+      ${cell(A,B,n=>dec(n,1)+'%',x=>x.bbw/x.ses)}
+      <td class="n">100,0%</td></tr></tbody>`;
+})();
+
+/* ---------- margin lab ---------- */
+const mg = {};
+D.suppliers.forEach(k => mg[k] = (D.margins[k][0]+D.margins[k][1])/2);
+$('#sliders').innerHTML = D.suppliers.map((k,i)=>{
+  const [lo,hi]=D.margins[k];
+  return `<div class="sl"><div class="top"><i style="background:${col(i)}"></i>
+    <strong>${k}</strong><b id="mv-${i}">${dec(mg[k],1)}%</b></div>
+    <input type="range" min="0" max="60" step="0.5" value="${mg[k]}" data-k="${k}" data-i="${i}"
+      aria-label="Margen de ${k}">
+    <div class="slnote">tu rango declarado: ${lo}–${hi}%</div></div>`;}).join('');
+
+function marginCalc(){
+  return D.suppliers.map((k,i)=>{
+    const b = roll(pick(D.series[k],iB));
+    const m = b.v*mg[k]/100;
+    return {k,i,v:b.v,ses:b.ses,m,cps:b.ses?100*m/b.ses:0};
+  }).filter(r=>r.v>0);
+}
+function renderMargin(){
+  const rows = marginCalc(), TM = rows.reduce((s,r)=>s+r.m,0), TS = rows.reduce((s,r)=>s+r.ses,0);
+  $('#mtab').innerHTML = `<thead><tr><th>Proveedor</th><th>Ventas ${wLab} ${yB}</th>
+    <th>% tráfico</th><th>Margen</th><th>Margen €</th><th>% del margen</th>
+    <th>cts/sesión</th></tr></thead><tbody>` +
+    rows.sort((a,b)=>b.m-a.m).map(r=>`<tr>
+      <td><span class="chip"><i style="background:${col(r.i)}"></i>${r.k}</span></td>
+      <td class="n">${eur(r.v)}</td><td class="n">${dec(100*r.ses/TS,1)}%</td>
+      <td class="n">${dec(mg[r.k],1)}%</td><td class="n">${eur(r.m)}</td>
+      <td class="n">${dec(100*r.m/TM,1)}%</td>
+      <td class="n"><span class="pill ${r.cps>=40?'g':r.cps>=20?'w':'b'}">${dec(r.cps,1)}c</span></td>
+    </tr>`).join('') +
+    `<tr class="tot"><td>Total</td><td class="n">${eur(rows.reduce((s,r)=>s+r.v,0))}</td>
+      <td class="n">100,0%</td><td class="n">—</td><td class="n">${eur(TM)}</td>
+      <td class="n">100,0%</td><td class="n">${dec(100*TM/TS,1)}c</td></tr></tbody>`;
+
+  // scatter: % tráfico (x) vs cts/sesión (y)
+  const w=620,h=260,p={t:18,r:20,b:38,l:52}, iw=w-p.l-p.r, ih=h-p.t-p.b;
+  const maxY = Math.max(...rows.map(r=>r.cps),10)*1.15;
+  const X = v => p.l + (v/100)*iw, Y = v => p.t+ih-(v/maxY)*ih;
+  let s='';
+  [0,.25,.5,.75,1].forEach(f=>{ const v=f*maxY;
+    s+=`<line class="gl" x1="${p.l}" x2="${w-p.r}" y1="${Y(v)}" y2="${Y(v)}"/>
+    <text class="ax" x="${p.l-8}" y="${Y(v)+3.5}" text-anchor="end">${dec(v,0)}c</text>`;});
+  [0,25,50,75,100].forEach(v=>{
+    s+=`<text class="ax" x="${X(v)}" y="${h-p.b+16}" text-anchor="middle">${v}%</text>`;});
+  s+=`<text class="ax" x="${p.l+iw/2}" y="${h-6}" text-anchor="middle">cuota de tráfico</text>`;
+  s+=`<text class="ax" x="${p.l-44}" y="${p.t-7}">cts margen / sesión</text>`;
+  rows.forEach(r=>{ const x=X(100*r.ses/TS), y=Y(r.cps);
+    const rr = 6+18*Math.sqrt(r.m/Math.max(TM,1));
+    s+=`<circle cx="${x}" cy="${y}" r="${rr}" fill="${col(r.i)}" fill-opacity=".78"
+         stroke="${css('--surface')}" stroke-width="2"/>`;
+    const flip = x > p.l+iw*.62;
+    s+=`<text class="ax" x="${x+(flip?-rr-6:rr+6)}" y="${y+3.5}"
+         text-anchor="${flip?'end':'start'}" style="font-size:11px;fill:var(--ink-2)">${r.k}</text>`;});
+  $('#mchart').innerHTML = s;
+
+  const best = rows.reduce((a,b)=>b.cps>a.cps?b:a), arc = rows.find(r=>r.k==='Arcos');
+  $('#mnote').innerHTML = arc
+    ? `Cada 100 sesiones enviadas a <strong>${best.k}</strong> valen
+       <strong>${eur(best.cps)}</strong> de margen; las mismas 100 en Arcos valen
+       <strong>${eur(arc.cps)}</strong> — un factor de
+       <strong>${dec(best.cps/Math.max(arc.cps,.01),1)}×</strong>. El tráfico no es
+       trasladable entre marcas: esto dice dónde rinde la <strong>inversión nueva</strong>
+       (PPC, fichas, stock, lanzamientos), no de dónde quitar sesiones.`
+    : '';
+}
+$('#sliders').addEventListener('input', e=>{
+  const k=e.target.dataset.k; if(!k) return;
+  mg[k]=+e.target.value; $('#mv-'+e.target.dataset.i).textContent=dec(mg[k],1)+'%';
+  renderMargin();
+});
+
+/* ---------- buybox ---------- */
+$('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th>
+  <th>Conv.</th><th>BuyBox</th><th>Ventas</th><th>€ en riesgo</th></tr></thead><tbody>` +
+  D.bbloss.map(r=>`<tr><td>${r.title.slice(0,66)}</td><td>${r.brand}</td>
+    <td class="n">${int(r.ses)}</td><td class="n">${dec(r.conv,1)}%</td>
+    <td class="n"><span class="pill ${r.bb<25?'b':r.bb<50?'w':'g'}">${dec(r.bb,1)}%</span></td>
+    <td class="n">${eur(r.v)}</td><td class="n">${eur(r.riesgo)}</td></tr>`).join('') +
+  `<tr class="tot"><td>${D.bbloss.length} ASINs listados</td><td></td><td></td><td></td><td></td>
+    <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.v,0))}</td>
+    <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
+
+/* ---------- findings ---------- */
+(function(){
+  const q4 = M.filter(isQ4), q4v = q4.reduce((s,m)=>s+T[M.indexOf(m)].v,0);
+  const yFull = years.find(y=>M.filter(m=>m.startsWith(y)).length===12);
+  let q4txt = '';
+  if(yFull){
+    const yv = M.filter(m=>m.startsWith(yFull)).reduce((s,m)=>s+T[M.indexOf(m)].v,0);
+    const nv = ['11','12'].reduce((s,mm)=>s+(T[M.indexOf(yFull+'-'+mm)]||{v:0}).v,0);
+    q4txt = `En ${yFull}, noviembre y diciembre valieron <strong>${dec(100*nv/yv,1)}%</strong>
+      del año (${eur(nv)} de ${eur(yv)}).`;
+  }
+  const jB = roll(pick(D.jamon,iB)), jA = roll(pick(D.jamon,iA));
+  const bbT = D.bbloss.reduce((s,r)=>s+r.riesgo,0);
+  const items = [
+    ['c','El crecimiento es de eficiencia, no de tráfico',
+     `Ventas ${dSpan(pct(B.v,A.v))} con sesiones solo ${dSpan(pct(B.ses,A.ses))} a ventana
+      idéntica. La diferencia sale de convertir mejor (${dec(100*B.uds/B.ses,2)}%) y de ganar
+      oferta destacada (${dec(B.bbw/B.ses,1)}%). Es el mejor tipo de crecimiento que existe.`],
+    ['c','La campaña decide el año',
+     `${q4txt} Cualquier proyección lineal sobre un año parcial se equivoca en esa proporción,
+      y se equivoca más en las marcas de regalo que en las de temporada de verano.`],
+    ['c','Jamoneros: consolidación, no canibalización',
+     `A ventana idéntica la categoría pasa de ${eur(jA.v)} a ${eur(jB.v)}
+      (${dSpan(pct(jB.v,jA.v))}) con unidades ${dSpan(pct(jB.uds,jA.uds))}. El crecimiento es
+      ticket medio, no volumen: excelente para el margen, frágil si entra competencia en precio.`],
+    ['i','El BuyBox es el mayor problema y la palanca menos rentable',
+     `Hay ${eur(bbT)} teóricos en juego en ${D.bbloss.length} ASINs, casi todos de la marca con
+      peor margen por sesión. Recuperarlos vale menos por sesión que crecer donde ya conviertes:
+      arréglalo, pero no antes que lo otro.`]
+  ];
+  $('#find').innerHTML = items.map(([t,h,p])=>`<div>
+    <h3><span class="tag ${t}">${t==='c'?'dato':'criterio'}</span>${h}</h3>
+    <p>${p}</p></div>`).join('');
+})();
+
+$('#foot').innerHTML = `Business Reports de Seller Central, ${N} meses (${D.periodo}).
+  Sesiones deduplicadas a nivel ASIN hijo: varios SKU comparten ASIN y Amazon repite la sesión en
+  cada fila. Las sesiones sumadas mes a mes quedan ~9% por encima del informe anual porque Amazon
+  deduplica visitantes dentro de cada periodo; ventas y unidades cuadran al céntimo.
+  Para actualizar: añade <code>mensual/AAAA-MM.csv</code> y ejecuta
+  <code>python3 build_dashboard.py</code>.`;
+
+draw(); renderMargin();
+</script>

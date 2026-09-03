@@ -1,0 +1,543 @@
+<title>Panel Marketplace Cuperinox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#f2f4f6; --surface:#fbfcfd; --surface-2:#e9edf1; --sunk:#e2e7ec;
+  --line:#d2dae1; --line-soft:#e3e9ee;
+  --ink:#141a20; --ink-2:#4a5763; --ink-3:#76838f;
+  --brass:#8a6412; --brass-soft:#f0e6cf;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#76838f;
+  --good:#127a52; --bad:#b8442f; --warn:#8a6412;
+  --good-bg:#dcefe6; --bad-bg:#f8e2dc; --warn-bg:#f4ebd6;
+  --shadow:0 1px 2px rgba(20,26,32,.06), 0 4px 14px rgba(20,26,32,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0e1216; --surface:#161c22; --surface-2:#1e262e; --sunk:#11171c;
+  --line:#2b353f; --line-soft:#222b33;
+  --ink:#eef3f7; --ink-2:#a8b6c2; --ink-3:#7b8896;
+  --brass:#d7ac52; --brass-soft:#2e2717;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#8b98a5;
+  --good:#3fbd8c; --bad:#e77f68; --warn:#d7ac52;
+  --good-bg:#12291f; --bad-bg:#2c1a15; --warn-bg:#28210f;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#0e1216; --surface:#161c22; --surface-2:#1e262e; --sunk:#11171c;
+  --line:#2b353f; --line-soft:#222b33;
+  --ink:#eef3f7; --ink-2:#a8b6c2; --ink-3:#7b8896;
+  --brass:#d7ac52; --brass-soft:#2e2717;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#8b98a5;
+  --good:#3fbd8c; --bad:#e77f68; --warn:#d7ac52;
+  --good-bg:#12291f; --bad-bg:#2c1a15; --warn-bg:#28210f;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:400 15px/1.55 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+h1,h2,h3{font-family:Archivo,"IBM Plex Sans",sans-serif;text-wrap:balance;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20}
+.hin{max-width:1180px;margin:0 auto;padding:16px 20px;display:flex;align-items:baseline;
+  gap:16px;flex-wrap:wrap}
+.mark{font-family:Archivo;font-weight:800;font-size:19px;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:9px}
+.mark::before{content:"";width:5px;height:20px;background:var(--brass);border-radius:1px;
+  display:block}
+.hmeta{margin-left:auto;display:flex;gap:18px;align-items:baseline}
+.hmeta span{font-size:12.5px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+.hmeta b{font-family:"IBM Plex Mono";font-weight:600;color:var(--ink);font-size:13px;
+  font-variant-numeric:tabular-nums}
+
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px}
+section{margin-top:40px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.shead h2{font-size:21px;font-weight:700;letter-spacing:-.015em}
+.shead p{margin:0;font-size:13.5px;color:var(--ink-2);max-width:62ch}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  margin-top:28px}
+.kpi{background:var(--surface);padding:15px 17px 16px}
+.kpi .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3)}
+.kpi .v{font-family:"IBM Plex Mono";font-weight:600;font-size:25px;letter-spacing:-.03em;
+  margin-top:5px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .d{font-size:12px;margin-top:5px;color:var(--ink-2);font-family:"IBM Plex Mono";
+  font-variant-numeric:tabular-nums}
+.up{color:var(--good)} .dn{color:var(--bad)}
+
+/* controls */
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);
+  border-radius:8px;padding:2px;gap:2px}
+.seg button{font:500 12.5px/1 "IBM Plex Sans",sans-serif;color:var(--ink-2);background:none;
+  border:0;padding:7px 11px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);
+  box-shadow:var(--shadow);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:18px 18px 12px;box-shadow:var(--shadow)}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.lg{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;padding:5px 10px 5px 8px;
+  border:1px solid var(--line);border-radius:99px;background:var(--surface);cursor:pointer;
+  color:var(--ink-2);font-family:inherit}
+.lg[aria-pressed="false"]{opacity:.42}
+.lg i{width:10px;height:10px;border-radius:2px;display:block;flex:none}
+.lg b{font-family:"IBM Plex Mono";font-weight:500;font-variant-numeric:tabular-nums;
+  color:var(--ink);font-size:12px}
+.lg:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+
+svg{display:block;width:100%;height:auto;overflow:visible}
+.gl{stroke:var(--line-soft);stroke-width:1}
+.ax{fill:var(--ink-3);font-family:"IBM Plex Mono";font-size:10.5px;
+  font-variant-numeric:tabular-nums}
+.q4{fill:var(--brass);opacity:.055}
+
+/* tooltip */
+.tip{position:fixed;pointer-events:none;z-index:60;background:var(--surface);
+  border:1px solid var(--line);border-radius:9px;padding:10px 12px;box-shadow:var(--shadow);
+  font-size:12.5px;min-width:184px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.tip h4{margin:0 0 7px;font:600 12px/1 "IBM Plex Mono";letter-spacing:.06em;color:var(--ink-3);
+  text-transform:uppercase}
+.tip .r{display:flex;align-items:center;gap:8px;margin-top:3px}
+.tip .r i{width:9px;height:9px;border-radius:2px;flex:none}
+.tip .r span{flex:1;color:var(--ink-2)}
+.tip .r b{font-family:"IBM Plex Mono";font-weight:600;font-variant-numeric:tabular-nums}
+.tip .tot{border-top:1px solid var(--line);margin-top:7px;padding-top:6px}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}
+th,td{padding:9px 13px;text-align:right;white-space:nowrap;
+  border-bottom:1px solid var(--line-soft)}
+th{font:600 11px/1.3 "IBM Plex Sans";letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);background:var(--surface-2);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:150px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+td.n{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:600;background:var(--surface-2);border-top:2px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{width:9px;height:9px;border-radius:2px;flex:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:600;
+  font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+.pill.g{background:var(--good-bg);color:var(--good)}
+.pill.b{background:var(--bad-bg);color:var(--bad)}
+.pill.w{background:var(--warn-bg);color:var(--warn)}
+
+/* margin lab */
+.lab{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:20px;align-items:start}
+@media(max-width:820px){.lab{grid-template-columns:1fr}}
+.sl{padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.sl:last-child{border-bottom:0}
+.sl .top{display:flex;align-items:baseline;gap:9px;margin-bottom:7px}
+.sl .top i{width:10px;height:10px;border-radius:2px;flex:none;align-self:center}
+.sl .top strong{font-size:14px;font-weight:600;flex:1}
+.sl .top b{font-family:"IBM Plex Mono";font-size:14px;font-weight:600;
+  font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--brass);height:20px;cursor:pointer}
+input[type=range]:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.slnote{font-size:11.5px;color:var(--ink-3);font-family:"IBM Plex Mono";
+  font-variant-numeric:tabular-nums}
+
+.note{background:var(--surface-2);border-left:3px solid var(--brass);border-radius:0 8px 8px 0;
+  padding:13px 16px;font-size:13.5px;color:var(--ink-2);margin-top:14px}
+.note strong{color:var(--ink)}
+.finding{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.finding > div{background:var(--surface);padding:15px 17px}
+.finding h3{font-size:14.5px;font-weight:700;margin-bottom:5px;display:flex;gap:9px;
+  align-items:baseline}
+.finding p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.tag{font-family:"IBM Plex Mono";font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 7px;border-radius:4px;flex:none}
+.tag.c{background:var(--good-bg);color:var(--good)}
+.tag.i{background:var(--warn-bg);color:var(--warn)}
+footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;
+  color:var(--ink-3)}
+footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px;
+  border-radius:4px;color:var(--ink-2);font-size:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header><div class="hin">
+  <div class="mark">Panel Marketplace</div>
+  <div class="hmeta">
+    <div><span>Periodo</span> <b id="hPer">—</b></div>
+    <div><span>Meses</span> <b id="hN">—</b></div>
+    <div><span>Acumulado</span> <b id="hV">—</b></div>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<div class="kpis" id="kpis"></div>
+<p class="note" id="lflNote"></p>
+
+<section>
+  <div class="shead">
+    <h2>Serie mensual por proveedor</h2>
+    <p>Las bandas cálidas marcan noviembre y diciembre. Las cifras de la leyenda son el acumulado de los 20 meses.</p>
+  </div>
+  <div class="bar">
+    <div class="seg" id="metric" role="group" aria-label="Métrica"></div>
+  </div>
+  <div class="card">
+    <svg id="chart" viewBox="0 0 980 340" role="img" aria-label="Serie mensual por proveedor"></svg>
+    <div class="legend" id="legend"></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>Comparativa a ventana idéntica</h2>
+    <p>Solo los meses presentes en ambos años. Un run-rate anualizado sería
+       inválido: noviembre y diciembre valen un tercio del año.</p>
+  </div>
+  <div class="scroll"><table id="lfl"></table></div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>Laboratorio de margen</h2>
+    <p>Mueve el margen de cada proveedor y mira qué le pasa al rendimiento por sesión.
+       Los valores de partida son tus rangos reales.</p>
+  </div>
+  <div class="lab">
+    <div class="card" id="sliders"></div>
+    <div>
+      <div class="card">
+        <svg id="mchart" viewBox="0 0 620 260" role="img"
+             aria-label="Margen por sesión frente a cuota de tráfico"></svg>
+      </div>
+      <div class="scroll" style="margin-top:14px"><table id="mtab"></table></div>
+      <p class="note" id="mnote"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <h2>BuyBox perdido</h2>
+    <p>ASINs de los últimos 8 meses con demanda probada (&gt;5.000 sesiones) y oferta
+       destacada por debajo del 70%. El riesgo es una cota superior, no una previsión.</p>
+  </div>
+  <div class="scroll"><table id="bb"></table></div>
+</section>
+
+<section>
+  <div class="shead"><h2>Lectura</h2></div>
+  <div class="finding" id="find"></div>
+</section>
+
+<footer id="foot"></footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const D = {"months": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08"], "suppliers": ["Arcos", "Cuperinox", "Hendi", "Vinfer (grupo)", "Otros"], "margins": {"Arcos": [15, 25], "Cuperinox": [25, 35], "Hendi": [20, 35], "Vinfer (grupo)": [15, 25], "Otros": [15, 25]}, "series": {"Arcos": [{"ses": 290227.0, "uds": 6684.0, "v": 159528.53, "bbw": 10991208.91, "n": 313}, {"ses": 222224.0, "uds": 3957.0, "v": 96860.08, "bbw": 7929523.92, "n": 264}, {"ses": 230470.0, "uds": 5489.0, "v": 128423.32, "bbw": 9501920.08, "n": 297}, {"ses": 122937.0, "uds": 4900.0, "v": 106927.85, "bbw": 6579795.97, "n": 272}, {"ses": 156403.0, "uds": 3851.0, "v": 92650.21, "bbw": 5403819.04, "n": 257}, {"ses": 94665.0, "uds": 3952.0, "v": 94127.29, "bbw": 4632943.78, "n": 258}, {"ses": 200522.0, "uds": 4726.0, "v": 115652.51, "bbw": 7193312.0, "n": 247}, {"ses": 178004.0, "uds": 4118.0, "v": 104809.82, "bbw": 6289882.42, "n": 278}, {"ses": 197357.0, "uds": 5676.0, "v": 140691.61, "bbw": 8743997.99, "n": 359}, {"ses": 245314.0, "uds": 6738.0, "v": 162304.94, "bbw": 11944516.76, "n": 353}, {"ses": 416605.0, "uds": 8599.0, "v": 222897.76, "bbw": 16648037.41, "n": 372}, {"ses": 584388.0, "uds": 11175.0, "v": 320204.84, "bbw": 21341436.91, "n": 379}, {"ses": 324442.0, "uds": 9231.0, "v": 223862.22, "bbw": 15091491.78, "n": 375}, {"ses": 207778.0, "uds": 5991.0, "v": 131095.18, "bbw": 9723114.16, "n": 313}, {"ses": 264024.0, "uds": 6387.0, "v": 155603.21, "bbw": 12040660.55, "n": 349}, {"ses": 151991.0, "uds": 5774.0, "v": 134930.6, "bbw": 7953251.11, "n": 336}, {"ses": 174889.0, "uds": 5207.0, "v": 125469.13, "bbw": 7599174.8, "n": 324}, {"ses": 233521.0, "uds": 5769.0, "v": 140975.91, "bbw": 8045995.95, "n": 338}, {"ses": 173384.0, "uds": 5288.0, "v": 123636.4, "bbw": 7086260.11, "n": 306}, {"ses": 221134.0, "uds": 4933.0, "v": 129358.21, "bbw": 7828222.58, "n": 305}], "Cuperinox": [{"ses": 34677.0, "uds": 2731.0, "v": 46482.05, "bbw": 3140273.57, "n": 53}, {"ses": 26625.0, "uds": 2101.0, "v": 32811.43, "bbw": 2582901.84, "n": 51}, {"ses": 22911.0, "uds": 1804.0, "v": 31550.6, "bbw": 2207523.71, "n": 50}, {"ses": 18491.0, "uds": 1337.0, "v": 31895.84, "bbw": 1664094.89, "n": 47}, {"ses": 16325.0, "uds": 1244.0, "v": 32948.6, "bbw": 1503419.28, "n": 51}, {"ses": 14492.0, "uds": 923.0, "v": 25452.36, "bbw": 1257016.6, "n": 53}, {"ses": 21235.0, "uds": 1536.0, "v": 42321.87, "bbw": 1997856.88, "n": 64}, {"ses": 19841.0, "uds": 1565.0, "v": 39142.35, "bbw": 1750495.47, "n": 59}, {"ses": 20740.0, "uds": 1614.0, "v": 39011.57, "bbw": 1835429.76, "n": 57}, {"ses": 26212.0, "uds": 1788.0, "v": 37985.82, "bbw": 2378562.03, "n": 62}, {"ses": 51622.0, "uds": 3405.0, "v": 82777.86, "bbw": 4666559.7, "n": 66}, {"ses": 111504.0, "uds": 8579.0, "v": 211173.28, "bbw": 10868680.24, "n": 74}, {"ses": 69973.0, "uds": 4105.0, "v": 138723.74, "bbw": 6677881.31, "n": 74}, {"ses": 32805.0, "uds": 2137.0, "v": 60761.67, "bbw": 3178428.71, "n": 61}, {"ses": 31380.0, "uds": 2418.0, "v": 60723.37, "bbw": 3090365.63, "n": 67}, {"ses": 20958.0, "uds": 1715.0, "v": 37051.12, "bbw": 2030058.14, "n": 67}, {"ses": 19367.0, "uds": 1582.0, "v": 31258.41, "bbw": 1887002.37, "n": 66}, {"ses": 19699.0, "uds": 1968.0, "v": 39871.54, "bbw": 1934370.27, "n": 67}, {"ses": 25292.0, "uds": 2091.0, "v": 58095.75, "bbw": 2498967.91, "n": 70}, {"ses": 30414.0, "uds": 2284.0, "v": 47755.98, "bbw": 2994779.53, "n": 77}], "Hendi": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 336.0, "uds": 18.0, "v": 1200.05, "bbw": 20187.61, "n": 10}, {"ses": 3737.0, "uds": 137.0, "v": 13875.02, "bbw": 182007.55, "n": 49}, {"ses": 4557.0, "uds": 132.0, "v": 13594.57, "bbw": 257116.97, "n": 47}, {"ses": 6621.0, "uds": 277.0, "v": 21842.13, "bbw": 398132.15, "n": 70}, {"ses": 8475.0, "uds": 270.0, "v": 19789.06, "bbw": 452634.74, "n": 66}, {"ses": 10201.0, "uds": 284.0, "v": 16438.01, "bbw": 482276.89, "n": 83}, {"ses": 9971.0, "uds": 414.0, "v": 22072.9, "bbw": 582795.65, "n": 92}, {"ses": 6132.0, "uds": 299.0, "v": 19192.93, "bbw": 347239.63, "n": 94}, {"ses": 8106.0, "uds": 352.0, "v": 18550.82, "bbw": 431913.4, "n": 88}, {"ses": 12436.0, "uds": 676.0, "v": 37109.81, "bbw": 831765.26, "n": 137}, {"ses": 10117.0, "uds": 765.0, "v": 41771.28, "bbw": 768585.43, "n": 132}, {"ses": 10999.0, "uds": 726.0, "v": 40768.33, "bbw": 741136.54, "n": 155}, {"ses": 9125.0, "uds": 700.0, "v": 38288.31, "bbw": 646727.13, "n": 139}, {"ses": 8067.0, "uds": 671.0, "v": 39177.9, "bbw": 531916.59, "n": 130}, {"ses": 6932.0, "uds": 448.0, "v": 23489.93, "bbw": 435808.4, "n": 108}], "Vinfer (grupo)": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 1200.0, "uds": 69.0, "v": 849.38, "bbw": 23114.63, "n": 8}, {"ses": 5801.0, "uds": 1243.0, "v": 17026.76, "bbw": 464789.63, "n": 16}, {"ses": 8565.0, "uds": 1784.0, "v": 26918.79, "bbw": 684566.5, "n": 17}, {"ses": 4156.0, "uds": 737.0, "v": 11100.6, "bbw": 337783.56, "n": 16}, {"ses": 5211.0, "uds": 626.0, "v": 9046.84, "bbw": 354105.56, "n": 30}, {"ses": 3816.0, "uds": 435.0, "v": 5955.83, "bbw": 281531.19, "n": 36}, {"ses": 2166.0, "uds": 271.0, "v": 3594.91, "bbw": 177194.16, "n": 29}, {"ses": 2781.0, "uds": 399.0, "v": 4736.0, "bbw": 220069.55, "n": 40}, {"ses": 6821.0, "uds": 559.0, "v": 7049.96, "bbw": 613243.61, "n": 57}, {"ses": 9881.0, "uds": 1185.0, "v": 16348.88, "bbw": 863871.19, "n": 55}, {"ses": 19485.0, "uds": 1593.0, "v": 23273.45, "bbw": 1763512.52, "n": 59}, {"ses": 25862.0, "uds": 1525.0, "v": 20349.56, "bbw": 2357187.23, "n": 59}, {"ses": 24464.0, "uds": 4410.0, "v": 66881.35, "bbw": 2180688.89, "n": 70}, {"ses": 26456.0, "uds": 4955.0, "v": 75258.49, "bbw": 2354787.44, "n": 67}, {"ses": 16758.0, "uds": 2187.0, "v": 31429.12, "bbw": 1437766.89, "n": 73}], "Otros": [{"ses": 1387.0, "uds": 71.0, "v": 964.29, "bbw": 96441.93, "n": 6}, {"ses": 1455.0, "uds": 92.0, "v": 936.3, "bbw": 103095.72, "n": 6}, {"ses": 1731.0, "uds": 140.0, "v": 1739.06, "bbw": 137091.48, "n": 5}, {"ses": 1632.0, "uds": 134.0, "v": 1590.16, "bbw": 136991.45, "n": 5}, {"ses": 1364.0, "uds": 91.0, "v": 1033.8, "bbw": 103634.69, "n": 6}, {"ses": 840.0, "uds": 52.0, "v": 740.28, "bbw": 68844.87, "n": 5}, {"ses": 1860.0, "uds": 117.0, "v": 1267.91, "bbw": 149997.84, "n": 7}, {"ses": 2769.0, "uds": 135.0, "v": 1438.73, "bbw": 185372.53, "n": 9}, {"ses": 1936.0, "uds": 147.0, "v": 1602.77, "bbw": 170642.1, "n": 7}, {"ses": 1728.0, "uds": 126.0, "v": 1336.58, "bbw": 156984.33, "n": 10}, {"ses": 2211.0, "uds": 148.0, "v": 1477.88, "bbw": 214383.26, "n": 9}, {"ses": 1306.0, "uds": 124.0, "v": 1183.94, "bbw": 128115.36, "n": 9}, {"ses": 1840.0, "uds": 96.0, "v": 972.48, "bbw": 122292.29, "n": 12}, {"ses": 1515.0, "uds": 100.0, "v": 982.54, "bbw": 103829.91, "n": 9}, {"ses": 1614.0, "uds": 85.0, "v": 846.37, "bbw": 101919.18, "n": 9}, {"ses": 1001.0, "uds": 89.0, "v": 864.03, "bbw": 92005.84, "n": 8}, {"ses": 1172.0, "uds": 125.0, "v": 1254.86, "bbw": 100226.53, "n": 11}, {"ses": 1391.0, "uds": 82.0, "v": 830.59, "bbw": 128694.83, "n": 10}, {"ses": 2702.0, "uds": 118.0, "v": 1323.66, "bbw": 188194.06, "n": 14}, {"ses": 3759.0, "uds": 232.0, "v": 2535.51, "bbw": 322135.75, "n": 18}]}, "brands": {"Arcos": [{"ses": 290227.0, "uds": 6684.0, "v": 159528.53, "bbw": 10991208.91, "n": 313}, {"ses": 222224.0, "uds": 3957.0, "v": 96860.08, "bbw": 7929523.92, "n": 264}, {"ses": 230470.0, "uds": 5489.0, "v": 128423.32, "bbw": 9501920.08, "n": 297}, {"ses": 122937.0, "uds": 4900.0, "v": 106927.85, "bbw": 6579795.97, "n": 272}, {"ses": 156403.0, "uds": 3851.0, "v": 92650.21, "bbw": 5403819.04, "n": 257}, {"ses": 94665.0, "uds": 3952.0, "v": 94127.29, "bbw": 4632943.78, "n": 258}, {"ses": 200522.0, "uds": 4726.0, "v": 115652.51, "bbw": 7193312.0, "n": 247}, {"ses": 178004.0, "uds": 4118.0, "v": 104809.82, "bbw": 6289882.42, "n": 278}, {"ses": 197357.0, "uds": 5676.0, "v": 140691.61, "bbw": 8743997.99, "n": 359}, {"ses": 245314.0, "uds": 6738.0, "v": 162304.94, "bbw": 11944516.76, "n": 353}, {"ses": 416605.0, "uds": 8599.0, "v": 222897.76, "bbw": 16648037.41, "n": 372}, {"ses": 584388.0, "uds": 11175.0, "v": 320204.84, "bbw": 21341436.91, "n": 379}, {"ses": 324442.0, "uds": 9231.0, "v": 223862.22, "bbw": 15091491.78, "n": 375}, {"ses": 207778.0, "uds": 5991.0, "v": 131095.18, "bbw": 9723114.16, "n": 313}, {"ses": 264024.0, "uds": 6387.0, "v": 155603.21, "bbw": 12040660.55, "n": 349}, {"ses": 151991.0, "uds": 5774.0, "v": 134930.6, "bbw": 7953251.11, "n": 336}, {"ses": 174889.0, "uds": 5207.0, "v": 125469.13, "bbw": 7599174.8, "n": 324}, {"ses": 233521.0, "uds": 5769.0, "v": 140975.91, "bbw": 8045995.95, "n": 338}, {"ses": 173384.0, "uds": 5288.0, "v": 123636.4, "bbw": 7086260.11, "n": 306}, {"ses": 221134.0, "uds": 4933.0, "v": 129358.21, "bbw": 7828222.58, "n": 305}], "Cuperinox": [{"ses": 34677.0, "uds": 2731.0, "v": 46482.05, "bbw": 3140273.57, "n": 53}, {"ses": 26625.0, "uds": 2101.0, "v": 32811.43, "bbw": 2582901.84, "n": 51}, {"ses": 22911.0, "uds": 1804.0, "v": 31550.6, "bbw": 2207523.71, "n": 50}, {"ses": 18491.0, "uds": 1337.0, "v": 31895.84, "bbw": 1664094.89, "n": 47}, {"ses": 16325.0, "uds": 1244.0, "v": 32948.6, "bbw": 1503419.28, "n": 51}, {"ses": 14492.0, "uds": 923.0, "v": 25452.36, "bbw": 1257016.6, "n": 53}, {"ses": 21235.0, "uds": 1536.0, "v": 42321.87, "bbw": 1997856.88, "n": 64}, {"ses": 19841.0, "uds": 1565.0, "v": 39142.35, "bbw": 1750495.47, "n": 59}, {"ses": 20740.0, "uds": 1614.0, "v": 39011.57, "bbw": 1835429.76, "n": 57}, {"ses": 26212.0, "uds": 1788.0, "v": 37985.82, "bbw": 2378562.03, "n": 62}, {"ses": 51622.0, "uds": 3405.0, "v": 82777.86, "bbw": 4666559.7, "n": 66}, {"ses": 111504.0, "uds": 8579.0, "v": 211173.28, "bbw": 10868680.24, "n": 74}, {"ses": 69973.0, "uds": 4105.0, "v": 138723.74, "bbw": 6677881.31, "n": 74}, {"ses": 32805.0, "uds": 2137.0, "v": 60761.67, "bbw": 3178428.71, "n": 61}, {"ses": 31380.0, "uds": 2418.0, "v": 60723.37, "bbw": 3090365.63, "n": 67}, {"ses": 20958.0, "uds": 1715.0, "v": 37051.12, "bbw": 2030058.14, "n": 67}, {"ses": 19367.0, "uds": 1582.0, "v": 31258.41, "bbw": 1887002.37, "n": 66}, {"ses": 19699.0, "uds": 1968.0, "v": 39871.54, "bbw": 1934370.27, "n": 67}, {"ses": 25292.0, "uds": 2091.0, "v": 58095.75, "bbw": 2498967.91, "n": 70}, {"ses": 30414.0, "uds": 2284.0, "v": 47755.98, "bbw": 2994779.53, "n": 77}], "Hendi": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 336.0, "uds": 18.0, "v": 1200.05, "bbw": 20187.61, "n": 10}, {"ses": 3737.0, "uds": 137.0, "v": 13875.02, "bbw": 182007.55, "n": 49}, {"ses": 4557.0, "uds": 132.0, "v": 13594.57, "bbw": 257116.97, "n": 47}, {"ses": 6621.0, "uds": 277.0, "v": 21842.13, "bbw": 398132.15, "n": 70}, {"ses": 8475.0, "uds": 270.0, "v": 19789.06, "bbw": 452634.74, "n": 66}, {"ses": 10201.0, "uds": 284.0, "v": 16438.01, "bbw": 482276.89, "n": 83}, {"ses": 9971.0, "uds": 414.0, "v": 22072.9, "bbw": 582795.65, "n": 92}, {"ses": 6132.0, "uds": 299.0, "v": 19192.93, "bbw": 347239.63, "n": 94}, {"ses": 8106.0, "uds": 352.0, "v": 18550.82, "bbw": 431913.4, "n": 88}, {"ses": 12436.0, "uds": 676.0, "v": 37109.81, "bbw": 831765.26, "n": 137}, {"ses": 10117.0, "uds": 765.0, "v": 41771.28, "bbw": 768585.43, "n": 132}, {"ses": 10999.0, "uds": 726.0, "v": 40768.33, "bbw": 741136.54, "n": 155}, {"ses": 9125.0, "uds": 700.0, "v": 38288.31, "bbw": 646727.13, "n": 139}, {"ses": 8067.0, "uds": 671.0, "v": 39177.9, "bbw": 531916.59, "n": 130}, {"ses": 6932.0, "uds": 448.0, "v": 23489.93, "bbw": 435808.4, "n": 108}], "Vinfermaton": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 480.0, "uds": 65.0, "v": 799.46, "bbw": 19772.75, "n": 6}, {"ses": 5408.0, "uds": 1231.0, "v": 16866.67, "bbw": 437818.95, "n": 14}, {"ses": 8073.0, "uds": 1753.0, "v": 26502.15, "bbw": 644291.64, "n": 14}, {"ses": 3957.0, "uds": 712.0, "v": 10798.2, "bbw": 318757.53, "n": 14}, {"ses": 3457.0, "uds": 417.0, "v": 6423.02, "bbw": 247797.08, "n": 12}, {"ses": 1791.0, "uds": 210.0, "v": 3241.04, "bbw": 141204.99, "n": 13}, {"ses": 612.0, "uds": 74.0, "v": 1044.07, "bbw": 56435.3, "n": 6}, {"ses": 488.0, "uds": 33.0, "v": 463.28, "bbw": 32039.86, "n": 7}, {"ses": 955.0, "uds": 101.0, "v": 1653.59, "bbw": 73835.55, "n": 10}, {"ses": 2361.0, "uds": 517.0, "v": 8436.17, "bbw": 197395.47, "n": 13}, {"ses": 4933.0, "uds": 980.0, "v": 16194.22, "bbw": 417784.42, "n": 15}, {"ses": 5979.0, "uds": 868.0, "v": 12771.28, "bbw": 513261.71, "n": 14}, {"ses": 19030.0, "uds": 3790.0, "v": 59544.64, "bbw": 1703065.59, "n": 20}, {"ses": 21953.0, "uds": 4241.0, "v": 66737.24, "bbw": 1947222.7, "n": 24}, {"ses": 13059.0, "uds": 1695.0, "v": 25621.53, "bbw": 1144320.71, "n": 25}], "Wins": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 1248.0, "uds": 159.0, "v": 2124.29, "bbw": 70086.31, "n": 12}, {"ses": 1320.0, "uds": 136.0, "v": 1886.85, "bbw": 83390.32, "n": 14}, {"ses": 997.0, "uds": 157.0, "v": 2162.23, "bbw": 73940.23, "n": 14}, {"ses": 1271.0, "uds": 232.0, "v": 3098.24, "bbw": 96773.82, "n": 17}, {"ses": 1207.0, "uds": 184.0, "v": 2409.34, "bbw": 85495.63, "n": 18}, {"ses": 1523.0, "uds": 254.0, "v": 3428.89, "bbw": 87866.05, "n": 16}, {"ses": 1385.0, "uds": 256.0, "v": 3354.14, "bbw": 86299.66, "n": 16}, {"ses": 1583.0, "uds": 296.0, "v": 3711.35, "bbw": 113450.32, "n": 15}, {"ses": 1558.0, "uds": 295.0, "v": 3602.22, "bbw": 104592.48, "n": 18}, {"ses": 1600.0, "uds": 407.0, "v": 5087.33, "bbw": 130739.14, "n": 16}, {"ses": 1463.0, "uds": 242.0, "v": 2928.84, "bbw": 80739.64, "n": 17}], "Sin marca": [{"ses": 877.0, "uds": 33.0, "v": 648.17, "bbw": 47465.91, "n": 4}, {"ses": 766.0, "uds": 25.0, "v": 360.97, "bbw": 36743.32, "n": 4}, {"ses": 1191.0, "uds": 91.0, "v": 1364.93, "bbw": 86456.05, "n": 3}, {"ses": 1166.0, "uds": 89.0, "v": 1225.11, "bbw": 90553.13, "n": 3}, {"ses": 937.0, "uds": 50.0, "v": 691.71, "bbw": 60934.69, "n": 4}, {"ses": 606.0, "uds": 36.0, "v": 606.44, "bbw": 45444.87, "n": 3}, {"ses": 1208.0, "uds": 61.0, "v": 817.77, "bbw": 84965.3, "n": 5}, {"ses": 1369.0, "uds": 62.0, "v": 775.94, "bbw": 106263.72, "n": 6}, {"ses": 1257.0, "uds": 78.0, "v": 998.46, "bbw": 103316.9, "n": 5}, {"ses": 1027.0, "uds": 73.0, "v": 818.1, "bbw": 87653.19, "n": 7}, {"ses": 1734.0, "uds": 135.0, "v": 1346.07, "bbw": 167533.82, "n": 6}, {"ses": 1016.0, "uds": 105.0, "v": 1017.11, "bbw": 99203.71, "n": 6}, {"ses": 1545.0, "uds": 82.0, "v": 825.62, "bbw": 96421.52, "n": 7}, {"ses": 1353.0, "uds": 88.0, "v": 860.16, "bbw": 87802.93, "n": 6}, {"ses": 1325.0, "uds": 74.0, "v": 726.98, "bbw": 77394.0, "n": 5}, {"ses": 782.0, "uds": 68.0, "v": 668.24, "bbw": 70582.12, "n": 6}, {"ses": 1001.0, "uds": 118.0, "v": 1177.43, "bbw": 83559.64, "n": 7}, {"ses": 1182.0, "uds": 75.0, "v": 758.66, "bbw": 107794.83, "n": 6}, {"ses": 1595.0, "uds": 76.0, "v": 907.92, "bbw": 154732.46, "n": 8}, {"ses": 2694.0, "uds": 157.0, "v": 1827.27, "bbw": 267774.95, "n": 9}], "Bioleaf": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 73.0, "uds": 5.0, "v": 49.95, "bbw": 6552.69, "n": 2}, {"ses": 54.0, "uds": 3.0, "v": 29.97, "bbw": 5132.3, "n": 2}, {"ses": 35.0, "uds": 2.0, "v": 20.15, "bbw": 3500.0, "n": 2}, {"ses": 292.0, "uds": 18.0, "v": 175.81, "bbw": 28760.02, "n": 9}, {"ses": 3782.0, "uds": 150.0, "v": 1756.41, "bbw": 376272.26, "n": 20}, {"ses": 4986.0, "uds": 277.0, "v": 3159.23, "bbw": 493234.46, "n": 18}, {"ses": 12446.0, "uds": 236.0, "v": 2648.64, "bbw": 1199627.06, "n": 19}, {"ses": 17491.0, "uds": 244.0, "v": 2754.56, "bbw": 1655506.82, "n": 20}, {"ses": 3048.0, "uds": 196.0, "v": 2382.95, "bbw": 301855.5, "n": 21}, {"ses": 1830.0, "uds": 164.0, "v": 1787.16, "bbw": 180550.4, "n": 16}, {"ses": 1209.0, "uds": 141.0, "v": 1618.58, "bbw": 119367.51, "n": 18}], "Vinfer": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 684.0, "uds": 2.0, "v": 21.94, "bbw": 342.0, "n": 1}, {"ses": 124.0, "uds": 2.0, "v": 21.94, "bbw": 70.68, "n": 1}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 238.0, "uds": 23.0, "v": 212.05, "bbw": 11299.7, "n": 2}, {"ses": 271.0, "uds": 52.0, "v": 448.86, "bbw": 23782.91, "n": 4}, {"ses": 350.0, "uds": 24.0, "v": 223.5, "bbw": 30789.11, "n": 4}, {"ses": 515.0, "uds": 97.0, "v": 794.48, "bbw": 47164.48, "n": 4}, {"ses": 638.0, "uds": 96.0, "v": 924.4, "bbw": 57382.88, "n": 6}, {"ses": 748.0, "uds": 115.0, "v": 1076.82, "bbw": 63191.11, "n": 5}, {"ses": 572.0, "uds": 105.0, "v": 890.61, "bbw": 48837.38, "n": 5}, {"ses": 623.0, "uds": 102.0, "v": 924.27, "bbw": 60077.12, "n": 6}, {"ses": 571.0, "uds": 113.0, "v": 1138.45, "bbw": 49194.25, "n": 7}, {"ses": 732.0, "uds": 122.0, "v": 1355.47, "bbw": 65942.5, "n": 7}, {"ses": 723.0, "uds": 90.0, "v": 1022.96, "bbw": 63443.59, "n": 10}], "Tradineur": [{"ses": 510.0, "uds": 38.0, "v": 316.12, "bbw": 48976.02, "n": 2}, {"ses": 689.0, "uds": 67.0, "v": 575.33, "bbw": 66352.4, "n": 2}, {"ses": 540.0, "uds": 49.0, "v": 374.13, "bbw": 50635.43, "n": 2}, {"ses": 466.0, "uds": 45.0, "v": 365.05, "bbw": 46438.32, "n": 2}, {"ses": 427.0, "uds": 41.0, "v": 342.09, "bbw": 42700.0, "n": 2}, {"ses": 234.0, "uds": 16.0, "v": 133.84, "bbw": 23400.0, "n": 2}, {"ses": 652.0, "uds": 56.0, "v": 450.14, "bbw": 65032.54, "n": 2}, {"ses": 796.0, "uds": 67.0, "v": 603.33, "bbw": 79108.81, "n": 2}, {"ses": 679.0, "uds": 69.0, "v": 604.31, "bbw": 67325.2, "n": 2}, {"ses": 629.0, "uds": 44.0, "v": 377.71, "bbw": 62200.98, "n": 2}, {"ses": 405.0, "uds": 10.0, "v": 84.26, "bbw": 39887.04, "n": 2}, {"ses": 279.0, "uds": 18.0, "v": 150.84, "bbw": 27811.65, "n": 2}, {"ses": 232.0, "uds": 10.0, "v": 88.9, "bbw": 22720.88, "n": 2}, {"ses": 127.0, "uds": 9.0, "v": 74.41, "bbw": 12526.98, "n": 2}, {"ses": 208.0, "uds": 8.0, "v": 77.42, "bbw": 20303.17, "n": 2}, {"ses": 219.0, "uds": 21.0, "v": 195.79, "bbw": 21423.72, "n": 2}, {"ses": 149.0, "uds": 5.0, "v": 51.45, "bbw": 14731.64, "n": 2}, {"ses": 173.0, "uds": 5.0, "v": 47.95, "bbw": 17300.0, "n": 2}, {"ses": 212.0, "uds": 13.0, "v": 121.86, "bbw": 20945.9, "n": 2}, {"ses": 253.0, "uds": 30.0, "v": 266.7, "bbw": 25138.34, "n": 2}], "Vincare": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 36.0, "uds": 2.0, "v": 27.98, "bbw": 2999.88, "n": 1}, {"ses": 269.0, "uds": 10.0, "v": 138.15, "bbw": 26900.0, "n": 1}, {"ses": 492.0, "uds": 31.0, "v": 416.64, "bbw": 40274.86, "n": 3}, {"ses": 199.0, "uds": 25.0, "v": 302.4, "bbw": 19026.03, "n": 2}, {"ses": 195.0, "uds": 22.0, "v": 237.53, "bbw": 18369.78, "n": 2}, {"ses": 380.0, "uds": 34.0, "v": 349.11, "bbw": 28020.67, "n": 3}, {"ses": 172.0, "uds": 14.0, "v": 144.96, "bbw": 12529.52, "n": 3}, {"ses": 215.0, "uds": 19.0, "v": 204.19, "bbw": 15331.37, "n": 3}, {"ses": 239.0, "uds": 28.0, "v": 306.22, "bbw": 20257.29, "n": 3}, {"ses": 263.0, "uds": 22.0, "v": 247.77, "bbw": 22184.1, "n": 3}, {"ses": 149.0, "uds": 16.0, "v": 185.84, "bbw": 10964.0, "n": 4}, {"ses": 186.0, "uds": 15.0, "v": 188.1, "bbw": 14891.26, "n": 4}, {"ses": 257.0, "uds": 16.0, "v": 213.09, "bbw": 21981.07, "n": 4}, {"ses": 341.0, "uds": 21.0, "v": 291.29, "bbw": 30332.7, "n": 4}, {"ses": 304.0, "uds": 19.0, "v": 237.21, "bbw": 29895.44, "n": 3}], "La Garrafita": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 15.0, "uds": 1.0, "v": 9.99, "bbw": 1235.25, "n": 1}, {"ses": 25.0, "uds": 1.0, "v": 7.99, "bbw": 2500.0, "n": 1}, {"ses": 100.0, "uds": 26.0, "v": 251.91, "bbw": 10000.0, "n": 2}, {"ses": 261.0, "uds": 40.0, "v": 381.42, "bbw": 25638.4, "n": 4}], "Xpartan": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 72.0, "uds": 9.0, "v": 140.77, "bbw": 7130.16, "n": 1}, {"ses": 72.0, "uds": 3.0, "v": 47.55, "bbw": 6962.4, "n": 1}, {"ses": 11.0, "uds": 1.0, "v": 15.99, "bbw": 1100.0, "n": 1}, {"ses": 37.0, "uds": 3.0, "v": 47.97, "bbw": 3149.89, "n": 2}, {"ses": 35.0, "uds": 3.0, "v": 47.97, "bbw": 3500.0, "n": 1}, {"ses": 47.0, "uds": 2.0, "v": 31.98, "bbw": 4222.01, "n": 1}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 7.0, "uds": 1.0, "v": 15.99, "bbw": 700.0, "n": 1}, {"ses": 11.0, "uds": 1.0, "v": 15.99, "bbw": 1100.0, "n": 1}, {"ses": 20.0, "uds": 2.0, "v": 31.98, "bbw": 1818.2, "n": 1}, {"ses": 32.0, "uds": 2.0, "v": 29.98, "bbw": 3200.0, "n": 2}], "Maton": [{"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 604.0, "uds": 6.0, "v": 59.46, "bbw": 0.0, "n": 1}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 26.0, "uds": 1.0, "v": 9.99, "bbw": 0.0, "n": 1}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 34.0, "uds": 1.0, "v": 9.99, "bbw": 0.0, "n": 1}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 0.0, "uds": 0.0, "v": 0.0, "bbw": 0.0, "n": 0}, {"ses": 775.0, "uds": 1.0, "v": 9.99, "bbw": 697.5, "n": 1}, {"ses": 519.0, "uds": 3.0, "v": 30.14, "bbw": 384.06, "n": 1}]}, "brandOrder": ["Arcos", "Cuperinox", "Hendi", "Vinfermaton", "Wins", "Sin marca", "Bioleaf", "Vinfer", "Tradineur", "Vincare", "La Garrafita", "Xpartan", "Maton"], "total": [{"ses": 326291.0, "uds": 9486.0, "v": 206974.87, "bbw": 14227924.41, "n": 372}, {"ses": 250304.0, "uds": 6150.0, "v": 130607.81, "bbw": 10615521.48, "n": 321}, {"ses": 255112.0, "uds": 7433.0, "v": 161712.98, "bbw": 11846535.27, "n": 352}, {"ses": 143060.0, "uds": 6371.0, "v": 140413.85, "bbw": 8380882.31, "n": 324}, {"ses": 174092.0, "uds": 5186.0, "v": 126632.61, "bbw": 7010873.01, "n": 314}, {"ses": 111533.0, "uds": 5014.0, "v": 122369.36, "bbw": 6002107.49, "n": 334}, {"ses": 233155.0, "uds": 7759.0, "v": 190144.07, "bbw": 9987963.9, "n": 383}, {"ses": 213736.0, "uds": 7734.0, "v": 185904.26, "bbw": 9167433.89, "n": 410}, {"ses": 230810.0, "uds": 8451.0, "v": 214248.68, "bbw": 11485985.56, "n": 509}, {"ses": 286940.0, "uds": 9548.0, "v": 230463.24, "bbw": 15286803.42, "n": 521}, {"ses": 484455.0, "uds": 12871.0, "v": 329547.34, "bbw": 22292788.45, "n": 566}, {"ses": 709335.0, "uds": 20563.0, "v": 558229.87, "bbw": 33098222.32, "n": 583}, {"ses": 405168.0, "uds": 14130.0, "v": 387487.37, "bbw": 22458974.56, "n": 595}, {"ses": 257025.0, "uds": 9139.0, "v": 218440.17, "bbw": 14050529.79, "n": 528}, {"ses": 319335.0, "uds": 10751.0, "v": 270631.64, "bbw": 16928581.81, "n": 617}, {"ses": 203552.0, "uds": 9936.0, "v": 237890.48, "bbw": 12607413.04, "n": 602}, {"ses": 232289.0, "uds": 9165.0, "v": 219100.29, "bbw": 12684727.47, "n": 615}, {"ses": 288200.0, "uds": 12929.0, "v": 286847.7, "bbw": 12936477.07, "n": 624}, {"ses": 235901.0, "uds": 13123.0, "v": 297492.2, "bbw": 12660126.11, "n": 587}, {"ses": 278997.0, "uds": 10084.0, "v": 234568.75, "bbw": 13018713.15, "n": 581}], "jamon": [{"ses": 45899.0, "uds": 1971.0, "v": 43651.16, "bbw": 2753724.04, "n": 44}, {"ses": 18684.0, "uds": 706.0, "v": 16928.17, "bbw": 1348690.19, "n": 35}, {"ses": 15465.0, "uds": 654.0, "v": 19008.5, "bbw": 1213189.82, "n": 36}, {"ses": 11285.0, "uds": 452.0, "v": 20209.76, "bbw": 833027.56, "n": 35}, {"ses": 12387.0, "uds": 453.0, "v": 22145.8, "bbw": 911250.19, "n": 33}, {"ses": 7444.0, "uds": 379.0, "v": 16484.64, "bbw": 649627.98, "n": 33}, {"ses": 12237.0, "uds": 485.0, "v": 23253.13, "bbw": 941861.19, "n": 31}, {"ses": 12758.0, "uds": 459.0, "v": 20201.13, "bbw": 854134.97, "n": 35}, {"ses": 15734.0, "uds": 627.0, "v": 27612.7, "bbw": 1173385.02, "n": 36}, {"ses": 25179.0, "uds": 637.0, "v": 25557.23, "bbw": 1676332.78, "n": 41}, {"ses": 64461.0, "uds": 1690.0, "v": 67138.57, "bbw": 3785563.51, "n": 45}, {"ses": 183294.0, "uds": 6574.0, "v": 202481.08, "bbw": 10502142.69, "n": 56}, {"ses": 72062.0, "uds": 2609.0, "v": 123105.11, "bbw": 5376976.87, "n": 52}, {"ses": 23429.0, "uds": 794.0, "v": 42880.84, "bbw": 1826585.22, "n": 41}, {"ses": 19891.0, "uds": 758.0, "v": 37703.11, "bbw": 1559792.71, "n": 42}, {"ses": 10601.0, "uds": 392.0, "v": 17358.57, "bbw": 758541.52, "n": 40}, {"ses": 9779.0, "uds": 307.0, "v": 12370.92, "bbw": 707381.04, "n": 36}, {"ses": 8453.0, "uds": 347.0, "v": 10429.37, "bbw": 553063.37, "n": 38}, {"ses": 8818.0, "uds": 322.0, "v": 12482.36, "bbw": 696140.9, "n": 35}, {"ses": 10862.0, "uds": 334.0, "v": 14411.72, "bbw": 786398.27, "n": 38}], "asins": [372, 321, 352, 324, 314, 334, 383, 410, 509, 521, 566, 583, 595, 528, 617, 602, 615, 624, 587, 581], "bbloss": [{"title": "Arcos Juego de Cuchillos Mondadores de 3 Piezas", "brand": "Arcos", "v": 25070, "bb": 14.3, "ses": 147713, "conv": 1.7, "riesgo": 75211}, {"title": "Arcos Juego de 6 Cuchillos de Mesa Chuleteros Hoja 110 mm Negro 705500", "brand": "Arcos", "v": 40728, "bb": 37.3, "ses": 59140, "conv": 5.8, "riesgo": 68581}, {"title": "Arcos Juego de 6 Cuchillos Mondadores Acero Inoxidable 100 mm", "brand": "Arcos", "v": 16405, "bb": 12.5, "ses": 66111, "conv": 1.48, "riesgo": 49214}, {"title": "ARCOS Afilador de Cuchillos Profesional ABS", "brand": "Arcos", "v": 13005, "bb": 24.6, "ses": 23957, "conv": 0.82, "riesgo": 39015}, {"title": "ARCOS Tijeras de Cocina Multiusos 200 mm", "brand": "Arcos", "v": 12650, "bb": 20.6, "ses": 21516, "conv": 5.03, "riesgo": 37951}, {"title": "Arcos Estuche de 3 Cuchillos Básicos de Cocina. Pack de Cuchillos con Hoja de Acero Inoxidable y Mango de Polieximetileno Aptos para Lavavajillas. Serie Universal. Color Negro", "brand": "Arcos", "v": 10145, "bb": 16.1, "ses": 35647, "conv": 0.65, "riesgo": 30435}, {"title": "Arcos Juego Chuleteros Mango Madera 110 mm", "brand": "Arcos", "v": 8231, "bb": 12.0, "ses": 31092, "conv": 1.12, "riesgo": 24694}, {"title": "Arcos Juego de Cuchillos con Bloque Acero Inoxidable 6 piezas", "brand": "Arcos", "v": 7084, "bb": 23.1, "ses": 22430, "conv": 0.7, "riesgo": 21252}, {"title": "ARCOS Pinzas para Emplatar Acero Inoxidable 200 mm", "brand": "Arcos", "v": 4594, "bb": 17.4, "ses": 29746, "conv": 1.33, "riesgo": 13783}, {"title": "Arcos Tacos - Bloque Universal para Cuchillos hasta 20 cm - Hecho de Caucho Termoplástico 220 x 160 x 65 mm - Color Negro", "brand": "Arcos", "v": 4243, "bb": 18.6, "ses": 12210, "conv": 1.32, "riesgo": 12728}, {"title": "Arcos Juego de Cuchillos de Cocina de 5 Piezas", "brand": "Arcos", "v": 4208, "bb": 14.9, "ses": 10781, "conv": 0.63, "riesgo": 12624}, {"title": "ARCOS Juego de Cubiertos de 24 Piezas para Mesa. Cuberterí­a Completa para 6 Personas. Set de 6 Cucharas, 6 Cuchillos, 6 Tenedores y 6 Cucharas de Postre. Serie Toscana. Color Plata", "brand": "Arcos", "v": 3943, "bb": 18.8, "ses": 11051, "conv": 0.53, "riesgo": 11829}, {"title": "Arcos Juego de Cuchillos de Cocina de 3 Piezas", "brand": "Arcos", "v": 3583, "bb": 14.5, "ses": 11731, "conv": 0.44, "riesgo": 10748}, {"title": "ARCOS Sacacorchos Eléctrico en ABS con Batería Interna Recargable. Abrebotellas Eléctrico Moderno y Elegante con Cortacápsulas y Luz Indicadora. Color Negro", "brand": "Arcos", "v": 3998, "bb": 27.6, "ses": 13865, "conv": 0.67, "riesgo": 10502}, {"title": "ARCOS Afilador Profesional Manual Cerámica y Carbono Rojo-Negro", "brand": "Arcos", "v": 3167, "bb": 5.9, "ses": 36797, "conv": 0.67, "riesgo": 9501}, {"title": "ARCOS Bolsa para Cuchillos 100% Poliéster 460x275 mm", "brand": "Arcos", "v": 16122, "bb": 63.5, "ses": 15125, "conv": 6.76, "riesgo": 9256}, {"title": "Arcos Hachuela Macheta de Cocina Acero Inoxidable 160 mm", "brand": "Arcos", "v": 3047, "bb": 16.9, "ses": 12430, "conv": 0.99, "riesgo": 9140}, {"title": "Arcos Serie Ecopro - Tijeras de Cocina - Acero Inoxidable 240 mm - Mango de Acero Inoxidable - Color Plata", "brand": "Arcos", "v": 2793, "bb": 23.5, "ses": 7920, "conv": 1.93, "riesgo": 8378}, {"title": "ARCOS Pelador Profesional Acero Inoxidable Cromado 130 mm", "brand": "Arcos", "v": 2728, "bb": 0.6, "ses": 38996, "conv": 1.15, "riesgo": 8184}, {"title": "Arcos Universal Cuchillo Jamonero Acero Hoja Hueca Negro 280 mm", "brand": "Arcos", "v": 2690, "bb": 22.7, "ses": 7216, "conv": 1.59, "riesgo": 8069}], "periodo": "2025-01 → 2026-08"};
+const $ = s => document.querySelector(s);
+const SC = ['--s1','--s2','--s3','--s4','--s5'];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const eur = n => n.toLocaleString('es-ES',{maximumFractionDigits:0})+' €';
+const int = n => n.toLocaleString('es-ES',{maximumFractionDigits:0});
+const dec = (n,d=2) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const MN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const lbl = m => MN[+m.slice(5,7)-1]+" '"+m.slice(2,4);
+const isQ4 = m => ['11','12'].includes(m.slice(5,7));
+const col = i => css(SC[i % SC.length]);
+
+const METRICS = [
+  {k:'v',    n:'Ventas',      stack:true,  fmt:eur,               ax:n=>int(n/1000)+'k'},
+  {k:'ses',  n:'Sesiones',    stack:true,  fmt:int,               ax:n=>int(n/1000)+'k'},
+  {k:'uds',  n:'Unidades',    stack:true,  fmt:int,               ax:int},
+  {k:'eur',  n:'€/sesión',    stack:false, fmt:n=>dec(n)+' €',    ax:n=>dec(n,2)},
+  {k:'conv', n:'Conversión',  stack:false, fmt:n=>dec(n,1)+'%',   ax:n=>dec(n,1)+'%'},
+  {k:'bb',   n:'BuyBox',      stack:false, fmt:n=>dec(n,1)+'%',   ax:n=>dec(n,0)+'%'}
+];
+const val = (a,k) => k==='eur' ? (a.ses?a.v/a.ses:0)
+                   : k==='conv'? (a.ses?100*a.uds/a.ses:0)
+                   : k==='bb'  ? (a.ses?a.bbw/a.ses:0) : a[k];
+
+let metric = 'v';
+const off = new Set();
+
+/* ---------- header + KPIs ---------- */
+const M = D.months, T = D.total, N = M.length;
+const sum = (arr,k) => arr.reduce((s,a)=>s+a[k],0);
+$('#hPer').textContent = lbl(M[0])+' – '+lbl(M[N-1]);
+$('#hN').textContent = N;
+$('#hV').textContent = eur(sum(T,'v'));
+
+/* ventana idéntica entre los dos últimos años presentes */
+const years = [...new Set(M.map(m=>m.slice(0,4)))].sort();
+const yB = years[years.length-1], yA = years[years.length-2];
+const mm = y => M.filter(m=>m.startsWith(y)).map(m=>m.slice(5));
+const win = yA ? mm(yB).filter(x=>mm(yA).includes(x)) : mm(yB);
+const idx = y => win.map(s=>M.indexOf(y+'-'+s)).filter(i=>i>=0);
+const iA = yA?idx(yA):[], iB = idx(yB);
+const pick = (rows,ii)=>ii.map(i=>rows[i]);
+const roll = rows => rows.reduce((a,r)=>({ses:a.ses+r.ses,uds:a.uds+r.uds,v:a.v+r.v,
+  bbw:a.bbw+r.bbw}),{ses:0,uds:0,v:0,bbw:0});
+const A = roll(pick(T,iA)), B = roll(pick(T,iB));
+const pct = (n,o) => o ? 100*(n-o)/o : null;
+const dSpan = p => p===null ? '' :
+  `<span class="${p>=0?'up':'dn'}">${p>=0?'▲':'▼'} ${dec(Math.abs(p),1)}%</span>`;
+
+const wLab = win.length ? `${MN[+win[0]-1]}–${MN[+win[win.length-1]-1]}` : '';
+$('#kpis').innerHTML = [
+  ['Ventas', eur(B.v), pct(B.v,A.v)],
+  ['Unidades', int(B.uds), pct(B.uds,A.uds)],
+  ['Sesiones', int(B.ses), pct(B.ses,A.ses)],
+  ['Conversión', dec(100*B.uds/B.ses,2)+'%', pct(B.uds/B.ses, A.uds/A.ses)],
+  ['€/sesión', dec(B.v/B.ses)+' €', pct(B.v/B.ses, A.v/A.ses)],
+  ['BuyBox', dec(B.bbw/B.ses,1)+'%', pct(B.bbw/B.ses, A.bbw/A.ses)]
+].map(([k,v,p])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+  <div class="d">${dSpan(p)} <span style="color:var(--ink-3)">vs ${yA||''}</span></div></div>`).join('');
+$('#lflNote').innerHTML = `Las cifras de arriba son <strong>${wLab} ${yB}</strong> frente a
+  <strong>${wLab} ${yA}</strong> — ventana idéntica, ${win.length} meses. El acumulado del
+  encabezado cubre los ${N} meses cargados.`;
+
+/* ---------- chart ---------- */
+const W=980, H=340, P={t:16,r:16,b:30,l:56};
+function draw(){
+  const m = METRICS.find(x=>x.k===metric);
+  const sups = D.suppliers.filter(s=>!off.has(s));
+  const iw = W-P.l-P.r, ih = H-P.t-P.b;
+  let max = 0;
+  if(m.stack) M.forEach((_,i)=>{max=Math.max(max, sups.reduce((s,k)=>s+val(D.series[k][i],m.k),0));});
+  else sups.forEach(k=>M.forEach((_,i)=>{max=Math.max(max, val(D.series[k][i],m.k));}));
+  if(!max) max=1;
+  const step = Math.pow(10,Math.floor(Math.log10(max)));
+  const top = Math.ceil(max/(step/2))*(step/2);
+  const y = v => P.t+ih-(v/top)*ih;
+  const bw = iw/M.length;
+  const ticks = [0,.25,.5,.75,1].map(f=>f*top);
+  let s = '';
+  M.forEach((mo,i)=>{ if(isQ4(mo)) s+=`<rect class="q4" x="${P.l+i*bw}" y="${P.t}"
+     width="${bw}" height="${ih}"/>`; });
+  ticks.forEach(t=>{ s+=`<line class="gl" x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}"/>
+    <text class="ax" x="${P.l-9}" y="${y(t)+3.5}" text-anchor="end">${m.ax(t)}</text>`; });
+  M.forEach((mo,i)=>{ if(i%(N>14?2:1)) return;
+    s+=`<text class="ax" x="${P.l+i*bw+bw/2}" y="${H-P.b+16}" text-anchor="middle">${lbl(mo)}</text>`;});
+
+  if(m.stack){
+    M.forEach((_,i)=>{ let acc=0;
+      sups.forEach(k=>{ const v=val(D.series[k][i],m.k); if(v<=0) return;
+        const y0=y(acc), y1=y(acc+v); acc+=v;
+        const h=Math.max(y0-y1-2,.8), x=P.l+i*bw+bw*.16, w=bw*.68;
+        s+=`<rect x="${x}" y="${y1}" width="${w}" height="${h}" rx="2"
+             fill="${col(D.suppliers.indexOf(k))}"/>`; });
+    });
+  } else {
+    sups.forEach(k=>{ const pts=M.map((_,i)=>[P.l+i*bw+bw/2, y(val(D.series[k][i],m.k))]);
+      s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none"
+           stroke="${col(D.suppliers.indexOf(k))}" stroke-width="2"
+           stroke-linejoin="round" stroke-linecap="round"/>`;
+      const last=pts[pts.length-1];
+      s+=`<circle cx="${last[0]}" cy="${last[1]}" r="4.5" fill="${col(D.suppliers.indexOf(k))}"
+           stroke="${css('--surface')}" stroke-width="2"/>`; });
+  }
+  M.forEach((_,i)=>{ s+=`<rect x="${P.l+i*bw}" y="${P.t}" width="${bw}" height="${ih}"
+    fill="transparent" data-i="${i}"/>`; });
+  $('#chart').innerHTML = s;
+  $('#legend').innerHTML = D.suppliers.map((k,i)=>{
+    const tv = m.stack ? sum(D.series[k], m.k) : val(roll(D.series[k]), m.k);
+    return `<button class="lg" data-s="${k}" aria-pressed="${!off.has(k)}">
+      <i style="background:${col(i)}"></i>${k} <b>${m.fmt(tv)}</b></button>`;}).join('');
+}
+$('#metric').innerHTML = METRICS.map(m=>
+  `<button data-m="${m.k}" aria-pressed="${m.k===metric}">${m.n}</button>`).join('');
+$('#metric').onclick = e => { const b=e.target.closest('button'); if(!b) return;
+  metric=b.dataset.m; [...$('#metric').children].forEach(x=>
+    x.setAttribute('aria-pressed', x.dataset.m===metric)); draw(); };
+$('#legend').onclick = e => { const b=e.target.closest('.lg'); if(!b) return;
+  const k=b.dataset.s; off.has(k)?off.delete(k):off.add(k);
+  if(off.size===D.suppliers.length) off.delete(k); draw(); };
+
+/* tooltip */
+const tip = $('#tip');
+$('#chart').addEventListener('mousemove', e => {
+  const r = e.target.closest('[data-i]'); if(!r){ tip.classList.remove('on'); return; }
+  const i = +r.dataset.i, m = METRICS.find(x=>x.k===metric);
+  const rows = D.suppliers.filter(s=>!off.has(s)).map(k=>({k,v:val(D.series[k][i],m.k),
+    c:col(D.suppliers.indexOf(k))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  tip.innerHTML = `<h4>${lbl(M[i])}${isQ4(M[i])?' · campaña':''}</h4>` +
+    rows.map(x=>`<div class="r"><i style="background:${x.c}"></i><span>${x.k}</span>
+      <b>${m.fmt(x.v)}</b></div>`).join('') +
+    (m.stack?`<div class="r tot"><span>Total</span>
+      <b>${m.fmt(rows.reduce((s,x)=>s+x.v,0))}</b></div>`:'');
+  tip.classList.add('on');
+  const bx = tip.getBoundingClientRect();
+  tip.style.left = Math.min(e.clientX+16, innerWidth-bx.width-12)+'px';
+  tip.style.top  = Math.min(e.clientY+16, innerHeight-bx.height-12)+'px';
+});
+$('#chart').addEventListener('mouseleave', ()=>tip.classList.remove('on'));
+
+/* ---------- like-for-like ---------- */
+(function(){
+  const rows = D.suppliers.map(k=>{
+    const a=roll(pick(D.series[k],iA)), b=roll(pick(D.series[k],iB));
+    return {k,a,b};}).filter(r=>r.a.v+r.b.v>1000).sort((x,y)=>y.b.v-x.b.v);
+  const cell = (a,b,f,rate) => {
+    const va = rate?rate(a):a, vb = rate?rate(b):b;
+    return `<td class="n">${f(va)}</td><td class="n">${f(vb)}</td>
+      <td class="n">${va?dSpan(pct(vb,va)):'<span style="color:var(--ink-3)">nueva</span>'}</td>`;};
+  $('#lfl').innerHTML = `<thead><tr><th>Proveedor</th>
+    <th>Ventas ${yA}</th><th>Ventas ${yB}</th><th>Δ</th>
+    <th>€/ses ${yA}</th><th>€/ses ${yB}</th><th>Δ</th>
+    <th>BuyBox ${yA}</th><th>BuyBox ${yB}</th><th>Δ</th>
+    <th>% ventas ${yB}</th></tr></thead><tbody>` +
+    rows.map(r=>`<tr><td><span class="chip"><i style="background:${col(D.suppliers.indexOf(r.k))}"></i>
+      ${r.k}</span></td>
+      ${cell(r.a.v,r.b.v,eur)}
+      ${cell(r.a,r.b,n=>dec(n)+' €',x=>x.ses?x.v/x.ses:0)}
+      ${cell(r.a,r.b,n=>dec(n,1)+'%',x=>x.ses?x.bbw/x.ses:0)}
+      <td class="n">${dec(100*r.b.v/B.v,1)}%</td></tr>`).join('') +
+    `<tr class="tot"><td>Total</td>${cell(A.v,B.v,eur)}
+      ${cell(A,B,n=>dec(n)+' €',x=>x.v/x.ses)}
+      ${cell(A,B,n=>dec(n,1)+'%',x=>x.bbw/x.ses)}
+      <td class="n">100,0%</td></tr></tbody>`;
+})();
+
+/* ---------- margin lab ---------- */
+const mg = {};
+D.suppliers.forEach(k => mg[k] = (D.margins[k][0]+D.margins[k][1])/2);
+$('#sliders').innerHTML = D.suppliers.map((k,i)=>{
+  const [lo,hi]=D.margins[k];
+  return `<div class="sl"><div class="top"><i style="background:${col(i)}"></i>
+    <strong>${k}</strong><b id="mv-${i}">${dec(mg[k],1)}%</b></div>
+    <input type="range" min="0" max="60" step="0.5" value="${mg[k]}" data-k="${k}" data-i="${i}"
+      aria-label="Margen de ${k}">
+    <div class="slnote">tu rango declarado: ${lo}–${hi}%</div></div>`;}).join('');
+
+function marginCalc(){
+  return D.suppliers.map((k,i)=>{
+    const b = roll(pick(D.series[k],iB));
+    const m = b.v*mg[k]/100;
+    return {k,i,v:b.v,ses:b.ses,m,cps:b.ses?100*m/b.ses:0};
+  }).filter(r=>r.v>0);
+}
+function renderMargin(){
+  const rows = marginCalc(), TM = rows.reduce((s,r)=>s+r.m,0), TS = rows.reduce((s,r)=>s+r.ses,0);
+  $('#mtab').innerHTML = `<thead><tr><th>Proveedor</th><th>Ventas ${wLab} ${yB}</th>
+    <th>% tráfico</th><th>Margen</th><th>Margen €</th><th>% del margen</th>
+    <th>cts/sesión</th></tr></thead><tbody>` +
+    rows.sort((a,b)=>b.m-a.m).map(r=>`<tr>
+      <td><span class="chip"><i style="background:${col(r.i)}"></i>${r.k}</span></td>
+      <td class="n">${eur(r.v)}</td><td class="n">${dec(100*r.ses/TS,1)}%</td>
+      <td class="n">${dec(mg[r.k],1)}%</td><td class="n">${eur(r.m)}</td>
+      <td class="n">${dec(100*r.m/TM,1)}%</td>
+      <td class="n"><span class="pill ${r.cps>=40?'g':r.cps>=20?'w':'b'}">${dec(r.cps,1)}c</span></td>
+    </tr>`).join('') +
+    `<tr class="tot"><td>Total</td><td class="n">${eur(rows.reduce((s,r)=>s+r.v,0))}</td>
+      <td class="n">100,0%</td><td class="n">—</td><td class="n">${eur(TM)}</td>
+      <td class="n">100,0%</td><td class="n">${dec(100*TM/TS,1)}c</td></tr></tbody>`;
+
+  // scatter: % tráfico (x) vs cts/sesión (y)
+  const w=620,h=260,p={t:18,r:20,b:38,l:52}, iw=w-p.l-p.r, ih=h-p.t-p.b;
+  const maxY = Math.max(...rows.map(r=>r.cps),10)*1.15;
+  const X = v => p.l + (v/100)*iw, Y = v => p.t+ih-(v/maxY)*ih;
+  let s='';
+  [0,.25,.5,.75,1].forEach(f=>{ const v=f*maxY;
+    s+=`<line class="gl" x1="${p.l}" x2="${w-p.r}" y1="${Y(v)}" y2="${Y(v)}"/>
+    <text class="ax" x="${p.l-8}" y="${Y(v)+3.5}" text-anchor="end">${dec(v,0)}c</text>`;});
+  [0,25,50,75,100].forEach(v=>{
+    s+=`<text class="ax" x="${X(v)}" y="${h-p.b+16}" text-anchor="middle">${v}%</text>`;});
+  s+=`<text class="ax" x="${p.l+iw/2}" y="${h-6}" text-anchor="middle">cuota de tráfico</text>`;
+  s+=`<text class="ax" x="${p.l-44}" y="${p.t-7}">cts margen / sesión</text>`;
+  rows.forEach(r=>{ const x=X(100*r.ses/TS), y=Y(r.cps);
+    const rr = 6+18*Math.sqrt(r.m/Math.max(TM,1));
+    s+=`<circle cx="${x}" cy="${y}" r="${rr}" fill="${col(r.i)}" fill-opacity=".78"
+         stroke="${css('--surface')}" stroke-width="2"/>`;
+    const flip = x > p.l+iw*.62;
+    s+=`<text class="ax" x="${x+(flip?-rr-6:rr+6)}" y="${y+3.5}"
+         text-anchor="${flip?'end':'start'}" style="font-size:11px;fill:var(--ink-2)">${r.k}</text>`;});
+  $('#mchart').innerHTML = s;
+
+  const best = rows.reduce((a,b)=>b.cps>a.cps?b:a), arc = rows.find(r=>r.k==='Arcos');
+  $('#mnote').innerHTML = arc
+    ? `Cada 100 sesiones enviadas a <strong>${best.k}</strong> valen
+       <strong>${eur(best.cps)}</strong> de margen; las mismas 100 en Arcos valen
+       <strong>${eur(arc.cps)}</strong> — un factor de
+       <strong>${dec(best.cps/Math.max(arc.cps,.01),1)}×</strong>. El tráfico no es
+       trasladable entre marcas: esto dice dónde rinde la <strong>inversión nueva</strong>
+       (PPC, fichas, stock, lanzamientos), no de dónde quitar sesiones.`
+    : '';
+}
+$('#sliders').addEventListener('input', e=>{
+  const k=e.target.dataset.k; if(!k) return;
+  mg[k]=+e.target.value; $('#mv-'+e.target.dataset.i).textContent=dec(mg[k],1)+'%';
+  renderMargin();
+});
+
+/* ---------- buybox ---------- */
+$('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th>
+  <th>Conv.</th><th>BuyBox</th><th>Ventas</th><th>€ en riesgo</th></tr></thead><tbody>` +
+  D.bbloss.map(r=>`<tr><td>${r.title.slice(0,66)}</td><td>${r.brand}</td>
+    <td class="n">${int(r.ses)}</td><td class="n">${dec(r.conv,1)}%</td>
+    <td class="n"><span class="pill ${r.bb<25?'b':r.bb<50?'w':'g'}">${dec(r.bb,1)}%</span></td>
+    <td class="n">${eur(r.v)}</td><td class="n">${eur(r.riesgo)}</td></tr>`).join('') +
+  `<tr class="tot"><td>${D.bbloss.length} ASINs listados</td><td></td><td></td><td></td><td></td>
+    <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.v,0))}</td>
+    <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
+
+/* ---------- findings ---------- */
+(function(){
+  const q4 = M.filter(isQ4), q4v = q4.reduce((s,m)=>s+T[M.indexOf(m)].v,0);
+  const yFull = years.find(y=>M.filter(m=>m.startsWith(y)).length===12);
+  let q4txt = '';
+  if(yFull){
+    const yv = M.filter(m=>m.startsWith(yFull)).reduce((s,m)=>s+T[M.indexOf(m)].v,0);
+    const nv = ['11','12'].reduce((s,mm)=>s+(T[M.indexOf(yFull+'-'+mm)]||{v:0}).v,0);
+    q4txt = `En ${yFull}, noviembre y diciembre valieron <strong>${dec(100*nv/yv,1)}%</strong>
+      del año (${eur(nv)} de ${eur(yv)}).`;
+  }
+  const jB = roll(pick(D.jamon,iB)), jA = roll(pick(D.jamon,iA));
+  const bbT = D.bbloss.reduce((s,r)=>s+r.riesgo,0);
+  const items = [
+    ['c','El crecimiento es de eficiencia, no de tráfico',
+     `Ventas ${dSpan(pct(B.v,A.v))} con sesiones solo ${dSpan(pct(B.ses,A.ses))} a ventana
+      idéntica. La diferencia sale de convertir mejor (${dec(100*B.uds/B.ses,2)}%) y de ganar
+      oferta destacada (${dec(B.bbw/B.ses,1)}%). Es el mejor tipo de crecimiento que existe.`],
+    ['c','La campaña decide el año',
+     `${q4txt} Cualquier proyección lineal sobre un año parcial se equivoca en esa proporción,
+      y se equivoca más en las marcas de regalo que en las de temporada de verano.`],
+    ['c','Jamoneros: consolidación, no canibalización',
+     `A ventana idéntica la categoría pasa de ${eur(jA.v)} a ${eur(jB.v)}
+      (${dSpan(pct(jB.v,jA.v))}) con unidades ${dSpan(pct(jB.uds,jA.uds))}. El crecimiento es
+      ticket medio, no volumen: excelente para el margen, frágil si entra competencia en precio.`],
+    ['i','El BuyBox es el mayor problema y la palanca menos rentable',
+     `Hay ${eur(bbT)} teóricos en juego en ${D.bbloss.length} ASINs, casi todos de la marca con
+      peor margen por sesión. Recuperarlos vale menos por sesión que crecer donde ya conviertes:
+      arréglalo, pero no antes que lo otro.`]
+  ];
+  $('#find').innerHTML = items.map(([t,h,p])=>`<div>
+    <h3><span class="tag ${t}">${t==='c'?'dato':'criterio'}</span>${h}</h3>
+    <p>${p}</p></div>`).join('');
+})();
+
+$('#foot').innerHTML = `Business Reports de Seller Central, ${N} meses (${D.periodo}).
+  Sesiones deduplicadas a nivel ASIN hijo: varios SKU comparten ASIN y Amazon repite la sesión en
+  cada fila. Las sesiones sumadas mes a mes quedan ~9% por encima del informe anual porque Amazon
+  deduplica visitantes dentro de cada periodo; ventas y unidades cuadran al céntimo.
+  Para actualizar: añade <code>mensual/AAAA-MM.csv</code> y ejecuta
+  <code>python3 build_dashboard.py</code>.`;
+
+draw(); renderMargin();
+</script>
