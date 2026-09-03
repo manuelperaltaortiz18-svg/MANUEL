@@ -71,6 +71,11 @@ payload = dict(
     bbloss=bbloss[:20], periodo=f"{months[0]} → {months[-1]}",
 )
 
+try:
+    payload['ads'] = json.load(open('ads_summary.json', encoding='utf-8'))
+except FileNotFoundError:
+    payload['ads'] = None
+
 tpl = open('dashboard_template.html', encoding='utf-8').read()
 out = tpl.replace('/*__DATA__*/null', json.dumps(payload, ensure_ascii=False))
 open('dashboard.html', 'w', encoding='utf-8').write(out)

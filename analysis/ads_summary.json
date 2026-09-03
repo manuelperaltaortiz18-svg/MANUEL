@@ -1,0 +1,115 @@
+{
+ "periodo": "jul 2025 – jul 2026 · 13 meses · España",
+ "rows": [
+  {
+   "marca": "Arcos",
+   "v": 2102134,
+   "gasto": 6834,
+   "vta": 66444,
+   "acos": 10.3,
+   "tacos": 0.33,
+   "lo": 15,
+   "hi": 25,
+   "neto": 308486
+  },
+  {
+   "marca": "Cuperinox",
+   "v": 878898,
+   "gasto": 2551,
+   "vta": 14251,
+   "acos": 17.9,
+   "tacos": 0.29,
+   "lo": 25,
+   "hi": 35,
+   "neto": 217173
+  },
+  {
+   "marca": "Hendi",
+   "v": 342471,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 20,
+   "hi": 35,
+   "neto": 68494
+  },
+  {
+   "marca": "Vinfermaton",
+   "v": 230676,
+   "gasto": 2167,
+   "vta": 6938,
+   "acos": 31.2,
+   "tacos": 0.94,
+   "lo": 15,
+   "hi": 25,
+   "neto": 32434
+  },
+  {
+   "marca": "Wins",
+   "v": 30865,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 4630
+  },
+  {
+   "marca": "Bioleaf",
+   "v": 14765,
+   "gasto": 3360,
+   "vta": 6854,
+   "acos": 49.0,
+   "tacos": 22.75,
+   "lo": 15,
+   "hi": 25,
+   "neto": -1145
+  },
+  {
+   "marca": "Sin marca",
+   "v": 11698,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 1755
+  },
+  {
+   "marca": "Vinfer",
+   "v": 8011,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 1202
+  },
+  {
+   "marca": "Vincare",
+   "v": 3225,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 484
+  },
+  {
+   "marca": "Tradineur",
+   "v": 2928,
+   "gasto": 0,
+   "vta": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 439
+  }
+ ]
+}

@@ -240,6 +240,15 @@ footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
+<section id="adsSec" hidden>
+  <div class="shead">
+    <h2>Publicidad frente a negocio real</h2>
+    <p id="adsSub"></p>
+  </div>
+  <div class="scroll"><table id="adsTab"></table></div>
+  <p class="note" id="adsNote"></p>
+</section>
+
 <section>
   <div class="shead"><h2>Lectura</h2></div>
   <div class="finding" id="find"></div>
@@ -496,6 +505,36 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th
   `<tr class="tot"><td>${D.bbloss.length} ASINs listados</td><td></td><td></td><td></td><td></td>
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.v,0))}</td>
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
+
+
+/* ---------- ads ---------- */
+if(D.ads && D.ads.rows.length){
+  $('#adsSec').hidden = false;
+  const R = D.ads.rows, tg = R.reduce((s,r)=>s+r.gasto,0), tv = R.reduce((s,r)=>s+r.v,0);
+  $('#adsSub').innerHTML = `${D.ads.periodo}. El ACOS mide la eficiencia del anuncio;
+    el TACOS, lo que cuesta sostener la marca. El veredicto usa el margen
+    <strong>mínimo</strong> de tu rango — el caso prudente.`;
+  $('#adsTab').innerHTML = `<thead><tr><th>Marca</th><th>Venta total</th><th>Gasto ads</th>
+    <th>Venta atribuida</th><th>ACOS</th><th>TACOS</th><th>Margen mín.</th>
+    <th>Margen − ads</th></tr></thead><tbody>` +
+    R.map(r=>`<tr><td>${r.marca}</td><td class="n">${eur(r.v)}</td>
+      <td class="n">${r.gasto?eur(r.gasto):'<span style="color:var(--ink-3)">sin campañas</span>'}</td>
+      <td class="n">${r.vta?eur(r.vta):'—'}</td>
+      <td class="n">${r.acos?`<span class="pill ${r.acos>=r.lo?'b':r.acos>=r.lo/2?'w':'g'}">${dec(r.acos,1)}%</span>`:'—'}</td>
+      <td class="n">${r.tacos?dec(r.tacos,2)+'%':'—'}</td>
+      <td class="n">${eur(r.v*r.lo/100)}</td>
+      <td class="n"><span class="pill ${r.neto<0?'b':'g'}">${eur(r.neto)}</span></td></tr>`).join('') +
+    `<tr class="tot"><td>Total</td><td class="n">${eur(tv)}</td><td class="n">${eur(tg)}</td>
+      <td class="n"></td><td class="n"></td><td class="n">${dec(100*tg/tv,2)}%</td>
+      <td class="n"></td><td class="n"></td></tr></tbody>`;
+  const bad = R.filter(r=>r.neto<0), zero = R.filter(r=>!r.gasto && r.v>100000);
+  $('#adsNote').innerHTML =
+    `TACOS global <strong>${dec(100*tg/tv,2)}%</strong>: prácticamente no inviertes en publicidad.
+     ${bad.length?`<strong>${bad.map(r=>r.marca).join(', ')}</strong> gasta más en anuncios que
+       el margen mínimo que deja — pagas por vender a pérdida. ` : ''}
+     ${zero.length?`<strong>${zero.map(r=>r.marca).join(', ')}</strong> factura sin una sola
+       campaña: todo su tráfico es orgánico.`:''}`;
+}
 
 /* ---------- findings ---------- */
 (function(){
