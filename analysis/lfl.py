@@ -15,8 +15,8 @@ def asins(paths):
     for a in acc.values(): a['bb']=a['bbw']/a['sessions'] if a['sessions'] else 0
     return acc
 
-M25=[f'mensual/2025-{m:02d}.csv' for m in range(1,6)]
-M26=[f'mensual/2026-{m:02d}.csv' for m in range(1,6)]
+M25=[f'mensual/2025-{m:02d}.csv' for m in range(1,9)]
+M26=[f'mensual/2026-{m:02d}.csv' for m in range(1,9)]
 A,B = asins(M25), asins(M26)
 def tot(d,f=lambda a:True):
     it=[a for a in d.values() if f(a)]
@@ -25,9 +25,9 @@ def tot(d,f=lambda a:True):
     return dict(ses=s,uds=u,v=v,conv=100*u/s if s else 0,eur=v/s if s else 0,bb=bb,n=len(it))
 def pd(n,o): return 100*(n-o)/o if o else float('inf')
 
-print("=== LIKE-FOR-LIKE: ENE-MAY 2025 vs ENE-MAY 2026 ===\n")
+print("=== LIKE-FOR-LIKE: ENE-AGO 2025 vs ENE-AGO 2026 ===\n")
 ta,tb=tot(A),tot(B)
-print(f"{'':<12}{'ene-may 25':>13}{'ene-may 26':>13}{'Δ%':>9}")
+print(f"{'':<12}{'ene-ago 25':>13}{'ene-ago 26':>13}{'Δ%':>9}")
 for k,lab,f in [('v','Ventas EUR','{:,.0f}'),('uds','Unidades','{:,.0f}'),('ses','Sesiones','{:,.0f}'),
                 ('conv','Conversion','{:.2f}%'),('eur','EUR/sesion','{:.2f}'),('bb','BuyBox','{:.1f}%')]:
     print(f"{lab:<12}{f.format(ta[k]):>13}{f.format(tb[k]):>13}{pd(tb[k],ta[k]):>+8.1f}%")
@@ -54,7 +54,7 @@ for p in sorted({SUPPLIER.get(a['brand'],'Otros') for a in B.values()},
 # JAMONEROS ventana identica
 JA=lambda a: re.search(r'JAMONER|SOPORTE JAMON|JAMONERA', a['title'].upper())
 x,y=tot(A,JA),tot(B,JA)
-print(f"\n=== JAMONEROS, ventana identica ene-may ===")
+print(f"\n=== JAMONEROS, ventana identica ene-ago ===")
 print(f"  2025: {x['v']:,.0f} EUR | {x['uds']:,.0f} uds | {x['ses']:,.0f} ses | {x['n']} ASINs | BB {x['bb']:.1f}%")
 print(f"  2026: {y['v']:,.0f} EUR | {y['uds']:,.0f} uds | {y['ses']:,.0f} ses | {y['n']} ASINs | BB {y['bb']:.1f}%")
 print(f"  Δ ventas {pd(y['v'],x['v']):+.1f}% | Δ uds {pd(y['uds'],x['uds']):+.1f}% | Δ ses {pd(y['ses'],x['ses']):+.1f}%")
