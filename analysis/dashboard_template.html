@@ -240,6 +240,23 @@ footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
+<section id="mkSec" hidden>
+  <div class="shead">
+    <h2>Los cuatro mercados</h2>
+    <p>Cada informe cubre un rango distinto, así que la comparación se hace en
+       <strong>€/mes</strong>. Los ratios (conversión, €/sesión, BuyBox, mix) son internos a
+       cada periodo y sí son directamente comparables.</p>
+  </div>
+  <div class="scroll"><table id="mkTab"></table></div>
+  <div class="card" style="margin-top:14px">
+    <svg id="mkChart" viewBox="0 0 980 250" role="img"
+         aria-label="Mix de marca por mercado"></svg>
+    <div class="legend" id="mkLeg"></div>
+  </div>
+  <div class="scroll" style="margin-top:14px"><table id="mkQuema"></table></div>
+  <p class="note" id="mkNote"></p>
+</section>
+
 <section id="adsSec" hidden>
   <div class="shead">
     <h2>Publicidad frente a negocio real</h2>
@@ -263,9 +280,11 @@ const D = /*__DATA__*/null;
 const $ = s => document.querySelector(s);
 const SC = ['--s1','--s2','--s3','--s4','--s5'];
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const eur = n => n.toLocaleString('es-ES',{maximumFractionDigits:0})+' €';
-const int = n => n.toLocaleString('es-ES',{maximumFractionDigits:0});
-const dec = (n,d=2) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const G = {maximumFractionDigits:0, useGrouping:'always'};
+const eur = n => n.toLocaleString('es-ES',G)+' €';
+const int = n => n.toLocaleString('es-ES',G);
+const dec = (n,d=2) => n.toLocaleString('es-ES',
+  {minimumFractionDigits:d, maximumFractionDigits:d, useGrouping:'always'});
 const MN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const lbl = m => MN[+m.slice(5,7)-1]+" '"+m.slice(2,4);
 const isQ4 = m => ['11','12'].includes(m.slice(5,7));
@@ -506,6 +525,69 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.v,0))}</td>
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
 
+
+
+/* ---------- mercados ---------- */
+if(D.mercados && D.mercados.length){
+  $('#mkSec').hidden = false;
+  const K = D.mercados, TVM = K.reduce((s,m)=>s+m.vmes,0);
+  $('#mkTab').innerHTML = `<thead><tr><th>Mercado</th><th>Periodo del informe</th>
+    <th>Ventas</th><th>€/mes</th><th>% del total</th><th>ASINs</th><th>Sesiones/mes</th>
+    <th>Conv.</th><th>Ticket</th><th>€/sesión</th><th>BuyBox</th></tr></thead><tbody>` +
+    K.map(m=>`<tr><td><strong>${m.nombre}</strong></td>
+      <td style="color:var(--ink-3);font-size:12.5px">${m.etiqueta} · ${dec(m.meses,1)} m</td>
+      <td class="n">${eur(m.v)}</td><td class="n"><strong>${eur(m.vmes)}</strong></td>
+      <td class="n">${dec(100*m.vmes/TVM,1)}%</td><td class="n">${int(m.asins)}</td>
+      <td class="n">${int(m.sesmes)}</td><td class="n">${dec(m.conv,1)}%</td>
+      <td class="n">${dec(m.ticket,1)} €</td><td class="n">${dec(m.eur)} €</td>
+      <td class="n"><span class="pill ${m.bb>=60?'g':m.bb>=45?'w':'b'}">${dec(m.bb,1)}%</span></td>
+      </tr>`).join('') + `</tbody>`;
+
+  /* mix de marca: barras 100% apiladas, una por mercado */
+  const MB = ['Arcos','Cuperinox','Hendi','Vinfermaton','Otras'];
+  const mixOf = m => { const o = {}; let resto = 0;
+    Object.entries(m.mix).forEach(([k,v])=>{ MB.includes(k) ? o[k]=v : resto+=v; });
+    o['Otras'] = +resto.toFixed(1); return o; };
+  const w=980,h=250,p={t:14,r:150,b:24,l:86}, iw=w-p.l-p.r, bh=(h-p.t-p.b)/K.length;
+  let s='';
+  K.forEach((m,i)=>{
+    const mx = mixOf(m); let acc=0;
+    const y = p.t+i*bh+bh*0.18, hh = bh*0.56;
+    s += `<text class="ax" x="${p.l-10}" y="${y+hh/2+4}" text-anchor="end"
+           style="font-size:12px;fill:var(--ink-2);font-family:'IBM Plex Sans'">${m.nombre}</text>`;
+    MB.forEach((b,j)=>{
+      const v = mx[b]||0; if(v<=0) return;
+      const x0 = p.l+(acc/100)*iw, wd = (v/100)*iw - 2; acc += v;
+      s += `<rect x="${x0}" y="${y}" width="${Math.max(wd,1)}" height="${hh}" rx="2"
+             fill="${col(j)}"/>`;
+      if(v>=8) s += `<text x="${x0+wd/2}" y="${y+hh/2+4}" text-anchor="middle"
+             style="font:600 11px 'IBM Plex Mono';fill:#fff;font-variant-numeric:tabular-nums"
+             >${dec(v,0)}%</text>`;
+    });
+    s += `<text class="ax" x="${p.l+iw+12}" y="${y+hh/2+4}"
+           style="font-size:11.5px">${eur(m.vmes)}/mes</text>`;
+  });
+  $('#mkChart').innerHTML = s;
+  $('#mkLeg').innerHTML = MB.map((b,j)=>
+    `<span class="lg" style="cursor:default"><i style="background:${col(j)}"></i>${b}</span>`).join('');
+
+  $('#mkQuema').innerHTML = `<thead><tr><th>Mercado</th><th>ASINs que queman tráfico</th>
+    <th>Sesiones</th><th>% del tráfico del país</th><th>Ventas que producen</th>
+    <th>€/sesión</th></tr></thead><tbody>` +
+    [...K].sort((a,b)=>b.quema_pct-a.quema_pct).map(m=>`<tr><td>${m.nombre}</td>
+      <td class="n">${int(m.quema_n)}</td><td class="n">${int(m.quema_ses)}</td>
+      <td class="n"><span class="pill ${m.quema_pct>=30?'b':'w'}">${dec(m.quema_pct,1)}%</span></td>
+      <td class="n">${eur(m.quema_v)}</td><td class="n">${dec(m.quema_eur)} €</td></tr>`).join('') +
+    `</tbody>`;
+  const peor = [...K].sort((a,b)=>b.quema_ses-a.quema_ses)[0];
+  const mejor = [...K].sort((a,b)=>b.eur-a.eur)[0];
+  $('#mkNote').innerHTML = `«Queman tráfico» = ASINs con más de 3.000 sesiones y BuyBox
+    por debajo del 25%: pagas la visita y la venta se la lleva otro vendedor.
+    <strong>${peor.nombre}</strong> concentra el mayor volumen absoluto
+    (${int(peor.quema_ses)} sesiones, ${dec(peor.quema_pct,1)}% de su tráfico).
+    <strong>${mejor.nombre}</strong> es el mercado más eficiente por sesión
+    (${dec(mejor.eur)} €), aunque no el mayor.`;
+}
 
 /* ---------- ads ---------- */
 if(D.ads && D.ads.rows.length){

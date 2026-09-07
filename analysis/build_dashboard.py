@@ -71,6 +71,61 @@ payload = dict(
     bbloss=bbloss[:20], periodo=f"{months[0]} → {months[-1]}",
 )
 
+
+# ---------- mercados exteriores ----------
+# Cada export cubre un rango distinto; se normaliza a EUR/mes.
+MERCADOS = [
+    ('España',   None,                    8.0,  'ene–ago 2026'),
+    ('Francia',  'fr/br_fr_2026ytd.csv',  8.1,  'ene–3 sep 2026'),
+    ('Italia',   'it/br_it.csv',         20.2,  '1 ene 2025 – 6 sep 2026'),
+    ('Alemania', 'de/br_de.csv',         20.2,  '1 ene 2025 – 6 sep 2026'),
+]
+
+def mercado(items, meses):
+    ses = sum(x['ses'] for x in items); v = sum(x['v'] for x in items)
+    uds = sum(x['uds'] for x in items)
+    quema = [x for x in items if x['ses'] > 3000 and x['bb'] < 25]
+    qs = sum(x['ses'] for x in quema)
+    mix = collections.Counter()
+    for x in items: mix[x['brand']] += x['v']
+    return dict(
+        meses=meses, v=round(v), vmes=round(v/meses), ses=round(ses), sesmes=round(ses/meses),
+        uds=round(uds), conv=round(100*uds/ses, 2) if ses else 0,
+        eur=round(v/ses, 2) if ses else 0, ticket=round(v/uds, 1) if uds else 0,
+        bb=round(sum(x['bb']*x['ses'] for x in items)/ses, 1) if ses else 0,
+        asins=len(items),
+        quema_n=len(quema), quema_ses=round(qs), quema_pct=round(100*qs/ses, 1) if ses else 0,
+        quema_v=round(sum(x['v'] for x in quema)),
+        quema_eur=round(sum(x['v'] for x in quema)/qs, 2) if qs else 0,
+        mix={k: round(100*val/v, 1) for k, val in mix.most_common() if v and 100*val/v >= 0.3})
+
+def flat(path):
+    out = []
+    for x in read_month(path):
+        out.append(dict(brand=x['brand'], ses=x['ses'], uds=x['uds'], v=x['v'], bb=x['bb']))
+    return out
+
+# Espana: agregar los meses de 2026 a nivel ASIN
+_es = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0, brand=''))
+for m in [x for x in months if x.startswith('2026')]:
+    for x in read_month(f'mensual/{m}.csv'):
+        a = _es[x['child']]
+        a['ses'] += x['ses']; a['uds'] += x['uds']; a['v'] += x['v']
+        a['bbw'] += x['bb']*x['ses']; a['brand'] = x['brand']
+ES = [dict(brand=a['brand'], ses=a['ses'], uds=a['uds'], v=a['v'],
+           bb=a['bbw']/a['ses'] if a['ses'] else 0) for a in _es.values()]
+
+mercados = []
+for nombre, path, meses, etiqueta in MERCADOS:
+    try:
+        items = ES if path is None else flat(path)
+    except FileNotFoundError:
+        continue
+    d = mercado(items, meses); d['nombre'] = nombre; d['etiqueta'] = etiqueta
+    mercados.append(d)
+mercados.sort(key=lambda d: -d['vmes'])
+payload['mercados'] = mercados
+
 try:
     payload['ads'] = json.load(open('ads_summary.json', encoding='utf-8'))
 except FileNotFoundError:
