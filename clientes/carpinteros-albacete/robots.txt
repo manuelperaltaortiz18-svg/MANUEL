@@ -1,0 +1,3 @@
+# Demo especulativa: NO indexar bajo ningún concepto.
+User-agent: *
+Disallow: /

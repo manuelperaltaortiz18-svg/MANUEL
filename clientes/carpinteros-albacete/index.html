@@ -1,0 +1,445 @@
+<!doctype html>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  DEMO ESPECULATIVA — Los Carpinteros de Albacete S.L.
+  Preparada SIN encargo, como pieza de venta. Ver web-factory/comercial/PROSPECCION.md
+  ══════════════════════════════════════════════════════════════════════
+
+  ⚠️ VERIFICAR ANTES DE ENVIAR NADA:
+     Existen DOS sociedades parecidas en Albacete —
+       · LOS CARPINTEROS DE ALBACETE SL   (CNAE 3109, carpintería y ebanistería)
+       · LOS CARPINTEROS DE CAMPOLLANO SL (Calle F, Campollano 10)
+     Las reseñas de esta demo (4,1/5, 12 reseñas) hay que confirmar a CUÁL de
+     las dos fichas de Google pertenecen. Mandar la demo a la empresa
+     equivocada mata la venta en el primer segundo.
+
+  DATOS USADOS — públicos:
+     · Nombre y forma jurídica (Iberinform / El Economista)
+     · Actividad: trabajos de carpintería y ebanistería en general, CNAE 3109;
+       compra y venta de muebles y maderas
+     · Reseñas: literales de Google, sin editar, con autor y puntuación
+     · Valoración global 4,1/5 sobre 12 reseñas, mostrada tal cual
+
+  DATOS PENDIENTES (marcados en naranja en la página, NO inventados):
+     teléfono · email · dirección del taller · horarios · NIF · fotos
+
+  REGLAS DE LA DEMO (innegociables):
+     1. Banner "no es su web oficial" visible arriba → se borra al contratar
+     2. noindex,nofollow SIEMPRE
+     3. URL de vista previa neutra, que no imite su marca
+     4. Se retira en 24 h si dicen que no
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Los Carpinteros de Albacete — Carpintería y ebanistería a medida</title>
+<meta name="description" content="Carpintería y ebanistería a medida en Albacete: armarios empotrados, muebles de cocina, puertas, tarima y mobiliario a medida. Presupuesto sin compromiso.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Los Carpinteros de Albacete — Carpintería y ebanistería a medida">
+<meta property="og:description" content="Armarios, cocinas, puertas, tarima y muebles a medida en Albacete. Presupuesto sin compromiso.">
+<meta name="theme-color" content="#8a4b1e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%238a4b1e'/%3E%3Cpath d='M7 21h18M7 16h18M7 11h18' stroke='%23f4e7db' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  /* ─── Tema: madera, taller, oficio. Nogal sobre roble claro ─── */
+  :root {
+    --bg:#fcfaf7; --surface:#f2ece3; --surface-2:#e6dccd;
+    --text:#231a12; --text-muted:#6b5b4a;
+    --accent:#8a4b1e; --accent-text:#fff; --accent-soft:#f4e7db;
+    --border:#e0d4c2;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --ok:#2f6b46; --todo-c:#8a6a1e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#14100c; --surface:#1e1811; --surface-2:#2a2118;
+      --text:#f4ede3; --text-muted:#b0a08c;
+      --accent:#d68b52; --accent-text:#14100c; --accent-soft:#2b1e14;
+      --border:#332921;
+      --ok:#6bbd8e; --todo-c:#d4ac5a;
+    }
+  }
+
+  /* Aviso de demo — BORRAR ESTE BLOQUE Y SU <div> AL CONTRATAR */
+  .demo-bar { background:#1b1b1b; color:#fff; font-size:.82rem;
+              line-height:1.5; padding:.7rem 1rem; text-align:center; }
+  .demo-bar strong { color:#e8a476; }
+
+  .hero { background:var(--surface); border-bottom:1px solid var(--border); }
+  .hero .split { padding-block:var(--sp-12); }
+  .hero h1 { max-width:15ch; }
+  .rating { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; }
+  .rating__score { font-size:var(--step-2); font-weight:700; font-family:var(--font-display); }
+  .stars { color:#e0a02a; letter-spacing:.08em; font-size:1.05rem; }
+
+  .ph { background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 12px,var(--surface) 12px,var(--surface) 24px);
+        display:grid; place-items:center; text-align:center; padding:var(--sp-2);
+        color:var(--text-muted); font-size:.7rem; font-weight:700;
+        letter-spacing:.1em; text-transform:uppercase; border-radius:var(--radius); }
+
+  .reviews { display:grid; gap:var(--sp-3); }
+  @media (min-width:760px){ .reviews{grid-template-columns:repeat(2,1fr);} }
+  @media (min-width:1060px){ .reviews{grid-template-columns:repeat(3,1fr);} }
+  .review { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
+            padding:var(--sp-3); display:flex; flex-direction:column; gap:var(--sp); }
+  .review__head { display:flex; justify-content:space-between; align-items:baseline; gap:var(--sp); }
+  .review__name { font-weight:700; font-size:var(--step-0); }
+  .review p { font-size:var(--step--1); line-height:1.55; }
+  .review__src { font-size:.7rem; color:var(--text-muted); margin-top:auto;
+                 padding-top:var(--sp); border-top:1px solid var(--border); }
+
+  .promise { display:grid; grid-template-columns:auto 1fr; gap:var(--sp-2); align-items:start; }
+  .promise__mark { color:var(--ok); font-size:1.3rem; line-height:1; }
+
+  .step { display:grid; grid-template-columns:auto 1fr; gap:var(--sp-3); align-items:start; }
+  .step__n { width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+             background:var(--accent); color:var(--accent-text); font-weight:700;
+             font-family:var(--font-display); flex:none; }
+
+  .work { display:grid; gap:var(--sp-2); }
+  .work .ph { aspect-ratio:4/3; }
+
+  .todo { color:var(--todo-c); font-weight:600; }
+  .fab { position:fixed; right:var(--sp-2); bottom:var(--sp-2); z-index:60;
+         box-shadow:0 6px 20px rgb(0 0 0 / .3); }
+  @media (min-width:760px){ .fab{display:none;} }
+  @media (max-width:759px){ body{padding-bottom:var(--sp-8);} }
+</style>
+</head>
+<body>
+
+<!-- ═══ BORRAR AL CONTRATAR ═══ -->
+<div class="demo-bar">
+  <strong>Propuesta de web</strong> preparada para Los Carpinteros de Albacete S.L.
+  · No es su web oficial · Las reseñas son literales de su ficha de Google
+  · Las zonas rayadas son las fotos que pondrían ustedes
+</div>
+<!-- ═══════════════════════════ -->
+
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#top">Los Carpinteros de&nbsp;Albacete</a>
+    <nav class="nav nav--main" aria-label="Principal">
+      <a href="#trabajos">Qué hacemos</a>
+      <a href="#opiniones">Opiniones</a>
+      <a href="#proceso">Cómo trabajamos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn" href="#contacto">Pedir presupuesto</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">Carpintería y ebanistería · Albacete</p>
+        <h1>Muebles a medida, hechos en nuestro propio taller</h1>
+        <p class="lead">Armarios empotrados, muebles de cocina, puertas, tarima y
+        mobiliario a medida. Fabricamos e instalamos nosotros: su encargo no pasa
+        por manos de nadie más.</p>
+        <div class="cluster">
+          <a class="btn btn--lg" href="#contacto">Pedir presupuesto</a>
+          <a class="btn btn--lg btn--ghost" href="#trabajos">Ver qué hacemos</a>
+        </div>
+        <div class="rating" style="margin-top:var(--sp-4)">
+          <span class="rating__score">4,1</span>
+          <span class="stars" aria-hidden="true">★★★★☆</span>
+          <span class="muted" style="font-size:var(--step--1)">Valoración de 12 reseñas en Google</span>
+        </div>
+      </div>
+      <div class="ph" style="aspect-ratio:4/3">Foto del taller<br>o de un trabajo terminado</div>
+    </div>
+  </section>
+
+  <section class="section" id="trabajos">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Qué hacemos</p>
+        <h2>Si se puede hacer en madera, lo hacemos</h2>
+        <p class="lead">Estos son los encargos que más nos piden. Si el suyo no
+        está en la lista, pregúntenos igualmente.</p>
+      </div>
+      <div class="grid grid--3">
+        <article class="work">
+          <div class="ph">Foto de un armario</div>
+          <h3 style="font-size:var(--step-1)">Armarios a medida</h3>
+          <p class="muted">Empotrados, vestidores y puertas correderas
+          aprovechando el hueco exacto que hay en casa.</p>
+        </article>
+        <article class="work">
+          <div class="ph">Foto de una cocina</div>
+          <h3 style="font-size:var(--step-1)">Muebles de cocina</h3>
+          <p class="muted">Fabricación e instalación completa, adaptada a los
+          electrodomésticos que ya tenga.</p>
+        </article>
+        <article class="work">
+          <div class="ph">Foto de puertas</div>
+          <h3 style="font-size:var(--step-1)">Puertas y tarima</h3>
+          <p class="muted">Puertas de paso y frentes, tarima flotante o maciza
+          con su rodapié, lacados y barnizados.</p>
+        </article>
+        <article class="work">
+          <div class="ph">Foto de una mesa</div>
+          <h3 style="font-size:var(--step-1)">Mobiliario a medida</h3>
+          <p class="muted">Mesas de comedor de grandes dimensiones, estanterías,
+          librerías y muebles de salón.</p>
+        </article>
+        <article class="work">
+          <div class="ph">Foto habitación infantil</div>
+          <h3 style="font-size:var(--step-1)">Habitaciones infantiles</h3>
+          <p class="muted">Camas nido, escritorios y almacenaje aprovechando
+          cada centímetro de la habitación.</p>
+        </article>
+        <article class="work">
+          <div class="ph">Foto de restauración</div>
+          <h3 style="font-size:var(--step-1)">Restauración de muebles</h3>
+          <p class="muted">Recuperación de muebles antiguos y de piezas con
+          valor familiar.</p>
+        </article>
+      </div>
+      <p class="muted" style="margin-top:var(--sp-4);font-size:var(--step--1)">
+        <span class="todo">Pendiente:</span> confirmar esta lista de servicios y
+        sustituir los seis marcadores por fotos reales de trabajos suyos.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="opiniones">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Opiniones</p>
+        <h2>Lo que dicen los clientes en Google</h2>
+        <p class="lead">Reseñas literales de nuestra ficha, sin editar.</p>
+      </div>
+
+      <div class="reviews">
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">Mariano Badia Pardo</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Los más profesionales que he conocido, hay que quitarse el sombrero
+          ante ellos, un 10 para los Carpinteros de Campollano»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">J. Raúl Molina</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Montaje de tarima, puertas, armarios a medida y muebles de cocina.
+          Atención y trato excelente, muy detallistas y pacientes con las
+          peticiones realizadas»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">Katy Moreno</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Ebanistería carpintería con una atención muy personalizada, muy
+          profesionales y te pueden hacer cualquier trabajo. Los recomiendo»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">Fernando Sánchez Sánchez</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Gente muy profesional, muy finos en su trabajo. Los recomiendo 100%»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">Lola Navarro Contreras</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Habitación infantil a medida.»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+
+        <blockquote class="review">
+          <div class="review__head"><span class="review__name">Antonia N.</span>
+            <span class="stars" aria-label="5 de 5">★★★★★</span></div>
+          <p>«Mesa de comedor de grandes dimensiones.»</p>
+          <p class="review__src">Reseña de Google · 5/5</p>
+        </blockquote>
+      </div>
+
+      <p class="muted" style="margin-top:var(--sp-4);font-size:var(--step--1)">
+        Valoración global: <strong>4,1 sobre 5</strong> con 12 reseñas en Google.
+        <span class="todo">Pendiente: enlazar a la ficha real de Google.</span>
+      </p>
+    </div>
+  </section>
+
+  <!--
+    ESTA SECCIÓN ES LA RAZÓN DE SER DE LA WEB PARA ESTE CLIENTE.
+    Sus tres reseñas negativas (2×1★ y 1×2★) dicen todas lo mismo: plazos que no
+    se cumplen, trabajos pequeños que se aparcan y falta de respuesta. No se
+    pueden borrar de Google, pero sí se puede responder a esa objeción antes de
+    que el visitante llegue a leerlas.
+  -->
+  <section class="section" id="proceso">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Cómo trabajamos</p>
+        <h2>Fecha de entrega por escrito, desde el presupuesto</h2>
+        <p class="lead">Un mueble a medida no es un producto de catálogo: hay que
+        medir, fabricar y montar. Por eso lo ponemos todo por escrito antes de
+        empezar y le decimos una fecha real.</p>
+      </div>
+
+      <div class="grid grid--3" style="margin-bottom:var(--sp-8)">
+        <div class="step"><div class="step__n">1</div>
+          <div><h3 style="font-size:var(--step-1)">Vamos a medir</h3>
+          <p class="muted">Nos desplazamos, tomamos medidas y hablamos de
+          materiales y acabados. Sin coste.</p></div></div>
+        <div class="step"><div class="step__n">2</div>
+          <div><h3 style="font-size:var(--step-1)">Presupuesto cerrado</h3>
+          <p class="muted">Por escrito, con el precio final y la
+          <strong>fecha de montaje comprometida</strong>.</p></div></div>
+        <div class="step"><div class="step__n">3</div>
+          <div><h3 style="font-size:var(--step-1)">Fabricación y montaje</h3>
+          <p class="muted">Le avisamos cuando entra en taller y cuando está listo
+          para montar.</p></div></div>
+      </div>
+
+      <div class="card card--raised">
+        <h3 style="margin-bottom:var(--sp-3)">Nuestro compromiso</h3>
+        <div class="grid grid--2">
+          <div class="promise"><span class="promise__mark">✓</span>
+            <p><strong>Contestamos siempre.</strong> Aunque la respuesta sea que
+            no podemos asumir el trabajo o que hay que esperar.</p></div>
+          <div class="promise"><span class="promise__mark">✓</span>
+            <p><strong>No aceptamos un encargo si no tenemos hueco.</strong>
+            Preferimos darle una fecha real a darle largas.</p></div>
+          <div class="promise"><span class="promise__mark">✓</span>
+            <p><strong>Trabajos pequeños también.</strong> Una puerta o un
+            estante entran igual en el taller.</p></div>
+          <div class="promise"><span class="promise__mark">✓</span>
+            <p><strong>Si se retrasa, se lo decimos antes.</strong> Un aviso a
+            tiempo vale más que una excusa después.</p></div>
+        </div>
+        <p class="muted" style="margin-top:var(--sp-3);font-size:var(--step--1)">
+          <span class="todo">Importante:</span> estos cuatro compromisos son una
+          propuesta. Solo deben publicarse si van a cumplirse — son exactamente
+          lo que les reprochan las reseñas negativas, y prometerlos sin
+          cumplirlos haría más daño que no tener web.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="contacto">
+    <div class="container split">
+      <div class="stack">
+        <p class="eyebrow">Contacto</p>
+        <h2>Cuéntenos qué necesita</h2>
+        <p class="lead">Mándenos las medidas aproximadas y, si tiene, una foto o
+        un dibujo del hueco. Le decimos si es viable y cuánto costaría.</p>
+
+        <p><strong>Teléfono</strong><br><span class="todo">Pendiente de confirmar</span></p>
+        <p><strong>Email</strong><br><span class="todo">Pendiente de confirmar</span></p>
+        <p><strong>Taller</strong><br><span class="todo">Pendiente de confirmar</span></p>
+        <p><strong>Horario</strong><br><span class="todo">Pendiente de confirmar</span></p>
+        <p class="muted" style="font-size:var(--step--1)">
+          Los Carpinteros de Albacete S.L. — trabajos de carpintería y
+          ebanistería en general.</p>
+      </div>
+
+      <form class="card card--raised stack" onsubmit="return demoSubmit(event)">
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" name="nombre" type="text" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="tel">Teléfono</label>
+          <input id="tel" name="telefono" type="tel" autocomplete="tel" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="tipo">¿Qué necesita?</label>
+          <select id="tipo" name="tipo">
+            <option>Armario a medida</option>
+            <option>Muebles de cocina</option>
+            <option>Puertas</option>
+            <option>Tarima o suelo</option>
+            <option>Mesa o mueble de salón</option>
+            <option>Habitación infantil</option>
+            <option>Restauración de un mueble</option>
+            <option>Otro trabajo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mensaje">Cuéntenos el trabajo y las medidas aproximadas</label>
+          <textarea id="mensaje" name="mensaje" rows="4" required></textarea>
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp)">
+          <input id="rgpd" type="checkbox" required style="width:auto;margin-top:4px">
+          <label for="rgpd" style="font-weight:400">Acepto la
+            <a href="privacidad.html">política de privacidad</a>.</label>
+        </div>
+        <button class="btn btn--lg" type="submit">Pedir presupuesto</button>
+        <p id="form-msg" class="muted" style="font-size:var(--step--1)">
+          En la web real, este formulario llega al correo del taller en el momento.</p>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="grid grid--3">
+      <div class="stack">
+        <p class="brand">Los Carpinteros de Albacete</p>
+        <p class="muted">Carpintería y ebanistería a medida en Albacete.</p>
+      </div>
+      <div class="stack">
+        <p><strong>Contacto</strong></p>
+        <p class="muted todo">Teléfono y dirección pendientes de confirmar</p>
+      </div>
+      <div class="stack">
+        <p><strong>Legal</strong></p>
+        <p><a href="aviso-legal.html">Aviso legal</a></p>
+        <p><a href="privacidad.html">Política de privacidad</a></p>
+        <p><a href="cookies.html">Política de cookies</a></p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:var(--sp-6)">
+      © <span id="year">2026</span> Los Carpinteros de Albacete S.L.</p>
+  </div>
+</footer>
+
+<a class="btn fab" href="#contacto">Pedir presupuesto</a>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  function demoSubmit(e){
+    e.preventDefault();
+    var m = document.getElementById('form-msg');
+    m.textContent = 'Esto es una demo: el mensaje no se ha enviado a ninguna parte. En la web real le llegaría al correo del taller al instante.';
+    m.style.color = 'var(--accent)';
+    return false;
+  }
+</script>
+
+<!-- Ficha estructurada para Google. Completar teléfono y dirección al contratar. -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"HomeAndConstructionBusiness",
+  "additionalType":"https://schema.org/GeneralContractor",
+  "name":"Los Carpinteros de Albacete S.L.",
+  "description":"Carpintería y ebanistería a medida en Albacete: armarios, muebles de cocina, puertas, tarima y mobiliario a medida.",
+  "areaServed":{"@type":"City","name":"Albacete"},
+  "address":{"@type":"PostalAddress","addressLocality":"Albacete","addressRegion":"Castilla-La Mancha","addressCountry":"ES"},
+  "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.1","reviewCount":"12"}
+}
+</script>
+</body>
+</html>
