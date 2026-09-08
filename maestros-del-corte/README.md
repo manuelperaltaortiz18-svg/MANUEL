@@ -72,15 +72,13 @@ Crea estas páginas e insértale a cada una su patrón desde el editor (botón `
 | Política de privacidad | `/privacidad/` |
 | Política de cookies | `/cookies/` |
 
-Los datos fiscales de CUPERINOX, S.L. ya están rellenos. **Quedan cinco huecos entre corchetes** por completar — busca `[` en cada página:
+Los datos fiscales de CUPERINOX, S.L. están rellenos y **verificados por el titular**. **Quedan cinco huecos entre corchetes** por completar — busca `[` en cada página:
 
 | Hueco | Dónde | De dónde sacarlo |
 |---|---|---|
 | `[TOMO]` `[FOLIO]` `[HOJA]` | Aviso legal | Escritura de constitución o nota simple del Registro Mercantil de Albacete |
 | `[MEDIOS DE PAGO ACEPTADOS]` | Condiciones, apart. 5 | Los que acabéis activando (tarjeta, Bizum, PayPal…) |
 | `[IMPORTE ORIENTATIVO]` | Condiciones, apart. 7 | Tarifa del transportista para una devolución peninsular |
-
-> Los datos fiscales se obtuvieron de registros mercantiles públicos, no de vuestra escritura. **Verificad razón social, CIF y domicilio** antes de publicar — un dato incorrecto en el aviso legal es sancionable.
 
 > Estos textos son una base bien fundamentada, con las referencias legales correctas, pero **no sustituyen a un asesor**. Que los revise alguien antes de publicar.
 
@@ -127,7 +125,7 @@ El aviso de devolución aparece en tres sitios: sello bajo el botón de compra, 
 
 ## Pendiente antes de lanzar
 
-- [ ] Verificar razón social, CIF y domicilio, y rellenar los cinco `[huecos]` restantes
+- [ ] Rellenar los cinco `[huecos]` restantes (tomo/folio/hoja, medios de pago, importe de devolución)
 - [ ] Instalar el stack de `HERRAMIENTAS.md` en el orden indicado (copias de seguridad primero, Complianz antes que cualquier píxel)
 - [ ] Las tres zonas de envío configuradas (si falta alguna, el checkout se bloquea en ese destino)
 - [ ] Cerrar tarifas reales con el transportista para Baleares y Canarias antes de fijar los importes
