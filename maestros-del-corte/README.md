@@ -69,12 +69,22 @@ Crea estas páginas e insértale a cada una su patrón desde el editor (botón `
 | Cuidado y mantenimiento | `/cuidado/` |
 | Aviso legal | `/aviso-legal/` |
 | Condiciones generales de venta | `/terminos/` |
+| Política de privacidad | `/privacidad/` |
+| Política de cookies | `/cookies/` |
 
-Los textos legales llevan **huecos entre corchetes** (`[CIF]`, `[RAZÓN SOCIAL]`…) que hay que rellenar con los datos fiscales reales. Busca `[` en la página para localizarlos todos.
+Los datos fiscales de CUPERINOX, S.L. ya están rellenos. **Quedan cinco huecos entre corchetes** por completar — busca `[` en cada página:
+
+| Hueco | Dónde | De dónde sacarlo |
+|---|---|---|
+| `[TOMO]` `[FOLIO]` `[HOJA]` | Aviso legal | Escritura de constitución o nota simple del Registro Mercantil de Albacete |
+| `[MEDIOS DE PAGO ACEPTADOS]` | Condiciones, apart. 5 | Los que acabéis activando (tarjeta, Bizum, PayPal…) |
+| `[IMPORTE ORIENTATIVO]` | Condiciones, apart. 7 | Tarifa del transportista para una devolución peninsular |
+
+> Los datos fiscales se obtuvieron de registros mercantiles públicos, no de vuestra escritura. **Verificad razón social, CIF y domicilio** antes de publicar — un dato incorrecto en el aviso legal es sancionable.
 
 > Estos textos son una base bien fundamentada, con las referencias legales correctas, pero **no sustituyen a un asesor**. Que los revise alguien antes de publicar.
 
-Faltan aún **Política de Privacidad** (`/privacidad/`) y **Política de Cookies** (`/cookies/`), que dependen de qué herramientas de analítica y marketing acabéis instalando.
+Las políticas de privacidad y cookies están redactadas **para el stack de `HERRAMIENTAS.md`**. Si cambias de herramienta, hay que actualizarlas.
 
 **8. Imágenes**
 
@@ -117,8 +127,8 @@ El aviso de devolución aparece en tres sitios: sello bajo el botón de compra, 
 
 ## Pendiente antes de lanzar
 
-- [ ] Rellenar los datos fiscales `[entre corchetes]` en aviso legal y condiciones de venta
-- [ ] Política de privacidad y de cookies
+- [ ] Verificar razón social, CIF y domicilio, y rellenar los cinco `[huecos]` restantes
+- [ ] Instalar el stack de `HERRAMIENTAS.md` en el orden indicado (copias de seguridad primero, Complianz antes que cualquier píxel)
 - [ ] Las tres zonas de envío configuradas (si falta alguna, el checkout se bloquea en ese destino)
 - [ ] Cerrar tarifas reales con el transportista para Baleares y Canarias antes de fijar los importes
 - [ ] Pasarela de pago en producción y una compra real de prueba de principio a fin

@@ -7,7 +7,7 @@
  */
 ?>
 <!-- wp:paragraph {"textColor":"contrast-soft","style":{"typography":{"fontSize":"0.875rem"}}} -->
-<p class="has-contrast-soft-color has-text-color" style="font-size:0.875rem">Última actualización: [FECHA]</p>
+<p class="has-contrast-soft-color has-text-color" style="font-size:0.875rem">Última actualización: 8 de septiembre de 2026</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -20,18 +20,18 @@
 
 <!-- wp:list -->
 <ul class="wp-block-list">
-	<!-- wp:list-item --><li><strong>Titular:</strong> [RAZÓN SOCIAL COMPLETA]</li><!-- /wp:list-item -->
-	<!-- wp:list-item --><li><strong>NIF/CIF:</strong> [CIF]</li><!-- /wp:list-item -->
-	<!-- wp:list-item --><li><strong>Domicilio social:</strong> [DIRECCIÓN COMPLETA, CP, LOCALIDAD, PROVINCIA]</li><!-- /wp:list-item -->
-	<!-- wp:list-item --><li><strong>Correo electrónico:</strong> [EMAIL DE CONTACTO]</li><!-- /wp:list-item -->
-	<!-- wp:list-item --><li><strong>Teléfono:</strong> [TELÉFONO]</li><!-- /wp:list-item -->
-	<!-- wp:list-item --><li><strong>Datos registrales:</strong> [REGISTRO MERCANTIL DE …, TOMO …, FOLIO …, HOJA …]</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>Titular:</strong> CUPERINOX, S.L.</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>NIF/CIF:</strong> B02364818</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>Domicilio social:</strong> Polígono Industrial Campollano, Calle D, 44 — 02007 Albacete</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>Correo electrónico:</strong> comercial@cuperinox.com</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>Teléfono:</strong> 967 19 33 79</li><!-- /wp:list-item -->
+	<!-- wp:list-item --><li><strong>Datos registrales:</strong> Registro Mercantil de Albacete, Tomo [TOMO], Folio [FOLIO], Hoja [HOJA]</li><!-- /wp:list-item -->
 	<!-- wp:list-item --><li><strong>Nombre comercial:</strong> Maestros del Corte by Cuperinox</li><!-- /wp:list-item -->
 </ul>
 <!-- /wp:list -->
 
 <!-- wp:paragraph -->
-<p>«Maestros del Corte» es una marca comercial titularidad de [RAZÓN SOCIAL], que opera igualmente el sitio web www.cuperinox.es.</p>
+<p>«Maestros del Corte» es una marca comercial titularidad de CUPERINOX, S.L., que opera igualmente el sitio web www.cuperinox.es.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -63,7 +63,7 @@
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p>Todos los contenidos de este sitio —textos, fotografías, gráficos, imágenes, diseño, marcas, nombres comerciales, código fuente y selección o presentación de los materiales— son titularidad de [RAZÓN SOCIAL] o de terceros que han autorizado su uso, y están protegidos por la normativa de propiedad intelectual e industrial.</p>
+<p>Todos los contenidos de este sitio —textos, fotografías, gráficos, imágenes, diseño, marcas, nombres comerciales, código fuente y selección o presentación de los materiales— son titularidad de CUPERINOX, S.L. o de terceros que han autorizado su uso, y están protegidos por la normativa de propiedad intelectual e industrial.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph -->

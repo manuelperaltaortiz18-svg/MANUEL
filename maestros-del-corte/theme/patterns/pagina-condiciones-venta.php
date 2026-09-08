@@ -7,7 +7,7 @@
  */
 ?>
 <!-- wp:paragraph {"textColor":"contrast-soft","style":{"typography":{"fontSize":"0.875rem"}}} -->
-<p class="has-contrast-soft-color has-text-color" style="font-size:0.875rem">Última actualización: [FECHA]</p>
+<p class="has-contrast-soft-color has-text-color" style="font-size:0.875rem">Última actualización: 8 de septiembre de 2026</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -15,7 +15,7 @@
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p>Los productos ofrecidos en este sitio son vendidos por [RAZÓN SOCIAL COMPLETA], con NIF [CIF] y domicilio en [DIRECCIÓN COMPLETA], en adelante «el vendedor», bajo la marca comercial Maestros del Corte by Cuperinox. Puedes contactar con nosotros en [EMAIL] o en el [TELÉFONO].</p>
+<p>Los productos ofrecidos en este sitio son vendidos por CUPERINOX, S.L., con NIF B02364818 y domicilio en Polígono Industrial Campollano, Calle D, 44 — 02007 Albacete, en adelante «el vendedor», bajo la marca comercial Maestros del Corte by Cuperinox. Puedes contactar con nosotros en comercial@cuperinox.com o en el 967 19 33 79.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":2} -->
@@ -99,7 +99,7 @@
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph -->
-<p>Para ejercerlo basta con comunicarlo de forma inequívoca a [EMAIL], indicando el número de pedido. Tras la comunicación, el cliente dispone de 14 días naturales para remitir el producto.</p>
+<p>Para ejercerlo basta con comunicarlo de forma inequívoca a comercial@cuperinox.com, indicando el número de pedido. Tras la comunicación, el cliente dispone de 14 días naturales para remitir el producto.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:group {"backgroundColor":"surface","style":{"spacing":{"padding":{"top":"var:preset|spacing|40","right":"var:preset|spacing|40","bottom":"var:preset|spacing|40","left":"var:preset|spacing|40"},"margin":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"}},"border":{"radius":"2px"}},"layout":{"type":"constrained"}} -->
@@ -183,7 +183,7 @@
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p>El cliente puede dirigir cualquier reclamación a [EMAIL] o al domicilio del vendedor indicado en el apartado 1. Disponemos de hojas oficiales de reclamación a disposición del consumidor.</p>
+<p>El cliente puede dirigir cualquier reclamación a comercial@cuperinox.com o al domicilio del vendedor indicado en el apartado 1. Disponemos de hojas oficiales de reclamación a disposición del consumidor.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph -->
