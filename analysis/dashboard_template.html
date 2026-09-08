@@ -173,6 +173,29 @@ footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);font-si
 footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px;
   border-radius:4px;color:var(--ink-2);font-size:12px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tools input[type=search],.tools select{font:400 13px/1 "IBM Plex Sans",sans-serif;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 11px}
+.tools input[type=search]{min-width:230px;flex:1;max-width:340px}
+.tools input:focus-visible,.tools select:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+.tools .count{margin-left:auto;font:500 12.5px/1 "IBM Plex Mono";color:var(--ink-3);
+  font-variant-numeric:tabular-nums}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--ink)}
+th.sortable[aria-sort]:not([aria-sort="none"])::after{content:" ↓";color:var(--brass)}
+th.sortable[aria-sort="ascending"]::after{content:" ↑"}
+.delta{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:600}
+.bar-cell{position:relative;min-width:96px}
+.bar-cell .fill{position:absolute;top:4px;bottom:4px;right:50%;border-radius:2px;opacity:.22}
+.bar-cell .fill.p{right:auto;left:50%}
+.bar-cell span{position:relative}
+.causa{font-size:11.5px;padding:2px 7px;border-radius:4px;background:var(--sunk);
+  color:var(--ink-2);white-space:nowrap}
+.more{display:block;width:100%;padding:11px;background:var(--surface-2);border:0;
+  border-top:1px solid var(--line);font:600 12.5px/1 "IBM Plex Sans";color:var(--ink-2);
+  cursor:pointer}
+.more:hover{color:var(--ink)}
 </style>
 
 <header><div class="hin">
@@ -238,6 +261,28 @@ footer code{font-family:"IBM Plex Mono";background:var(--sunk);padding:1.5px 6px
        destacada por debajo del 70%. El riesgo es una cota superior, no una previsión.</p>
   </div>
   <div class="scroll"><table id="bb"></table></div>
+</section>
+
+<section id="ayoySec" hidden>
+  <div class="shead">
+    <h2>ASIN a ASIN: quién ganó y quién perdió</h2>
+    <p id="ayoySub"></p>
+  </div>
+  <div class="bar"><div class="seg" id="ayoyPais" role="group" aria-label="Mercado"></div></div>
+  <div class="tools">
+    <input type="search" id="ayoyQ" placeholder="Buscar producto…" aria-label="Buscar producto">
+    <select id="ayoyMarca" aria-label="Marca"></select>
+    <select id="ayoyCausa" aria-label="Causa"></select>
+    <select id="ayoySent" aria-label="Sentido">
+      <option value="">Suben y bajan</option>
+      <option value="baja">Solo los que bajan</option>
+      <option value="sube">Solo los que suben</option>
+    </select>
+    <span class="count" id="ayoyCount"></span>
+  </div>
+  <div class="scroll"><table id="ayoyTab"></table></div>
+  <button class="more" id="ayoyMore" hidden>Ver más</button>
+  <p class="note" id="ayoyNote"></p>
 </section>
 
 <section id="mkSec" hidden>
@@ -526,6 +571,127 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
 
 
+
+
+/* ---------- ASIN YoY ---------- */
+if(D.asinYoY && D.asinYoY.length){
+  $('#ayoySec').hidden = false;
+  let pais = 'ES', shown = 40, sortK = 'd', sortAsc = true;
+
+  const ES_ROWS = D.asinYoY, FR_ROWS = D.asinFR || [];
+  const paises = [['ES','España · € a ventana idéntica']].concat(
+    FR_ROWS.length ? [['FR','Francia · cuota del país']] : []);
+  $('#ayoyPais').innerHTML = paises.map(([k,n])=>
+    `<button data-p="${k}" aria-pressed="${k===pais}">${n}</button>`).join('');
+
+  const rowsOf = () => pais==='ES' ? ES_ROWS : FR_ROWS;
+  const fmtD  = v => pais==='ES' ? (v>=0?'+':'−')+eur(Math.abs(v))
+                                 : (v>=0?'+':'−')+dec(Math.abs(v),1)+' p';
+
+  function fill(){
+    const rs = rowsOf();
+    const marcas = [...new Set(rs.map(r=>r.brand))].sort();
+    $('#ayoyMarca').innerHTML = '<option value="">Todas las marcas</option>' +
+      marcas.map(m=>`<option>${m}</option>`).join('');
+    const causas = pais==='ES' ? [...new Set(rs.map(r=>r.causa))].sort() : [];
+    $('#ayoyCausa').innerHTML = '<option value="">Cualquier causa</option>' +
+      causas.map(c=>`<option>${c}</option>`).join('');
+    $('#ayoyCausa').disabled = !causas.length;
+  }
+
+  function filtered(){
+    const q = $('#ayoyQ').value.trim().toLowerCase();
+    const mb = $('#ayoyMarca').value, cz = $('#ayoyCausa').value, sn = $('#ayoySent').value;
+    return rowsOf().filter(r =>
+      (!q  || r.title.toLowerCase().includes(q)) &&
+      (!mb || r.brand === mb) &&
+      (!cz || r.causa === cz) &&
+      (!sn || (sn==='sube' ? r.d>0 : r.d<0))
+    ).sort((a,b)=>{
+      const x=a[sortK], y=b[sortK];
+      if(typeof x === 'string') return sortAsc ? x.localeCompare(y) : y.localeCompare(x);
+      return sortAsc ? x-y : y-x;
+    });
+  }
+
+  const COLS_ES = [
+    ['title','Producto',0],['brand','Marca',0],['d','Δ ventas',1],['v0','2025',1],['v1','2026',1],
+    ['s0','Ses. 25',1],['s1','Ses. 26',1],['bb1','BuyBox 26',1],['c0','Conv 25',1],['c1','Conv 26',1],
+    ['causa','Causa dominante',0]];
+  const COLS_FR = [
+    ['title','Producto',0],['brand','Marca',0],['d','Δ cuota',1],['cuota0','% vta 25',1],
+    ['cuota1','% vta 26',1],['s0','Ses. 25',1],['s1','Ses. 26',1],['bb0','BuyBox 25',1],
+    ['bb1','BuyBox 26',1],['c1','Conv 26',1]];
+
+  function render(){
+    const cols = pais==='ES' ? COLS_ES : COLS_FR;
+    const all = filtered(), rs = all.slice(0, shown);
+    const maxAbs = Math.max(1, ...all.map(r=>Math.abs(r.d)));
+    $('#ayoyTab').innerHTML =
+      `<thead><tr>${cols.map(([k,n])=>
+        `<th class="sortable" data-k="${k}" aria-sort="${
+          k===sortK ? (sortAsc?'ascending':'descending') : 'none'}">${n}</th>`).join('')}</tr></thead>
+       <tbody>` + rs.map(r=>{
+        const pos = r.d >= 0, w = 46*Math.abs(r.d)/maxAbs;
+        const cell = k => {
+          if(k==='title')  return `<td>${r.title.slice(0,64)}</td>`;
+          if(k==='brand')  return `<td>${r.brand}</td>`;
+          if(k==='causa')  return `<td><span class="causa">${r.causa}</span></td>`;
+          if(k==='d') return `<td class="n bar-cell">
+              <div class="fill ${pos?'p':''}" style="width:${w}%;background:${
+                pos?'var(--good)':'var(--bad)'}"></div>
+              <span class="delta" style="color:${pos?'var(--good)':'var(--bad)'}">${fmtD(r.d)}</span></td>`;
+          if(k.startsWith('bb') || k.startsWith('c') && k!=='causa')
+            return `<td class="n">${dec(r[k],1)}%</td>`;
+          if(k.startsWith('s')) return `<td class="n">${int(r[k])}</td>`;
+          if(k.startsWith('cuota')) return `<td class="n">${dec(r[k],1)}%</td>`;
+          return `<td class="n">${eur(r[k])}</td>`;
+        };
+        return `<tr>${cols.map(([k])=>cell(k)).join('')}</tr>`;
+      }).join('') + `</tbody>`;
+    $('#ayoyCount').textContent = `${int(all.length)} de ${int(rowsOf().length)} ASINs`;
+    $('#ayoyMore').hidden = all.length <= shown;
+    $('#ayoyMore').textContent = `Ver ${int(Math.min(40, all.length-shown))} más`;
+  }
+
+  $('#ayoyTab').addEventListener('click', e=>{
+    const th = e.target.closest('th.sortable'); if(!th) return;
+    const k = th.dataset.k;
+    if(k===sortK) sortAsc = !sortAsc; else { sortK = k; sortAsc = (k==='d'); }
+    render();
+  });
+  ['#ayoyQ','#ayoyMarca','#ayoyCausa','#ayoySent'].forEach(sel=>
+    $(sel).addEventListener('input', ()=>{ shown = 40; render(); }));
+  $('#ayoyMore').onclick = ()=>{ shown += 40; render(); };
+  $('#ayoyPais').onclick = e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    pais = b.dataset.p; shown = 40; sortK = 'd'; sortAsc = true;
+    [...$('#ayoyPais').children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.p===pais));
+    fill(); setSub(); render();
+  };
+
+  function setSub(){
+    if(pais==='ES'){
+      const up = ES_ROWS.filter(r=>r.d>0), dn = ES_ROWS.filter(r=>r.d<0);
+      $('#ayoySub').innerHTML = `Enero–agosto 2025 frente a enero–agosto 2026, misma ventana.
+        <strong>${int(up.length)}</strong> ASINs suben (+${eur(up.reduce((s,r)=>s+r.d,0))}) y
+        <strong>${int(dn.length)}</strong> bajan (${eur(dn.reduce((s,r)=>s+r.d,0))}).
+        La causa dominante se calcula descomponiendo cada movimiento en tráfico × conversión × precio.`;
+      $('#ayoyNote').innerHTML = `Del crecimiento neto, <strong>${eur(
+        ES_ROWS.reduce((s,r)=>s+r.et,0))}</strong> vienen de tráfico, <strong>${eur(
+        ES_ROWS.reduce((s,r)=>s+r.ec,0))}</strong> de conversión y solo <strong>${eur(
+        ES_ROWS.reduce((s,r)=>s+r.ep,0))}</strong> de precio. Creces vendiendo más, no cobrando más.`;
+    } else {
+      $('#ayoySub').innerHTML = `El informe francés de 2025 cubre 12 meses y el de 2026 solo 8,
+        así que <strong>los euros no son comparables</strong>. Lo que sí lo es: la cuota que cada
+        ASIN representa dentro de la venta francesa, y los ratios de conversión y BuyBox.`;
+      $('#ayoyNote').innerHTML = `Los ASINs franceses que más cuota pierden conservan el BuyBox casi
+        intacto: pierden <strong>sesiones</strong>, no la oferta destacada. Es pérdida de
+        posicionamiento, no competencia por el precio.`;
+    }
+  }
+  fill(); setSub(); render();
+}
 
 /* ---------- mercados ---------- */
 if(D.mercados && D.mercados.length){
