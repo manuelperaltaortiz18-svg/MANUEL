@@ -1,0 +1,28 @@
+{
+  "asin": "B0TESTBAD1",
+  "category": "beauty",
+  "brand": "Luminar",
+  "title": "crema facial crema hidratante crema anti edad BEST SELLER 50ml",
+  "bullets": [
+    "Hidrata mucho",
+    "crema buena"
+  ],
+  "description": "Crema facial. Cures acne and treats wrinkles. Visita www.luminar-shop.com o escribe a ventas@luminar.com",
+  "has_a_plus": false,
+  "images": [
+    {"url": "https://x/1.jpg", "width": 800, "height": 800, "is_main": true, "has_white_background": false, "kind": "product"},
+    {"url": "https://x/2.jpg", "width": 900, "height": 900, "kind": "product"}
+  ],
+  "has_video": false,
+  "backend_search_terms": "crema, crema, facial, hidratante, luminar, crema facial",
+  "target_keywords": ["crema hidratante facial", "crema antiarrugas", "acido hialuronico", "crema noche", "hidratante piel seca"],
+  "attributes": {"brand": "Luminar"},
+  "browse_node": "",
+  "price": 19.9,
+  "buybox_won": false,
+  "sponsored_products": false,
+  "rating": 3.1,
+  "review_count": 4,
+  "answered_questions": 0,
+  "return_rate": 0.14
+}

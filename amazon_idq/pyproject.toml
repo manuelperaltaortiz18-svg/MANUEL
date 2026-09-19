@@ -1,0 +1,13 @@
+[project]
+name = "amazon-idq"
+version = "0.1.0"
+description = "Proxy listing-quality auditor for Amazon listings (content, media, keywords, attributes, compliance, ads, reviews)"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+amazon-idq = "amazon_idq.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

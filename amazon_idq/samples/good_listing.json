@@ -1,0 +1,50 @@
+{
+  "asin": "B0TESTGOOD",
+  "category": "beauty",
+  "brand": "Luminar",
+  "title": "Luminar Crema Hidratante Facial con Ácido Hialurónico y Vitamina C, 50 ml, Hidratación 24h para Piel Seca y Sensible, Textura Ligera No Grasa, Uso Día y Noche",
+  "bullets": [
+    "HIDRATACIÓN 24 HORAS: la combinación de ácido hialurónico de bajo peso molecular y glicerina vegetal retiene el agua en las capas superficiales de la piel durante todo el día, reduciendo la sensación de tirantez desde la primera aplicación.",
+    "TEXTURA LIGERA NO GRASA: la fórmula en gel-crema se absorbe en menos de 30 segundos y no deja película, por lo que funciona como base de maquillaje sin apelmazar ni brillar a lo largo de la jornada.",
+    "APTA PARA PIEL SENSIBLE: sin perfume, sin alcohol y sin siliconas, formulada con un pH de 5,5 afín al manto ácido de la piel y testada dermatológicamente en pieles reactivas.",
+    "VITAMINA C ESTABILIZADA: el derivado ascorbil glucósido aporta luminosidad y ayuda a atenuar la apariencia de manchas sin la irritación asociada al ácido ascórbico puro.",
+    "FORMATO 50 ML PARA 2 MESES: el envase airless protege los activos de la oxidación y dosifica la cantidad exacta, con un rendimiento aproximado de dos meses en uso diario mañana y noche."
+  ],
+  "description": "Luminar Crema Hidratante Facial está formulada para quienes buscan hidratación duradera sin la pesadez de las cremas tradicionales. El ácido hialurónico de bajo peso molecular penetra en la capa córnea y retiene agua donde hace falta, mientras la glicerina vegetal y la manteca de karité refuerzan la barrera cutánea. La vitamina C en forma de ascorbil glucósido aporta luminosidad progresiva sin el riesgo de irritación. Su textura gel-crema se absorbe rápido y deja un acabado mate natural, apta como base de maquillaje. Sin perfume, sin alcohol y sin siliconas, con pH 5,5 y testada dermatológicamente en pieles sensibles y reactivas. Modo de empleo: aplicar mañana y noche sobre el rostro y cuello limpios, extendiendo con movimientos ascendentes hasta su total absorción. El envase airless de 50 ml protege los activos de la luz y el aire, manteniendo la eficacia de la fórmula hasta la última dosis y rindiendo aproximadamente dos meses de uso diario.",
+  "has_a_plus": true,
+  "a_plus_modules": 5,
+  "has_brand_story": true,
+  "images": [
+    {"url": "u1", "width": 1600, "height": 1600, "is_main": true, "has_white_background": true, "kind": "product"},
+    {"url": "u2", "width": 1600, "height": 1600, "kind": "infographic"},
+    {"url": "u3", "width": 1600, "height": 1600, "kind": "lifestyle"},
+    {"url": "u4", "width": 1600, "height": 1600, "kind": "dimensions"},
+    {"url": "u5", "width": 1600, "height": 1600, "kind": "infographic"},
+    {"url": "u6", "width": 1600, "height": 1600, "kind": "lifestyle"},
+    {"url": "u7", "width": 1600, "height": 1600, "kind": "packaging"}
+  ],
+  "has_video": true,
+  "video_count": 2,
+  "backend_search_terms": "gelcrema rostro mujer hombre cosmetica coreana rutina skincare matificante nutritiva reparadora calmante rosacea dermatologica sin fragancia vegana cruelty free regalo navidad neceser viaje",
+  "target_keywords": ["crema hidratante facial", "ácido hialurónico", "vitamina c", "piel sensible", "crema noche"],
+  "attributes": {
+    "brand": "Luminar", "ingredients": "Aqua, Glycerin, Sodium Hyaluronate, Ascorbyl Glucoside",
+    "item_form": "Crema", "net_content": "50 ml", "country_of_origin": "España",
+    "skin_type": "Seca, Sensible", "scent": "Sin perfume", "age_range": "Adulto",
+    "special_features": "Sin alcohol, pH 5.5", "item_volume": "50 ml"
+  },
+  "browse_node": "6198073031",
+  "variation_parent": "B0PARENT01",
+  "variation_count": 3,
+  "price": 24.9,
+  "buybox_won": true,
+  "is_prime": true,
+  "in_stock": true,
+  "sponsored_products": true,
+  "sponsored_brands": true,
+  "ad_keyword_count": 45,
+  "rating": 4.6,
+  "review_count": 312,
+  "answered_questions": 14,
+  "return_rate": 0.03
+}
