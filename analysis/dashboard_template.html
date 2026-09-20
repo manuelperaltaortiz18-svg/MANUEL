@@ -189,6 +189,8 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
 .bar-cell{position:relative;min-width:96px}
 .bar-cell .fill{position:absolute;top:4px;bottom:4px;right:50%;border-radius:2px;opacity:.22}
 .bar-cell .fill.p{right:auto;left:50%}
+.bar-cell.u{min-width:104px}
+.bar-cell.u .fill{opacity:.16}
 .bar-cell span{position:relative}
 .sku{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);
   white-space:normal;min-width:110px;max-width:190px;word-break:break-word}
@@ -270,7 +272,10 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
     <h2>ASIN a ASIN: quién ganó y quién perdió</h2>
     <p id="ayoySub"></p>
   </div>
-  <div class="bar"><div class="seg" id="ayoyPais" role="group" aria-label="Mercado"></div></div>
+  <div class="bar">
+    <div class="seg" id="ayoyPais" role="group" aria-label="Mercado"></div>
+    <div class="seg" id="ayoyOrden" role="group" aria-label="Ordenar por"></div>
+  </div>
   <div class="tools">
     <input type="search" id="ayoyQ" placeholder="Buscar por producto o SKU…" aria-label="Buscar por producto o SKU">
     <select id="ayoyMarca" aria-label="Marca"></select>
@@ -579,13 +584,22 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 /* ---------- ASIN YoY ---------- */
 if(D.asinYoY && D.asinYoY.length){
   $('#ayoySec').hidden = false;
-  let pais = 'ES', shown = 40, sortK = 'd', sortAsc = true;
+  let pais = 'ES', shown = 40, sortK = 'u1', sortAsc = false;
 
   const ES_ROWS = D.asinYoY, FR_ROWS = D.asinFR || [];
   const paises = [['ES','España · € a ventana idéntica']].concat(
     FR_ROWS.length ? [['FR','Francia · cuota del país']] : []);
   $('#ayoyPais').innerHTML = paises.map(([k,n])=>
     `<button data-p="${k}" aria-pressed="${k===pais}">${n}</button>`).join('');
+  const pintaOrden = () => $('#ayoyOrden').innerHTML = ORDENES.map(([k,n])=>
+    `<button data-o="${k}" aria-pressed="${k===sortK}">${n} ${
+      k===sortK ? (sortAsc?'↑':'↓') : ''}</button>`).join('');
+  $('#ayoyOrden').onclick = e => {
+    const b = e.target.closest('button'); if(!b) return;
+    const k = b.dataset.o;
+    if(k===sortK) sortAsc = !sortAsc; else { sortK = k; sortAsc = false; }
+    shown = 40; pintaOrden(); render();
+  };
 
   const rowsOf = () => pais==='ES' ? ES_ROWS : FR_ROWS;
   const fmtD  = v => pais==='ES' ? (v>=0?'+':'−')+eur(Math.abs(v))
@@ -619,18 +633,21 @@ if(D.asinYoY && D.asinYoY.length){
   }
 
   const COLS_ES = [
-    ['title','Producto',0],['sku','SKU',0],['brand','Marca',0],['d','Δ ventas',1],['v0','2025',1],['v1','2026',1],
-    ['s0','Ses. 25',1],['s1','Ses. 26',1],['bb1','BuyBox 26',1],['c0','Conv 25',1],['c1','Conv 26',1],
-    ['causa','Causa dominante',0]];
+    ['title','Producto'],['sku','SKU'],['brand','Marca'],['u1','Uds 26'],['u0','Uds 25'],
+    ['du','Δ uds'],['d','Δ ventas'],['v1','2026'],['v0','2025'],['s1','Ses. 26'],
+    ['bb1','BuyBox 26'],['c1','Conv 26'],['causa','Causa dominante']];
   const COLS_FR = [
-    ['title','Producto',0],['sku','SKU',0],['brand','Marca',0],['d','Δ cuota',1],['cuota0','% vta 25',1],
-    ['cuota1','% vta 26',1],['s0','Ses. 25',1],['s1','Ses. 26',1],['bb0','BuyBox 25',1],
-    ['bb1','BuyBox 26',1],['c1','Conv 26',1]];
+    ['title','Producto'],['sku','SKU'],['brand','Marca'],['u1','Uds 26'],['u0','Uds 25'],
+    ['du','Δ uds'],['d','Δ cuota'],['cuota1','% vta 26'],['cuota0','% vta 25'],
+    ['s1','Ses. 26'],['bb1','BuyBox 26'],['c1','Conv 26']];
+  const ORDENES = [
+    ['u1','Unidades 2026'],['u0','Unidades 2025'],['du','Δ unidades'],['d','Δ ventas'],['v1','Ventas 2026']];
 
   function render(){
     const cols = pais==='ES' ? COLS_ES : COLS_FR;
     const all = filtered(), rs = all.slice(0, shown);
     const maxAbs = Math.max(1, ...all.map(r=>Math.abs(r.d)));
+    const maxU   = Math.max(1, ...all.map(r=>r.u1||0));
     $('#ayoyTab').innerHTML =
       `<thead><tr>${cols.map(([k,n])=>
         `<th class="sortable" data-k="${k}" aria-sort="${
@@ -642,6 +659,13 @@ if(D.asinYoY && D.asinYoY.length){
           if(k==='sku')    return `<td class="sku">${r.sku || '—'}</td>`;
           if(k==='brand')  return `<td>${r.brand}</td>`;
           if(k==='causa')  return `<td><span class="causa">${r.causa}</span></td>`;
+          if(k==='u1') return `<td class="n bar-cell u"><div class="fill p"
+              style="left:0;width:${92*r.u1/maxU}%;background:var(--s1)"></div>
+              <span><strong>${int(r.u1)}</strong></span></td>`;
+          if(k==='u0') return `<td class="n">${int(r.u0)}</td>`;
+          if(k==='du') return `<td class="n delta" style="color:${
+              r.du>0?'var(--good)':r.du<0?'var(--bad)':'var(--ink-3)'}">${
+              r.du>0?'+':r.du<0?'−':''}${int(Math.abs(r.du))}</td>`;
           if(k==='d') return `<td class="n bar-cell">
               <div class="fill ${pos?'p':''}" style="width:${w}%;background:${
                 pos?'var(--good)':'var(--bad)'}"></div>
@@ -662,17 +686,17 @@ if(D.asinYoY && D.asinYoY.length){
   $('#ayoyTab').addEventListener('click', e=>{
     const th = e.target.closest('th.sortable'); if(!th) return;
     const k = th.dataset.k;
-    if(k===sortK) sortAsc = !sortAsc; else { sortK = k; sortAsc = (k==='d'); }
-    render();
+    if(k===sortK) sortAsc = !sortAsc; else { sortK = k; sortAsc = false; }
+    pintaOrden(); render();
   });
   ['#ayoyQ','#ayoyMarca','#ayoyCausa','#ayoySent'].forEach(sel=>
     $(sel).addEventListener('input', ()=>{ shown = 40; render(); }));
   $('#ayoyMore').onclick = ()=>{ shown += 40; render(); };
   $('#ayoyPais').onclick = e=>{
     const b = e.target.closest('button'); if(!b) return;
-    pais = b.dataset.p; shown = 40; sortK = 'd'; sortAsc = true;
+    pais = b.dataset.p; shown = 40; sortK = 'u1'; sortAsc = false;
     [...$('#ayoyPais').children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.p===pais));
-    fill(); setSub(); render();
+    fill(); setSub(); pintaOrden(); render();
   };
 
   function setSub(){
@@ -695,7 +719,7 @@ if(D.asinYoY && D.asinYoY.length){
         posicionamiento, no competencia por el precio.`;
     }
   }
-  fill(); setSub(); render();
+  fill(); setSub(); pintaOrden(); render();
 }
 
 /* ---------- mercados ---------- */

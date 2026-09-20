@@ -51,6 +51,7 @@ for ch in set(A) | set(B):
     filas.append(dict(ch=ch, title=(b['title'] or a['title']), brand=(b['brand'] or a['brand']),
         sku=', '.join(sorted(a['skus'] | b['skus'])),
         v0=a['v'], v1=b['v'], d=b['v']-a['v'],
+        u0=a['uds'], u1=b['uds'], du=b['uds']-a['uds'],
         s0=a['ses'], s1=b['ses'], bb0=a['bb'], bb1=b['bb'],
         c0=100*a['conv'], c1=100*b['conv'], p0=a['p'], p1=b['p'],
         et=et, ec=ec, ep=ep, causa=causa,
@@ -133,6 +134,7 @@ for ch in set(FA) | set(FB):
         cuota0=round(pa,2), cuota1=round(pb,2), d=round(pb-pa,2),
         qses0=round(qa,2), qses1=round(qb,2), dses=round(qb-qa,2),
         v0=round(a['v']), v1=round(b['v']), s0=round(a['ses']), s1=round(b['ses']),
+        u0=round(a['uds']), u1=round(b['uds']), du=round(b['uds']-a['uds']),
         bb0=round(a['bb'],1), bb1=round(b['bb'],1), c0=round(a['conv'],2), c1=round(b['conv'],2)))
 fr.sort(key=lambda f: f['d'])
 json.dump(fr, open('asin_yoy_fr.json','w'), ensure_ascii=False)
