@@ -7,7 +7,7 @@ from brands import brand
 
 def window(meses):
     acc = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0,
-                                               title='', brand='', n=0))
+                                               title='', brand='', n=0, skus=set()))
     for m in meses:
         rows = load(f'mensual/{m}.csv')
         by = collections.defaultdict(list)
@@ -18,6 +18,7 @@ def window(meses):
             a['ses'] += s; a['uds'] += sum(r['units'] for r in rs)
             a['v'] += sum(r['sales'] for r in rs); a['bbw'] += max(r['bb'] for r in rs)*s
             a['title'] = rs[0]['title']; a['brand'] = brand(rs[0]); a['n'] += 1
+            a['skus'].update(r['sku'] for r in rs if r['sku'])
     for a in acc.values():
         a['bb']   = a['bbw']/a['ses'] if a['ses'] else 0
         a['conv'] = a['uds']/a['ses'] if a['ses'] else 0
@@ -26,7 +27,7 @@ def window(meses):
 
 A = window([f'2025-{m:02d}' for m in range(1,9)])
 B = window([f'2026-{m:02d}' for m in range(1,9)])
-Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0)
+Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0, skus=set())
 
 def descompon(a, b):
     """Efecto de cada factor sobre el delta de venta, en euros."""
@@ -48,6 +49,7 @@ for ch in set(A) | set(B):
     if a['v'] == 0: causa = 'ASIN nuevo'
     elif b['v'] == 0: causa = 'ASIN retirado'
     filas.append(dict(ch=ch, title=(b['title'] or a['title']), brand=(b['brand'] or a['brand']),
+        sku=', '.join(sorted(a['skus'] | b['skus'])),
         v0=a['v'], v1=b['v'], d=b['v']-a['v'],
         s0=a['ses'], s1=b['ses'], bb0=a['bb'], bb1=b['bb'],
         c0=100*a['conv'], c1=100*b['conv'], p0=a['p'], p1=b['p'],
@@ -61,12 +63,12 @@ neg = [f for f in filas if f['d'] < 0]; pos = [f for f in filas if f['d'] > 0]
 def tabla(fs, titulo):
     print(f"\n{titulo}\n")
     h = (f"{'Δ EUR':>9}{'2025':>9}{'2026':>9}{'Ses25':>8}{'Ses26':>8}{'BB25':>6}{'BB26':>6}"
-         f"{'Cv25':>6}{'Cv26':>6}{'P25':>6}{'P26':>6}  {'Causa':<13} Producto")
+         f"{'Cv25':>6}{'Cv26':>6}{'P25':>6}{'P26':>6}  {'Causa':<13}{'SKU':<24} Producto")
     print(h); print('-'*118)
     for f in fs:
         print(f"{f['d']:>+9,.0f}{f['v0']:>9,.0f}{f['v1']:>9,.0f}{f['s0']:>8,.0f}{f['s1']:>8,.0f}"
               f"{f['bb0']:>5.0f}%{f['bb1']:>5.0f}%{f['c0']:>5.1f}%{f['c1']:>5.1f}%"
-              f"{f['p0']:>6.1f}{f['p1']:>6.1f}  {f['causa']:<13} {f['title'][:42]}")
+              f"{f['p0']:>6.1f}{f['p1']:>6.1f}  {f['causa']:<13}{f['sku'][:23]:<24} {f['title'][:42]}")
 
 print(f"ESPANA — ene-ago 2025 vs ene-ago 2026, {len(filas)} ASINs con >300 EUR en algun periodo")
 print(f"Delta neto: {TOT_D:>+,.0f} EUR   |   {len(pos)} suben (+{sum(f['d'] for f in pos):,.0f})"
@@ -100,7 +102,8 @@ for k,a in sorted(gm.items(), key=lambda x:-x[1]['d']):
           f"{a['et']:>+13,.0f}{a['ec']:>+12,.0f}{a['ep']:>+12,.0f}")
 
 import json
-json.dump([{k:(round(v,2) if isinstance(v,float) else v) for k,v in f.items()} for f in filas],
+json.dump([{k:(round(v,2) if isinstance(v,float) else v)
+            for k,v in f.items() if not isinstance(v,set)} for f in filas],
           open('asin_yoy.json','w'), ensure_ascii=False)
 print(f"\n-> asin_yoy.json ({len(filas)} ASINs)")
 
@@ -111,13 +114,14 @@ def col(f):
     for c, rs in by.items():
         s = max(r['sessions'] for r in rs); u = sum(r['units'] for r in rs)
         out[c] = dict(title=rs[0]['title'], brand=brand(rs[0]), ses=s, uds=u,
+                      skus={r['sku'] for r in rs if r['sku']},
                       v=sum(r['sales'] for r in rs), bb=max(r['bb'] for r in rs),
                       conv=100*u/s if s else 0)
     return out
 FA, FB = col('fr/br_fr_2025.csv'), col('fr/br_fr_2026ytd.csv')
 TA, TB = sum(x['v'] for x in FA.values()), sum(x['v'] for x in FB.values())
 SA, SB = sum(x['ses'] for x in FA.values()), sum(x['ses'] for x in FB.values())
-ZF = dict(title='', brand='', ses=0, uds=0, v=0, bb=0, conv=0)
+ZF = dict(title='', brand='', ses=0, uds=0, v=0, bb=0, conv=0, skus=set())
 fr = []
 for ch in set(FA) | set(FB):
     a, b = FA.get(ch, ZF), FB.get(ch, ZF)
@@ -125,6 +129,7 @@ for ch in set(FA) | set(FB):
     qa, qb = 100*a['ses']/SA, 100*b['ses']/SB
     if max(a['v'], b['v']) < 300: continue
     fr.append(dict(ch=ch, title=(b['title'] or a['title']), brand=(b['brand'] or a['brand']),
+        sku=', '.join(sorted(a['skus'] | b['skus'])),
         cuota0=round(pa,2), cuota1=round(pb,2), d=round(pb-pa,2),
         qses0=round(qa,2), qses1=round(qb,2), dses=round(qb-qa,2),
         v0=round(a['v']), v1=round(b['v']), s0=round(a['ses']), s1=round(b['ses']),
@@ -134,14 +139,14 @@ json.dump(fr, open('asin_yoy_fr.json','w'), ensure_ascii=False)
 
 print(f"\n\nFRANCIA — cuota de la venta del pais (2025 completo vs 2026 YTD), {len(fr)} ASINs")
 print("Los euros no son comparables (12m vs 8m); la cuota si.\n")
-h=f"{'Δcuota':>8}{'%25':>7}{'%26':>7}{'Δ%ses':>8}{'Ses25':>8}{'Ses26':>8}{'BB25':>6}{'BB26':>6}{'Cv25':>6}{'Cv26':>6}  Producto"
+h=f"{'Δcuota':>8}{'%25':>7}{'%26':>7}{'Δ%ses':>8}{'Ses25':>8}{'Ses26':>8}{'BB25':>6}{'BB26':>6}{'Cv25':>6}{'Cv26':>6}  {'SKU':<24} Producto"
 print("=== LOS 12 QUE MAS CUOTA PIERDEN ===\n"); print(h); print('-'*112)
 for f in fr[:12]:
     print(f"{f['d']:>+7.1f}p{f['cuota0']:>6.1f}%{f['cuota1']:>6.1f}%{f['dses']:>+7.1f}p"
           f"{f['s0']:>8,.0f}{f['s1']:>8,.0f}{f['bb0']:>5.0f}%{f['bb1']:>5.0f}%"
-          f"{f['c0']:>5.1f}%{f['c1']:>5.1f}%  {f['title'][:44]}")
+          f"{f['c0']:>5.1f}%{f['c1']:>5.1f}%  {f['sku'][:23]:<24} {f['title'][:44]}")
 print("\n=== LOS 12 QUE MAS CUOTA GANAN ===\n"); print(h); print('-'*112)
 for f in fr[-12:][::-1]:
     print(f"{f['d']:>+7.1f}p{f['cuota0']:>6.1f}%{f['cuota1']:>6.1f}%{f['dses']:>+7.1f}p"
           f"{f['s0']:>8,.0f}{f['s1']:>8,.0f}{f['bb0']:>5.0f}%{f['bb1']:>5.0f}%"
-          f"{f['c0']:>5.1f}%{f['c1']:>5.1f}%  {f['title'][:44]}")
+          f"{f['c0']:>5.1f}%{f['c1']:>5.1f}%  {f['sku'][:23]:<24} {f['title'][:44]}")

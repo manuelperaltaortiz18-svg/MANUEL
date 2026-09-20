@@ -21,7 +21,8 @@ def read_month(path):
         out.append(dict(child=child, title=rs[0]['title'], brand=brand(rs[0]),
                         ses=s, uds=sum(r['units'] for r in rs),
                         v=sum(r['sales'] for r in rs), bb=max(r['bb'] for r in rs),
-                        skus=len({r['sku'] for r in rs})))
+                        skus=len({r['sku'] for r in rs}),
+                        skulist={r['sku'] for r in rs if r['sku']}))
     return out
 
 files = sorted(glob.glob('mensual/*.csv'))
@@ -45,17 +46,20 @@ asin_ct  = [len(data[m]) for m in months]
 
 # BuyBox perdido: ultimos 8 meses agregados, ASINs con demanda y BB bajo
 last8 = months[-8:]
-agg = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0, title='', brand=''))
+agg = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0, title='',
+                                           brand='', skulist=set()))
 for m in last8:
     for x in data[m]:
         a = agg[x['child']]
         a['ses'] += x['ses']; a['uds'] += x['uds']; a['v'] += x['v']
         a['bbw'] += x['bb'] * x['ses']; a['title'] = x['title']; a['brand'] = x['brand']
+        a['skulist'] |= x['skulist']
 bbloss = []
 for c, a in agg.items():
     bb = a['bbw'] / a['ses'] if a['ses'] else 0
     if a['ses'] > 5000 and bb < 70 and a['v'] > 1000:
         bbloss.append(dict(title=a['title'], brand=a['brand'], v=round(a['v']),
+                           sku=', '.join(sorted(a['skulist'])),
                            bb=round(bb, 1), ses=round(a['ses']),
                            conv=round(100 * a['uds'] / a['ses'], 2),
                            riesgo=round(min(a['v'] * (100 - bb) / bb, 3 * a['v']))))

@@ -190,6 +190,8 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
 .bar-cell .fill{position:absolute;top:4px;bottom:4px;right:50%;border-radius:2px;opacity:.22}
 .bar-cell .fill.p{right:auto;left:50%}
 .bar-cell span{position:relative}
+.sku{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);
+  white-space:normal;min-width:110px;max-width:190px;word-break:break-word}
 .causa{font-size:11.5px;padding:2px 7px;border-radius:4px;background:var(--sunk);
   color:var(--ink-2);white-space:nowrap}
 .more{display:block;width:100%;padding:11px;background:var(--surface-2);border:0;
@@ -270,7 +272,7 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
   </div>
   <div class="bar"><div class="seg" id="ayoyPais" role="group" aria-label="Mercado"></div></div>
   <div class="tools">
-    <input type="search" id="ayoyQ" placeholder="Buscar producto…" aria-label="Buscar producto">
+    <input type="search" id="ayoyQ" placeholder="Buscar por producto o SKU…" aria-label="Buscar por producto o SKU">
     <select id="ayoyMarca" aria-label="Marca"></select>
     <select id="ayoyCausa" aria-label="Causa"></select>
     <select id="ayoySent" aria-label="Sentido">
@@ -560,13 +562,14 @@ $('#sliders').addEventListener('input', e=>{
 });
 
 /* ---------- buybox ---------- */
-$('#bb').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Sesiones</th>
+$('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>Sesiones</th>
   <th>Conv.</th><th>BuyBox</th><th>Ventas</th><th>€ en riesgo</th></tr></thead><tbody>` +
-  D.bbloss.map(r=>`<tr><td>${r.title.slice(0,66)}</td><td>${r.brand}</td>
+  D.bbloss.map(r=>`<tr><td>${r.title.slice(0,66)}</td>
+    <td class="sku">${r.sku || '—'}</td><td>${r.brand}</td>
     <td class="n">${int(r.ses)}</td><td class="n">${dec(r.conv,1)}%</td>
     <td class="n"><span class="pill ${r.bb<25?'b':r.bb<50?'w':'g'}">${dec(r.bb,1)}%</span></td>
     <td class="n">${eur(r.v)}</td><td class="n">${eur(r.riesgo)}</td></tr>`).join('') +
-  `<tr class="tot"><td>${D.bbloss.length} ASINs listados</td><td></td><td></td><td></td><td></td>
+  `<tr class="tot"><td>${D.bbloss.length} ASINs listados</td><td></td><td></td><td></td><td></td><td></td>
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.v,0))}</td>
     <td class="n">${eur(D.bbloss.reduce((s,r)=>s+r.riesgo,0))}</td></tr></tbody>`;
 
@@ -603,7 +606,8 @@ if(D.asinYoY && D.asinYoY.length){
     const q = $('#ayoyQ').value.trim().toLowerCase();
     const mb = $('#ayoyMarca').value, cz = $('#ayoyCausa').value, sn = $('#ayoySent').value;
     return rowsOf().filter(r =>
-      (!q  || r.title.toLowerCase().includes(q)) &&
+      (!q  || r.title.toLowerCase().includes(q) ||
+              (r.sku||'').toLowerCase().includes(q)) &&
       (!mb || r.brand === mb) &&
       (!cz || r.causa === cz) &&
       (!sn || (sn==='sube' ? r.d>0 : r.d<0))
@@ -615,11 +619,11 @@ if(D.asinYoY && D.asinYoY.length){
   }
 
   const COLS_ES = [
-    ['title','Producto',0],['brand','Marca',0],['d','Δ ventas',1],['v0','2025',1],['v1','2026',1],
+    ['title','Producto',0],['sku','SKU',0],['brand','Marca',0],['d','Δ ventas',1],['v0','2025',1],['v1','2026',1],
     ['s0','Ses. 25',1],['s1','Ses. 26',1],['bb1','BuyBox 26',1],['c0','Conv 25',1],['c1','Conv 26',1],
     ['causa','Causa dominante',0]];
   const COLS_FR = [
-    ['title','Producto',0],['brand','Marca',0],['d','Δ cuota',1],['cuota0','% vta 25',1],
+    ['title','Producto',0],['sku','SKU',0],['brand','Marca',0],['d','Δ cuota',1],['cuota0','% vta 25',1],
     ['cuota1','% vta 26',1],['s0','Ses. 25',1],['s1','Ses. 26',1],['bb0','BuyBox 25',1],
     ['bb1','BuyBox 26',1],['c1','Conv 26',1]];
 
@@ -635,6 +639,7 @@ if(D.asinYoY && D.asinYoY.length){
         const pos = r.d >= 0, w = 46*Math.abs(r.d)/maxAbs;
         const cell = k => {
           if(k==='title')  return `<td>${r.title.slice(0,64)}</td>`;
+          if(k==='sku')    return `<td class="sku">${r.sku || '—'}</td>`;
           if(k==='brand')  return `<td>${r.brand}</td>`;
           if(k==='causa')  return `<td><span class="causa">${r.causa}</span></td>`;
           if(k==='d') return `<td class="n bar-cell">
