@@ -1,0 +1,49 @@
+name: Contenido semanal
+
+# Lunes a las 07:00 UTC: genera los borradores y los deja pendientes de
+# revision. NO publica: publicar exige aprobacion humana explicita.
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      briefing:
+        description: "Material de partida de esta semana (opcional)"
+        required: false
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -e .
+
+      # La cola vive fuera del repo: se cachea entre ejecuciones para no
+      # perder el historial ni commitear una base de datos.
+      - name: Restaurar la cola
+        uses: actions/cache@v4
+        with:
+          path: data/queue.db
+          key: social-queue-${{ github.run_id }}
+          restore-keys: social-queue-
+
+      - name: Generar borradores
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: social generate --briefing "${{ inputs.briefing }}"
+
+      - name: Publicar los borradores como artefacto para revision
+        uses: actions/upload-artifact@v4
+        with:
+          name: borradores-semana-${{ github.run_number }}
+          path: data/queue.db
+          retention-days: 30

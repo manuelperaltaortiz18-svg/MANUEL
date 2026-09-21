@@ -1,0 +1,71 @@
+# Perfil de marca de cuperinox.es
+# TODO(cuperinox): revisa y corrige todos los campos. Lo de abajo es un borrador
+# inferido del nombre del dominio, no informacion verificada del negocio.
+
+nombre: Cuperinox
+web: https://cuperinox.es
+sector: Metalisteria y acero inoxidable
+ubicacion: España
+
+descripcion: >
+  Fabricacion y montaje de elementos en acero inoxidable y otros metales para
+  proyectos a medida: hosteleria, industria, arquitectura y particulares.
+
+audiencia:
+  - Arquitectos y estudios de interiorismo
+  - Responsables de compras en hosteleria e industria alimentaria
+  - Constructoras y contratistas
+  - Particulares con proyectos a medida
+
+propuesta_valor:
+  - Fabricacion a medida, no catalogo cerrado
+  - Acabados y soldadura de calidad
+  - Acompañamiento desde el plano hasta el montaje
+
+tono:
+  voz: Cercana y profesional, de taller que sabe lo que hace
+  tratamiento: tu
+  evitar:
+    - Lenguaje corporativo vacio ("sinergias", "soluciones 360")
+    - Exclamaciones multiples y emojis en exceso
+    - Promesas de precio o plazos concretos sin datos
+  preferir:
+    - Frases cortas
+    - Detalle tecnico concreto (material, acabado, medida)
+    - Una sola idea por publicacion
+
+# Pilares de contenido: el generador rota entre ellos semana a semana.
+pilares:
+  - id: proyecto
+    nombre: Proyecto terminado
+    descripcion: Un trabajo real, que se pedia y como se resolvio.
+  - id: proceso
+    nombre: Entre bastidores
+    descripcion: Como se fabrica una pieza, herramientas, soldadura, acabado.
+  - id: tecnico
+    nombre: Divulgacion tecnica
+    descripcion: Diferencias entre AISI 304 y 316, acabados, mantenimiento.
+  - id: equipo
+    nombre: Taller y equipo
+    descripcion: Personas, oficio, dia a dia del taller.
+  - id: sector
+    nombre: Sector y normativa
+    descripcion: Tendencias, normativa alimentaria, materiales.
+
+hashtags_base:
+  linkedin:
+    - AceroInoxidable
+    - Metalisteria
+    - FabricacionAMedida
+  instagram:
+    - aceroinoxidable
+    - metalisteria
+    - inox
+    - tallermetalico
+    - fabricacionamedida
+    - soldadura
+    - hechoenespaña
+
+cta:
+  linkedin: "¿Tienes un proyecto en mente? Escríbenos a cuperinox.es"
+  instagram: "Cuéntanos tu proyecto por DM o en cuperinox.es"
