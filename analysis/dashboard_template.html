@@ -267,6 +267,36 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
+<section id="invSec" hidden>
+  <div class="shead">
+    <h2>Inventario y demanda prevista</h2>
+    <p id="invSub"></p>
+  </div>
+  <p class="note" id="invFalta"></p>
+  <div class="card" style="margin-top:14px">
+    <svg id="invChart" viewBox="0 0 980 280" role="img"
+         aria-label="Demanda prevista por semana"></svg>
+    <div class="legend">
+      <span class="lg" style="cursor:default"><i style="background:var(--s1)"></i>Previsión media
+        <b id="invM">—</b></span>
+      <span class="lg" style="cursor:default"><i style="background:var(--s2)"></i>Escenario alto (P90),
+        incluye la barra azul <b id="invP">—</b></span>
+    </div>
+  </div>
+  <div class="tools" style="margin-top:18px">
+    <input type="search" id="invQ" placeholder="Buscar por producto o SKU…" aria-label="Buscar">
+    <select id="invMarca" aria-label="Marca"></select>
+    <select id="invAlerta" aria-label="Alerta">
+      <option value="">Todos</option>
+      <option value="sube">Amazon prevé MÁS de lo que vendes</option>
+      <option value="baja">Amazon prevé MENOS de lo que vendes</option>
+    </select>
+    <span class="count" id="invCount"></span>
+  </div>
+  <div class="scroll"><table id="invTab"></table></div>
+  <button class="more" id="invMore" hidden>Ver más</button>
+</section>
+
 <section id="ayoySec" hidden>
   <div class="shead">
     <h2>ASIN a ASIN: quién ganó y quién perdió</h2>
@@ -580,6 +610,98 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 
 
 
+
+
+/* ---------- inventario ---------- */
+if(D.inv && D.inv.filas.length){
+  $('#invSec').hidden = false;
+  const R = D.inv.resumen, F = D.inv.filas;
+  let shown = 30, sk = 'm13', sasc = false;
+
+  $('#invSub').innerHTML = `Previsión de FBA creada el ${R.creado}, 13 semanas hasta fin de
+    diciembre. Cubre <strong>${int(R.asins)} de ${int(R.asins_catalogo)}</strong> ASINs
+    (${dec(100*R.v_cubierta/R.v_total,1)}% de la venta, ${dec(100*R.u_cubierta/R.u_total,1)}%
+    de las unidades): solo lo que está en FBA.`;
+  $('#invFalta').innerHTML = `<strong>Esto no es todavía un plan de reposición.</strong>
+    El informe trae la demanda prevista pero no el <strong>stock disponible ni el que está en
+    tránsito</strong>, así que no se puede calcular qué enviar ni cuándo rompes. Falta el informe
+    de inventario FBA. Lo que sí sirve ya: dimensionar la compra de Q4 y detectar dónde la
+    previsión de Amazon se aleja de tu venta real.`;
+
+  /* --- rampa de Q4 --- */
+  const w=980,h=280,p={t:18,r:18,b:42,l:56}, iw=w-p.l-p.r, ih=h-p.t-p.b;
+  const top = Math.ceil(Math.max(...R.p90)/1000)*1000;
+  const y = v => p.t+ih-(v/top)*ih, bw = iw/R.semanas.length;
+  let s='';
+  [0,.25,.5,.75,1].forEach(f=>{ const v=f*top;
+    s+=`<line class="gl" x1="${p.l}" x2="${w-p.r}" y1="${y(v)}" y2="${y(v)}"/>
+      <text class="ax" x="${p.l-9}" y="${y(v)+3.5}" text-anchor="end">${int(v)}</text>`;});
+  R.semanas.forEach((sem,i)=>{
+    const dic = sem.startsWith('12') || sem.startsWith('11/2');
+    if(dic) s+=`<rect class="q4" x="${p.l+i*bw}" y="${p.t}" width="${bw}" height="${ih}"/>`;
+    const x=p.l+i*bw+bw/2;
+    s+=`<rect x="${x-bw*0.33}" y="${y(R.p90[i])}" width="${bw*0.66}"
+          height="${Math.max(ih-(y(R.p90[i])-p.t),1)}" rx="2" fill="var(--s2)" opacity=".28"/>`;
+    s+=`<rect x="${x-bw*0.33}" y="${y(R.mean[i])}" width="${bw*0.66}"
+          height="${Math.max(ih-(y(R.mean[i])-p.t),1)}" rx="2" fill="var(--s1)"/>`;
+    const [mm,dd]=sem.split('/');
+    s+=`<text class="ax" x="${x}" y="${h-p.b+15}" text-anchor="middle">${dd}/${mm}</text>`;
+  });
+  s+=`<text class="ax" x="${p.l}" y="${h-8}">semana que empieza</text>`;
+  $('#invChart').innerHTML = s;
+  $('#invM').textContent = int(R.mean.reduce((a,b)=>a+b,0))+' uds';
+  $('#invP').textContent = 'hasta '+int(R.p90.reduce((a,b)=>a+b,0))+' uds';
+
+  /* --- tabla --- */
+  $('#invMarca').innerHTML = '<option value="">Todas las marcas</option>' +
+    [...new Set(F.map(f=>f.brand))].sort().map(m=>`<option>${m}</option>`).join('');
+
+  const COLS = [['title','Producto'],['sku','SKU'],['brand','Marca'],
+    ['vsep','Uds/día sep'],['vago','Uds/día ago'],['v84','Uds/día 84 d'],
+    ['m4','Previsión 4 sem'],['m13','Previsión 13 sem'],['p13','Alto (P90) 13 sem'],
+    ['ratio','Previsión ÷ real']];
+
+  function filtra(){
+    const q=$('#invQ').value.trim().toLowerCase(), mb=$('#invMarca').value, al=$('#invAlerta').value;
+    return F.filter(f =>
+      (!q || f.title.toLowerCase().includes(q) || (f.sku||'').toLowerCase().includes(q)) &&
+      (!mb || f.brand===mb) &&
+      (!al || (f.ratio!=null && (al==='sube' ? f.ratio>=1.5 : f.ratio<=0.67)))
+    ).sort((a,b)=>{ const x=a[sk],yy=b[sk];
+      if(x==null) return 1; if(yy==null) return -1;
+      if(typeof x==='string') return sasc ? x.localeCompare(yy) : yy.localeCompare(x);
+      return sasc ? x-yy : yy-x; });
+  }
+  function pinta(){
+    const all=filtra(), rs=all.slice(0,shown);
+    const maxM=Math.max(1,...all.map(f=>f.m13));
+    $('#invTab').innerHTML = `<thead><tr>${COLS.map(([k,n])=>
+      `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
+      >${n}</th>`).join('')}</tr></thead><tbody>` + rs.map(f=>{
+      const cell = k => {
+        if(k==='title') return `<td>${f.title.slice(0,58)}</td>`;
+        if(k==='sku')   return `<td class="sku">${f.sku||'—'}</td>`;
+        if(k==='brand') return `<td>${f.brand}</td>`;
+        if(k==='m13')   return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*f.m13/maxM}%;background:var(--s1)"></div>
+            <span><strong>${int(f.m13)}</strong></span></td>`;
+        if(k==='ratio') return `<td class="n">${f.ratio==null ? '—' :
+            `<span class="pill ${f.ratio>=1.5||f.ratio<=0.67?'w':'g'}">${dec(f.ratio,1)}×</span>`}</td>`;
+        if(k.startsWith('v')) return `<td class="n">${dec(f[k],2)}</td>`;
+        return `<td class="n">${int(f[k])}</td>`;
+      };
+      return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
+    }).join('') + `</tbody>`;
+    $('#invCount').textContent = `${int(all.length)} de ${int(F.length)} ASINs en FBA`;
+    $('#invMore').hidden = all.length<=shown;
+    $('#invMore').textContent = `Ver ${int(Math.min(30,all.length-shown))} más`;
+  }
+  $('#invTab').addEventListener('click', e=>{ const th=e.target.closest('th.sortable'); if(!th) return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else { sk=k; sasc=false; } pinta(); });
+  ['#invQ','#invMarca','#invAlerta'].forEach(x=>$(x).addEventListener('input',()=>{shown=30;pinta();}));
+  $('#invMore').onclick = ()=>{ shown+=30; pinta(); };
+  pinta();
+}
 
 /* ---------- ASIN YoY ---------- */
 if(D.asinYoY && D.asinYoY.length){
