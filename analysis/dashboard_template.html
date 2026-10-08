@@ -192,6 +192,10 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
 .bar-cell.u{min-width:104px}
 .bar-cell.u .fill{opacity:.16}
 .bar-cell span{position:relative}
+.chk{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:8px;padding:7px 11px;background:var(--surface);
+  cursor:pointer;user-select:none}
+.chk input{accent-color:var(--brass);cursor:pointer;margin:0}
 .sku{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);
   white-space:normal;min-width:110px;max-width:190px;word-break:break-word}
 .causa{font-size:11.5px;padding:2px 7px;border-radius:4px;background:var(--sunk);
@@ -265,6 +269,31 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
        destacada por debajo del 70%. El riesgo es una cota superior, no una previsión.</p>
   </div>
   <div class="scroll"><table id="bb"></table></div>
+</section>
+
+<section id="pnlSec" hidden>
+  <div class="shead">
+    <h2>Margen y P&amp;L por producto</h2>
+    <p id="pnlSub"></p>
+  </div>
+  <p class="note" id="pnlAviso"></p>
+  <div class="kpis" id="pnlKpis" style="margin-top:16px"></div>
+  <div class="tools" style="margin-top:18px">
+    <input type="search" id="pnlQ" placeholder="Buscar por SKU o producto…" aria-label="Buscar">
+    <select id="pnlMarca" aria-label="Marca"></select>
+    <select id="pnlFiltro" aria-label="Filtro">
+      <option value="">Todos los SKUs</option>
+      <option value="vende">Solo los que han vendido</option>
+      <option value="malo">Margen bajo o negativo (&lt;15%)</option>
+      <option value="desvio">Precio real lejos de tarifa</option>
+      <option value="error">La hoja no cuadra</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="pnlFull"> Desglose completo</label>
+    <span class="count" id="pnlCount"></span>
+  </div>
+  <div class="scroll"><table id="pnlTab"></table></div>
+  <button class="more" id="pnlMore" hidden>Ver más</button>
+  <p class="note" id="pnlNota2"></p>
 </section>
 
 <section id="invSec" hidden>
@@ -611,6 +640,117 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 
 
 
+
+
+/* ---------- P&L por producto ---------- */
+if(D.pnl && D.pnl.filas.length){
+  $('#pnlSec').hidden = false;
+  const P = D.pnl.filas, CB = D.pnl.cobertura;
+  let shown = 30, sk = 'contrib', sasc = false;
+
+  $('#pnlSub').innerHTML = `Recalculado desde tu hoja de costes: ${int(CB.skus_coste)} SKUs con
+    coste declarado. Todos los márgenes se expresan <strong>sobre venta neta</strong> (sin IVA),
+    que es la base correcta para comparar — no sobre el PVP con IVA.`;
+  const pc = 100*CB.venta_cubierta/CB.venta_total;
+  $('#pnlAviso').innerHTML = `<strong>Cubre el ${dec(pc,1)}% de tu facturación.</strong>
+    ${eur(CB.venta_total-CB.venta_cubierta)} de venta no tienen coste declarado — Arcos, Hendi y
+    Vinfermaton no están en la hoja. Lo de abajo es correcto para lo que cubre, pero no es todavía
+    el P&amp;L del negocio.`;
+
+  const con = P.filter(p=>p.uds>0);
+  const T = {
+    venta: con.reduce((s,p)=>s+p.venta,0),
+    margen: con.reduce((s,p)=>s+p.margen*p.uds,0),
+    publi: con.reduce((s,p)=>s+p.publi_ud*p.uds,0),
+    contrib: con.reduce((s,p)=>s+p.contrib,0),
+    neto: con.reduce((s,p)=>s+p.neto*p.uds,0),
+    uds: con.reduce((s,p)=>s+p.uds,0)};
+  $('#pnlKpis').innerHTML = [
+    ['SKUs con venta', int(con.length), `de ${int(CB.skus_coste)} con coste`],
+    ['Venta cubierta', eur(T.venta), `${dec(pc,1)}% del total`],
+    ['Venta neta', eur(T.neto), 'sin IVA'],
+    ['Margen bruto', eur(T.margen), `${dec(100*T.margen/T.neto,1)}% sobre neto`],
+    ['Publicidad imputada', eur(T.publi), `${dec(100*T.publi/T.neto,2)}% de la venta neta`],
+    ['Contribución', eur(T.contrib), `${dec(100*T.contrib/T.neto,1)}% tras publicidad`]
+  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d}</div></div>`).join('');
+
+  $('#pnlMarca').innerHTML = '<option value="">Todas las marcas</option>' +
+    [...new Set(P.map(p=>p.brand))].sort().map(m=>`<option>${m}</option>`).join('');
+
+  const BASE = [['sku','SKU'],['title','Producto'],['brand','Marca'],['uds','Uds 2026'],
+    ['venta','Venta'],['pvp_real','PVP real'],['coste','Coste'],['margen','Margen/ud'],
+    ['pct','% s/neto'],['pct_tras_publi','% tras publi'],['contrib','Contribución'],
+    ['hoja_pct','% de tu hoja']];
+  const FULL = [['sku','SKU'],['title','Producto'],['brand','Marca'],['uds','Uds 2026'],
+    ['venta','Venta'],['pvp','PVP tarifa'],['pvp_real','PVP real'],['iva','IVA'],['neto','Neto/ud'],
+    ['coste','Coste'],['fee','Comisión'],['fba','FBA'],['margen','Margen/ud'],['pct','% s/neto'],
+    ['publi_ud','Publi/ud'],['pct_tras_publi','% tras publi'],['contrib','Contribución'],
+    ['hoja_pct','% de tu hoja']];
+
+  function filtra(){
+    const q=$('#pnlQ').value.trim().toLowerCase(), mb=$('#pnlMarca').value, f=$('#pnlFiltro').value;
+    return P.filter(p =>
+      (!q || p.sku.toLowerCase().includes(q) || p.title.toLowerCase().includes(q) ||
+             (p.skus_venta||'').toLowerCase().includes(q)) &&
+      (!mb || p.brand===mb) &&
+      (f!=='vende'  || p.uds>0) &&
+      (f!=='malo'   || p.pct<15) &&
+      (f!=='desvio' || (p.uds>0 && Math.abs(p.pvp_real-p.pvp)>0.5)) &&
+      (f!=='error'  || Math.abs(p.hoja-p.margen_tarifa)>0.05)
+    ).sort((a,b)=>{ const x=a[sk], y=b[sk];
+      if(typeof x==='string') return sasc ? x.localeCompare(y) : y.localeCompare(x);
+      return sasc ? x-y : y-x; });
+  }
+  function pinta(){
+    const all=filtra(), rs=all.slice(0,shown);
+    const COLS = $('#pnlFull').checked ? FULL : BASE;
+    const maxC=Math.max(1,...all.map(p=>Math.abs(p.contrib)));
+    $('#pnlTab').innerHTML = `<thead><tr>${COLS.map(([k,n])=>
+      `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
+      >${n}</th>`).join('')}</tr></thead><tbody>` + rs.map(p=>{
+      const bad = p.pct < 0, flojo = p.pct < 15;
+      const desv = p.uds>0 && Math.abs(p.pvp_real-p.pvp)>0.5;
+      const cell = k => {
+        if(k==='sku')   return `<td class="sku">${p.sku}</td>`;
+        if(k==='title') return `<td>${p.title.slice(0,52)}</td>`;
+        if(k==='brand') return `<td>${p.brand}</td>`;
+        if(k==='uds')   return `<td class="n">${int(p.uds)}</td>`;
+        if(k==='pvp_real') return `<td class="n" ${desv?'style="color:var(--warn);font-weight:600"':''}
+            >${p.uds? dec(p.pvp_real)+' €' : '—'}</td>`;
+        if(k==='pct')   return `<td class="n"><span class="pill ${bad?'b':flojo?'w':'g'}"
+            >${dec(p.pct,1)}%</span></td>`;
+        if(k==='pct_tras_publi') return `<td class="n"><span class="pill ${
+            p.pct_tras_publi<0?'b':p.pct_tras_publi<15?'w':'g'}">${dec(p.pct_tras_publi,1)}%</span></td>`;
+        if(k==='contrib') return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*Math.abs(p.contrib)/maxC}%;background:${
+            p.contrib<0?'var(--bad)':'var(--s1)'}"></div>
+            <span><strong>${eur(p.contrib)}</strong></span></td>`;
+        if(k==='hoja_pct') return `<td class="n" style="color:var(--ink-3)">${dec(p.hoja_pct,0)}%</td>`;
+        if(k==='venta')  return `<td class="n">${eur(p.venta)}</td>`;
+        if(k==='publi_ud') return `<td class="n">${dec(p.publi_ud,3)} €</td>`;
+        return `<td class="n">${dec(p[k])} €</td>`;
+      };
+      return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
+    }).join('') + `</tbody>`;
+    $('#pnlCount').textContent = `${int(all.length)} de ${int(P.length)} SKUs`;
+    $('#pnlMore').hidden = all.length<=shown;
+    $('#pnlMore').textContent = `Ver ${int(Math.min(30,all.length-shown))} más`;
+  }
+  $('#pnlTab').addEventListener('click', e=>{ const th=e.target.closest('th.sortable'); if(!th) return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else { sk=k; sasc=false; } pinta(); });
+  ['#pnlQ','#pnlMarca','#pnlFiltro','#pnlFull'].forEach(x=>
+    $(x).addEventListener('input',()=>{shown=30;pinta();}));
+  $('#pnlMore').onclick = ()=>{ shown+=30; pinta(); };
+  pinta();
+
+  const err = P.filter(p=>Math.abs(p.hoja-p.margen_tarifa)>0.05);
+  $('#pnlNota2').innerHTML = `<strong>«% de tu hoja»</strong> es lo que decía tu Excel, para que
+    compares. En <strong>${int(err.length)} SKUs</strong> no coincide con el margen que sale de sus
+    propias columnas. <strong>«Publi/ud»</strong> es una imputación por cuota de venta dentro de
+    cada marca a partir del TACOS observado, <strong>no publicidad medida por ASIN</strong>: con el
+    informe de productos publicitados pasa a ser real.`;
+}
 
 /* ---------- inventario ---------- */
 if(D.inv && D.inv.filas.length){
