@@ -204,6 +204,22 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
   border-top:1px solid var(--line);font:600 12.5px/1 "IBM Plex Sans";color:var(--ink-2);
   cursor:pointer}
 .more:hover{color:var(--ink)}
+
+.savestate{font:500 12px/1 "IBM Plex Mono";color:var(--ink-3);padding:7px 10px;
+  border-radius:6px;background:var(--sunk);border:1px solid var(--line)}
+.savestate.ok{color:var(--good)} .savestate.err{color:var(--bad)}
+.btn{font:600 12.5px/1 "IBM Plex Sans",sans-serif;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.btn:hover{border-color:var(--brass)}
+.btn:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+input.envio{width:76px;font:600 13px/1 "IBM Plex Mono";font-variant-numeric:tabular-nums;
+  text-align:right;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:6px;padding:6px 7px}
+input.envio:focus{outline:2px solid var(--brass);outline-offset:0;border-color:var(--brass)}
+input.envio.vacio{border-style:dashed;color:var(--ink-3)}
+td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:600}
+.pctbig{font-family:"IBM Plex Mono";font-weight:600;font-size:14px;
+  font-variant-numeric:tabular-nums}
 </style>
 
 <header><div class="hin">
@@ -271,27 +287,34 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
-<section id="canSec" hidden>
+<section id="calcSec" hidden>
   <div class="shead">
-    <h2>Margen por producto: FBM frente a FBA</h2>
-    <p id="canSub"></p>
+    <h2>Calculadora de envío y margen</h2>
+    <p id="calcSub"></p>
   </div>
-  <p class="note" id="canAviso"></p>
-  <div class="kpis" id="canKpis" style="margin-top:16px"></div>
+  <div class="bar">
+    <div class="seg" id="calcCanal" role="group" aria-label="Canal">
+      <button data-c="fbm" aria-pressed="true">FBM · envío propio</button>
+      <button data-c="fba" aria-pressed="false">FBA · tarifa Amazon</button>
+    </div>
+    <span id="calcEstado" class="savestate">—</span>
+  </div>
+  <div class="kpis" id="calcKpis"></div>
   <div class="tools" style="margin-top:18px">
-    <input type="search" id="canQ" placeholder="Buscar por SKU o producto…" aria-label="Buscar">
-    <select id="canF" aria-label="Filtro">
+    <input type="search" id="calcQ" placeholder="Buscar por SKU o producto…" aria-label="Buscar">
+    <select id="calcF" aria-label="Filtro">
       <option value="">Todos</option>
-      <option value="logistica">La logística se come &gt;50% del margen</option>
-      <option value="malo">Margen FBM &lt; 15%</option>
-      <option value="sup">Envío supuesto (falta el dato)</option>
-      <option value="fba">Ya tienen tarifa FBA</option>
+      <option value="sin">Sin precio de envío puesto</option>
+      <option value="malo">Margen &lt; 15%</option>
+      <option value="neg">Margen negativo</option>
+      <option value="peso">El envío se come &gt;50% del margen</option>
     </select>
-    <span class="count" id="canCount"></span>
+    <button class="btn" id="calcMasivo">Aplicar un envío a todo lo filtrado</button>
+    <span class="count" id="calcCount"></span>
   </div>
-  <div class="scroll"><table id="canTab"></table></div>
-  <button class="more" id="canMore" hidden>Ver más</button>
-  <p class="note" id="canNota"></p>
+  <div class="scroll"><table id="calcTab"></table></div>
+  <button class="more" id="calcMore" hidden>Ver más</button>
+  <p class="note" id="calcNota"></p>
 </section>
 
 <section id="pnlSec" hidden>
@@ -666,98 +689,191 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 
 
 
-/* ---------- canal FBM vs FBA ---------- */
+
+/* ---------- calculadora de envio y margen ---------- */
 if(D.canal && D.canal.length){
-  $('#canSec').hidden = false;
-  const A = D.canal.filter(f=>!f.baja), BAJA = D.canal.filter(f=>f.baja);
-  let shown=30, sk='contrib_fbm', sasc=false;
-  const T={u:A.reduce((s,f)=>s+f.uds,0), v:A.reduce((s,f)=>s+f.venta,0),
-    neto:A.reduce((s,f)=>s+f.neto*f.uds,0), base:A.reduce((s,f)=>s+f.base*f.uds,0),
-    log:A.reduce((s,f)=>s+f.envio_fbm*f.uds,0), c:A.reduce((s,f)=>s+f.contrib_fbm,0)};
-  const conFba = A.filter(f=>f.tarifa_fba!=null);
+  $('#calcSec').hidden = false;
+  const A = D.canal.filter(f=>!f.baja);
+  const IX = Object.fromEntries(A.map(f=>[f.sku,f]));
+  let canal='fbm', shown=40, sk='contrib', sasc=false;
+  // envios[sku] = {fbm:Number|null, fba:Number|null}
+  const envios = {};
+  A.forEach(f=>envios[f.sku] = {fbm: f.fbm_supuesto ? null : f.envio_fbm, fba: null});
 
-  $('#canSub').innerHTML = `Precio = <strong>el que realmente cobras</strong> (venta ÷ unidades
-    de 2026), no la tarifa. «Mg s/log» es el margen antes de logística: lo que queda tras coste,
-    comisión e IVA. A partir de ahí, cada canal resta su propio coste de envío.`;
-  $('#canAviso').innerHTML = `<strong>El euro no decide entre FBM y FBA.</strong> Como todo lo
-    demás es idéntico, la comparación se reduce a una resta: te compensa FBA cuando su tarifa baja
-    de lo que te cuesta enviar tú (columna «FBA empata si&nbsp;&lt;»). Lo que de verdad decide —
-    almacenamiento, recargo de Q4, tu tiempo, y sobre todo el BuyBox y la conversión que da el
-    badge Prime — no está en esta tabla. ${conFba.length
-      ? `Ya hay ${int(conFba.length)} SKUs con tarifa FBA cargada.`
-      : `Aún no hay ninguna tarifa FBA cargada: las columnas FBA se rellenan según las envíes.`}`;
+  let db=null, puedeEscribir=true;
+  const estado=$('#calcEstado');
+  const marca=(txt,cls)=>{estado.textContent=txt; estado.className='savestate '+(cls||'');};
 
-  $('#canKpis').innerHTML = [
-    ['SKUs con venta', int(A.length), `${int(T.u)} unidades`],
-    ['Venta neta', eur(T.neto), 'sin IVA'],
-    ['Margen antes de logística', eur(T.base), `${dec(100*T.base/T.neto,1)}% s/neto`],
-    ['Coste de envío propio', eur(T.log), `${dec(100*T.log/T.base,0)}% de ese margen`],
-    ['Contribución FBM', eur(T.c), `${dec(100*T.c/T.neto,1)}% s/neto`],
-    ['Envío medio', dec(T.log/T.u)+' €', 'por unidad']
-  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
-    <div class="d">${d}</div></div>`).join('');
+  const LS='envios-cuperinox';
+  function guardaLocal(){ try{ localStorage.setItem(LS, JSON.stringify(envios)); }catch(e){} }
+  function leeLocal(){ try{ const r=localStorage.getItem(LS);
+    if(r) Object.entries(JSON.parse(r)).forEach(([k,v])=>{ if(envios[k]) envios[k]=v; }); }catch(e){} }
 
-  const COLS=[['sku','SKU'],['title','Producto'],['uds','Uds'],['precio','Precio real'],
-    ['coste','Coste'],['fee','Comisión'],['base','Mg s/log'],['envio_fbm','Envío propio'],
-    ['m_fbm','Mg FBM'],['pct_fbm','% FBM'],['equilibrio','FBA empata si <'],
-    ['tarifa_fba','Tarifa FBA'],['m_fba','Mg FBA'],['pct_fba','% FBA'],['contrib_fbm','Contrib. FBM']];
-
-  function filtra(){
-    const q=$('#canQ').value.trim().toLowerCase(), f=$('#canF').value;
-    return A.filter(r=>
-      (!q || r.sku.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) ||
-             (r.skus||'').toLowerCase().includes(q)) &&
-      (f!=='logistica' || (r.base>0 && r.envio_fbm/r.base>0.5)) &&
-      (f!=='malo'      || r.pct_fbm<15) &&
-      (f!=='sup'       || r.fbm_supuesto) &&
-      (f!=='fba'       || r.tarifa_fba!=null)
-    ).sort((a,b)=>{const x=a[sk],y=b[sk];
-      if(x==null) return 1; if(y==null) return -1;
-      if(typeof x==='string') return sasc?x.localeCompare(y):y.localeCompare(x);
-      return sasc?x-y:y-x;});
+  /* ---- modelo ---- */
+  function calc(f){
+    const e = envios[f.sku][canal];
+    const env = e==null ? (canal==='fbm' ? f.envio_fbm : null) : e;
+    if(env==null) return {env:null, m:null, pct:null, contrib:0, puesto:false};
+    const m = f.base - env;
+    return {env, m, pct: f.neto? 100*m/f.neto : 0, contrib: m*f.uds,
+            puesto: e!=null, peso: f.base>0 ? env/f.base : 0};
   }
+
+  /* ---- persistencia: ver al final, tras definir pinta() ---- */
+
+  const pend = {};
+  function guarda(sku){
+    guardaLocal();
+    if(!db || !puedeEscribir) return;
+    clearTimeout(pend[sku]);
+    pend[sku] = setTimeout(async ()=>{
+      try{
+        marca('guardando…');
+        await db.collection('envios').doc(sku).set({
+          fbm: envios[sku].fbm, fba: envios[sku].fba, ts: new Date().toISOString()});
+        marca('guardado ✓','ok');
+      }catch(e){
+        puedeEscribir=false;
+        marca('sin permiso de guardado — queda en este navegador','err');
+      }
+    }, 600);
+  }
+
+  /* ---- tabla ---- */
+  function filtra(){
+    const q=$('#calcQ').value.trim().toLowerCase(), f=$('#calcF').value;
+    return A.filter(r=>{
+      const c=calc(r);
+      return (!q || r.sku.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) ||
+              (r.skus||'').toLowerCase().includes(q)) &&
+        (f!=='sin'  || !c.puesto) &&
+        (f!=='malo' || (c.pct!=null && c.pct<15)) &&
+        (f!=='neg'  || (c.pct!=null && c.pct<0)) &&
+        (f!=='peso' || (c.env!=null && r.base>0 && c.env/r.base>0.5));
+    }).sort((a,b)=>{
+      const ca=calc(a), cb=calc(b);
+      const val=(r,c)=> sk==='contrib'?c.contrib : sk==='pct'?(c.pct??-999) :
+                        sk==='env'?(c.env??-1) : r[sk];
+      const x=val(a,ca), y=val(b,cb);
+      if(typeof x==='string') return sasc?x.localeCompare(y):y.localeCompare(x);
+      return sasc?x-y:y-x;
+    });
+  }
+  const COLS=[['sku','SKU'],['title','Producto'],['uds','Uds'],['precio','Precio real'],
+    ['coste','Coste'],['fee','Comisión'],['iva','IVA'],['base','Margen antes de envío'],
+    ['env','Envío'],['mg','Margen/ud'],['pct','% MARGEN'],['contrib','Contribución']];
+
   function pinta(){
     const all=filtra(), rs=all.slice(0,shown);
-    const maxC=Math.max(1,...all.map(r=>Math.abs(r.contrib_fbm)));
-    $('#canTab').innerHTML=`<thead><tr>${COLS.map(([k,n])=>
+    const maxC=Math.max(1,...all.map(r=>Math.abs(calc(r).contrib)));
+    $('#calcTab').innerHTML=`<thead><tr>${COLS.map(([k,n])=>
       `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
       >${n}</th>`).join('')}</tr></thead><tbody>`+rs.map(r=>{
+      const c=calc(r);
       const cell=k=>{
         if(k==='sku')   return `<td class="sku">${r.sku}</td>`;
         if(k==='title') return `<td>${r.title.slice(0,46)}</td>`;
         if(k==='uds')   return `<td class="n">${int(r.uds)}</td>`;
-        if(k==='envio_fbm') return `<td class="n"${r.fbm_supuesto?' style="color:var(--warn)"':''}
-            >${dec(r.envio_fbm)} €${r.fbm_supuesto?' *':''}</td>`;
-        if(k==='pct_fbm') return `<td class="n"><span class="pill ${
-            r.pct_fbm<0?'b':r.pct_fbm<15?'w':'g'}">${dec(r.pct_fbm,1)}%</span></td>`;
-        if(k==='pct_fba') return `<td class="n">${r.pct_fba==null?'<span style="color:var(--ink-3)">—</span>'
-            :`<span class="pill ${r.pct_fba<0?'b':r.pct_fba<15?'w':'g'}">${dec(r.pct_fba,1)}%</span>`}</td>`;
-        if(k==='tarifa_fba'||k==='m_fba') return `<td class="n">${r[k]==null
-            ?'<span style="color:var(--ink-3)">pendiente</span>':dec(r[k])+' €'}</td>`;
-        if(k==='equilibrio') return `<td class="n" style="color:var(--brass);font-weight:600"
-            >${dec(r.equilibrio)} €</td>`;
-        if(k==='contrib_fbm') return `<td class="n bar-cell u"><div class="fill p"
-            style="left:0;width:${92*Math.abs(r.contrib_fbm)/maxC}%;background:${
-            r.contrib_fbm<0?'var(--bad)':'var(--s1)'}"></div>
-            <span><strong>${eur(r.contrib_fbm)}</strong></span></td>`;
+        if(k==='env')   return `<td class="n"><input class="envio${c.puesto?'':' vacio'}"
+            type="number" step="0.01" min="0" inputmode="decimal" data-sku="${r.sku}"
+            value="${c.env==null?'':c.env}" placeholder="${canal==='fba'?'tarifa':'envío'}"
+            aria-label="Envío de ${r.sku}"></td>`;
+        if(k==='mg')    return `<td class="mg" style="color:${c.m==null?'var(--ink-3)'
+            :c.m<0?'var(--bad)':'var(--ink)'}">${c.m==null?'—':dec(c.m)+' €'}</td>`;
+        if(k==='pct')   return `<td class="n">${c.pct==null?'<span style="color:var(--ink-3)">—</span>'
+            :`<span class="pill pctbig ${c.pct<0?'b':c.pct<15?'w':'g'}">${dec(c.pct,1)}%</span>`}</td>`;
+        if(k==='contrib') return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*Math.abs(c.contrib)/maxC}%;background:${
+            c.contrib<0?'var(--bad)':'var(--s1)'}"></div>
+            <span><strong>${c.m==null?'—':eur(c.contrib)}</strong></span></td>`;
         return `<td class="n">${dec(r[k])} €</td>`;
       };
       return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
     }).join('')+`</tbody>`;
-    $('#canCount').textContent=`${int(all.length)} de ${int(A.length)} SKUs`;
-    $('#canMore').hidden=all.length<=shown;
-    $('#canMore').textContent=`Ver ${int(Math.min(30,all.length-shown))} más`;
+
+    const con=all.map(r=>({r,c:calc(r)})).filter(x=>x.c.m!=null);
+    const T={neto:con.reduce((s,x)=>s+x.r.neto*x.r.uds,0),
+      base:con.reduce((s,x)=>s+x.r.base*x.r.uds,0),
+      env:con.reduce((s,x)=>s+x.c.env*x.r.uds,0),
+      c:con.reduce((s,x)=>s+x.c.contrib,0), u:con.reduce((s,x)=>s+x.r.uds,0)};
+    const sinPrecio=all.length-con.length;
+    $('#calcKpis').innerHTML=[
+      ['Canal', canal==='fbm'?'FBM':'FBA', canal==='fbm'?'tu envío':'tarifa Amazon'],
+      ['SKUs calculados', int(con.length), sinPrecio?`${int(sinPrecio)} sin precio`:'todos'],
+      ['Margen antes de envío', eur(T.base), T.neto?`${dec(100*T.base/T.neto,1)}% s/neto`:''],
+      ['Coste de envío', eur(T.env), T.base?`${dec(100*T.env/T.base,0)}% del margen`:''],
+      ['Contribución', eur(T.c), T.neto?`${dec(100*T.c/T.neto,1)}% s/neto`:''],
+      ['% MARGEN MEDIO', T.neto?dec(100*T.c/T.neto,1)+'%':'—', 'ponderado por ventas']
+    ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+      <div class="d">${d}</div></div>`).join('');
+    $('#calcCount').textContent=`${int(all.length)} de ${int(A.length)} SKUs`;
+    $('#calcMore').hidden=all.length<=shown;
+    $('#calcMore').textContent=`Ver ${int(Math.min(40,all.length-shown))} más`;
   }
-  $('#canTab').addEventListener('click',e=>{const th=e.target.closest('th.sortable');if(!th)return;
-    const k=th.dataset.k; if(k===sk) sasc=!sasc; else {sk=k;sasc=false;} pinta();});
-  ['#canQ','#canF'].forEach(x=>$(x).addEventListener('input',()=>{shown=30;pinta();}));
-  $('#canMore').onclick=()=>{shown+=30;pinta();};
-  pinta();
-  const sup=A.filter(f=>f.fbm_supuesto);
-  $('#canNota').innerHTML=`<strong>*</strong> envío supuesto a ${dec(3.30)} € en
-    ${int(sup.length)} SKUs (${int(sup.reduce((s,f)=>s+f.uds,0))} unidades): falta el dato real.
-    ${BAJA.length?`Descatalogados en la lista pero con venta en 2026:
-    ${BAJA.map(b=>`<strong>${b.sku}</strong> (${eur(b.venta)})`).join(', ')}.`:''}`;
+
+  $('#calcTab').addEventListener('input', e=>{
+    const inp=e.target.closest('input.envio'); if(!inp) return;
+    const sku=inp.dataset.sku, v=inp.value.trim();
+    envios[sku][canal] = v==='' ? null : Math.max(0, parseFloat(v.replace(',','.'))||0);
+    const f=IX[sku], c=calc(f);
+    const tr=inp.closest('tr'), tds=tr.cells;
+    tds[COLS.findIndex(x=>x[0]==='mg')].innerHTML = c.m==null?'—':dec(c.m)+' €';
+    tds[COLS.findIndex(x=>x[0]==='mg')].style.color = c.m==null?'var(--ink-3)':c.m<0?'var(--bad)':'var(--ink)';
+    tds[COLS.findIndex(x=>x[0]==='pct')].innerHTML = c.pct==null?'<span style="color:var(--ink-3)">—</span>'
+      :`<span class="pill pctbig ${c.pct<0?'b':c.pct<15?'w':'g'}">${dec(c.pct,1)}%</span>`;
+    inp.classList.toggle('vacio', !c.puesto);
+    guarda(sku);
+  });
+  $('#calcTab').addEventListener('click', e=>{
+    const th=e.target.closest('th.sortable'); if(!th) return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else {sk=k; sasc=false;} pinta();
+  });
+  $('#calcCanal').onclick = e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    canal=b.dataset.c; shown=40;
+    [...$('#calcCanal').children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.c===canal));
+    sub(); pinta();
+  };
+  ['#calcQ','#calcF'].forEach(x=>$(x).addEventListener('input',()=>{shown=40;pinta();}));
+  $('#calcMore').onclick=()=>{shown+=40;pinta();};
+  $('#calcMasivo').onclick=()=>{
+    const v=prompt(`Envío a aplicar a los ${filtra().length} SKUs filtrados (€/ud):`,
+                   canal==='fbm'?'3.30':'');
+    if(v==null) return;
+    const n=parseFloat(String(v).replace(',','.'));
+    if(!isFinite(n)||n<0) return;
+    filtra().forEach(r=>{ envios[r.sku][canal]=n; guarda(r.sku); });
+    pinta();
+  };
+  function sub(){
+    $('#calcSub').innerHTML = canal==='fbm'
+      ? `Escribe en la columna <strong>Envío</strong> lo que te cuesta mandar cada unidad.
+         El margen y el <strong>% de margen</strong> se recalculan al teclear. Los valores que
+         ya traía tu Excel vienen puestos; los que no, en blanco.`
+      : `Escribe la <strong>tarifa FBA</strong> de cada SKU según las vayas sacando. Empieza en
+         blanco a propósito: una casilla vacía significa «aún no lo sé», no cero. Compara el
+         <strong>% de margen</strong> con el de la pestaña FBM.`;
+  }
+  /* ---- persistencia ---- */
+  (async () => {
+    leeLocal(); pinta();
+    const d = (typeof claude !== 'undefined' && claude.use) ? await claude.use('db') : null;
+    if(!d){ marca('guardado solo en este navegador'); return; }
+    db = d;
+    try{
+      const snap = await db.collection('envios').get();
+      snap.docs.forEach(s=>{ const v=s.data()||{};
+        if(envios[s.id]) envios[s.id] = {fbm: v.fbm ?? envios[s.id].fbm, fba: v.fba ?? null}; });
+      marca(snap.empty ? 'listo para guardar' : `${snap.size} SKUs guardados`, 'ok');
+      pinta();
+    }catch(e){ marca('no se pudo leer lo guardado','err'); }
+  })();
+
+  sub();
+  $('#calcNota').innerHTML = `El margen es sobre <strong>venta neta</strong> (sin IVA) y al
+    <strong>precio que realmente cobras</strong> (venta ÷ unidades de 2026), no a tarifa.
+    «Margen antes de envío» ya descuenta coste, comisión del 15,45% e IVA. Lo que escribas se
+    guarda y sigue aquí la próxima vez que abras el panel, también si yo republico el panel.`;
 }
 
 /* ---------- P&L por producto ---------- */
