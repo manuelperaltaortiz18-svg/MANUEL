@@ -271,6 +271,29 @@ th.sortable[aria-sort="ascending"]::after{content:" ↑"}
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
+<section id="canSec" hidden>
+  <div class="shead">
+    <h2>Margen por producto: FBM frente a FBA</h2>
+    <p id="canSub"></p>
+  </div>
+  <p class="note" id="canAviso"></p>
+  <div class="kpis" id="canKpis" style="margin-top:16px"></div>
+  <div class="tools" style="margin-top:18px">
+    <input type="search" id="canQ" placeholder="Buscar por SKU o producto…" aria-label="Buscar">
+    <select id="canF" aria-label="Filtro">
+      <option value="">Todos</option>
+      <option value="logistica">La logística se come &gt;50% del margen</option>
+      <option value="malo">Margen FBM &lt; 15%</option>
+      <option value="sup">Envío supuesto (falta el dato)</option>
+      <option value="fba">Ya tienen tarifa FBA</option>
+    </select>
+    <span class="count" id="canCount"></span>
+  </div>
+  <div class="scroll"><table id="canTab"></table></div>
+  <button class="more" id="canMore" hidden>Ver más</button>
+  <p class="note" id="canNota"></p>
+</section>
+
 <section id="pnlSec" hidden>
   <div class="shead">
     <h2>Margen y P&amp;L por producto</h2>
@@ -641,6 +664,101 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 
 
 
+
+
+/* ---------- canal FBM vs FBA ---------- */
+if(D.canal && D.canal.length){
+  $('#canSec').hidden = false;
+  const A = D.canal.filter(f=>!f.baja), BAJA = D.canal.filter(f=>f.baja);
+  let shown=30, sk='contrib_fbm', sasc=false;
+  const T={u:A.reduce((s,f)=>s+f.uds,0), v:A.reduce((s,f)=>s+f.venta,0),
+    neto:A.reduce((s,f)=>s+f.neto*f.uds,0), base:A.reduce((s,f)=>s+f.base*f.uds,0),
+    log:A.reduce((s,f)=>s+f.envio_fbm*f.uds,0), c:A.reduce((s,f)=>s+f.contrib_fbm,0)};
+  const conFba = A.filter(f=>f.tarifa_fba!=null);
+
+  $('#canSub').innerHTML = `Precio = <strong>el que realmente cobras</strong> (venta ÷ unidades
+    de 2026), no la tarifa. «Mg s/log» es el margen antes de logística: lo que queda tras coste,
+    comisión e IVA. A partir de ahí, cada canal resta su propio coste de envío.`;
+  $('#canAviso').innerHTML = `<strong>El euro no decide entre FBM y FBA.</strong> Como todo lo
+    demás es idéntico, la comparación se reduce a una resta: te compensa FBA cuando su tarifa baja
+    de lo que te cuesta enviar tú (columna «FBA empata si&nbsp;&lt;»). Lo que de verdad decide —
+    almacenamiento, recargo de Q4, tu tiempo, y sobre todo el BuyBox y la conversión que da el
+    badge Prime — no está en esta tabla. ${conFba.length
+      ? `Ya hay ${int(conFba.length)} SKUs con tarifa FBA cargada.`
+      : `Aún no hay ninguna tarifa FBA cargada: las columnas FBA se rellenan según las envíes.`}`;
+
+  $('#canKpis').innerHTML = [
+    ['SKUs con venta', int(A.length), `${int(T.u)} unidades`],
+    ['Venta neta', eur(T.neto), 'sin IVA'],
+    ['Margen antes de logística', eur(T.base), `${dec(100*T.base/T.neto,1)}% s/neto`],
+    ['Coste de envío propio', eur(T.log), `${dec(100*T.log/T.base,0)}% de ese margen`],
+    ['Contribución FBM', eur(T.c), `${dec(100*T.c/T.neto,1)}% s/neto`],
+    ['Envío medio', dec(T.log/T.u)+' €', 'por unidad']
+  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d}</div></div>`).join('');
+
+  const COLS=[['sku','SKU'],['title','Producto'],['uds','Uds'],['precio','Precio real'],
+    ['coste','Coste'],['fee','Comisión'],['base','Mg s/log'],['envio_fbm','Envío propio'],
+    ['m_fbm','Mg FBM'],['pct_fbm','% FBM'],['equilibrio','FBA empata si <'],
+    ['tarifa_fba','Tarifa FBA'],['m_fba','Mg FBA'],['pct_fba','% FBA'],['contrib_fbm','Contrib. FBM']];
+
+  function filtra(){
+    const q=$('#canQ').value.trim().toLowerCase(), f=$('#canF').value;
+    return A.filter(r=>
+      (!q || r.sku.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) ||
+             (r.skus||'').toLowerCase().includes(q)) &&
+      (f!=='logistica' || (r.base>0 && r.envio_fbm/r.base>0.5)) &&
+      (f!=='malo'      || r.pct_fbm<15) &&
+      (f!=='sup'       || r.fbm_supuesto) &&
+      (f!=='fba'       || r.tarifa_fba!=null)
+    ).sort((a,b)=>{const x=a[sk],y=b[sk];
+      if(x==null) return 1; if(y==null) return -1;
+      if(typeof x==='string') return sasc?x.localeCompare(y):y.localeCompare(x);
+      return sasc?x-y:y-x;});
+  }
+  function pinta(){
+    const all=filtra(), rs=all.slice(0,shown);
+    const maxC=Math.max(1,...all.map(r=>Math.abs(r.contrib_fbm)));
+    $('#canTab').innerHTML=`<thead><tr>${COLS.map(([k,n])=>
+      `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
+      >${n}</th>`).join('')}</tr></thead><tbody>`+rs.map(r=>{
+      const cell=k=>{
+        if(k==='sku')   return `<td class="sku">${r.sku}</td>`;
+        if(k==='title') return `<td>${r.title.slice(0,46)}</td>`;
+        if(k==='uds')   return `<td class="n">${int(r.uds)}</td>`;
+        if(k==='envio_fbm') return `<td class="n"${r.fbm_supuesto?' style="color:var(--warn)"':''}
+            >${dec(r.envio_fbm)} €${r.fbm_supuesto?' *':''}</td>`;
+        if(k==='pct_fbm') return `<td class="n"><span class="pill ${
+            r.pct_fbm<0?'b':r.pct_fbm<15?'w':'g'}">${dec(r.pct_fbm,1)}%</span></td>`;
+        if(k==='pct_fba') return `<td class="n">${r.pct_fba==null?'<span style="color:var(--ink-3)">—</span>'
+            :`<span class="pill ${r.pct_fba<0?'b':r.pct_fba<15?'w':'g'}">${dec(r.pct_fba,1)}%</span>`}</td>`;
+        if(k==='tarifa_fba'||k==='m_fba') return `<td class="n">${r[k]==null
+            ?'<span style="color:var(--ink-3)">pendiente</span>':dec(r[k])+' €'}</td>`;
+        if(k==='equilibrio') return `<td class="n" style="color:var(--brass);font-weight:600"
+            >${dec(r.equilibrio)} €</td>`;
+        if(k==='contrib_fbm') return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*Math.abs(r.contrib_fbm)/maxC}%;background:${
+            r.contrib_fbm<0?'var(--bad)':'var(--s1)'}"></div>
+            <span><strong>${eur(r.contrib_fbm)}</strong></span></td>`;
+        return `<td class="n">${dec(r[k])} €</td>`;
+      };
+      return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
+    }).join('')+`</tbody>`;
+    $('#canCount').textContent=`${int(all.length)} de ${int(A.length)} SKUs`;
+    $('#canMore').hidden=all.length<=shown;
+    $('#canMore').textContent=`Ver ${int(Math.min(30,all.length-shown))} más`;
+  }
+  $('#canTab').addEventListener('click',e=>{const th=e.target.closest('th.sortable');if(!th)return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else {sk=k;sasc=false;} pinta();});
+  ['#canQ','#canF'].forEach(x=>$(x).addEventListener('input',()=>{shown=30;pinta();}));
+  $('#canMore').onclick=()=>{shown+=30;pinta();};
+  pinta();
+  const sup=A.filter(f=>f.fbm_supuesto);
+  $('#canNota').innerHTML=`<strong>*</strong> envío supuesto a ${dec(3.30)} € en
+    ${int(sup.length)} SKUs (${int(sup.reduce((s,f)=>s+f.uds,0))} unidades): falta el dato real.
+    ${BAJA.length?`Descatalogados en la lista pero con venta en 2026:
+    ${BAJA.map(b=>`<strong>${b.sku}</strong> (${eur(b.venta)})`).join(', ')}.`:''}`;
+}
 
 /* ---------- P&L por producto ---------- */
 if(D.pnl && D.pnl.filas.length){
