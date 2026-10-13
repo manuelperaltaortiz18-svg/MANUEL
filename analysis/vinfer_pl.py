@@ -17,8 +17,9 @@ def N(s): return re.sub(r'[^A-Z0-9]', '', (s or '').upper())
 
 # Emparejamientos confirmados por el usuario (SKU de Amazon -> REF de la hoja)
 MANUAL = {
-    'V101302':       'ROJO_CUCAS',
-    'V101302_PACK3': 'ROJO_CUCAS+PACK3',
+    'V101302':        'ROJO_CUCAS',
+    'V101302_PACK3':  'ROJO_CUCAS+PACK3',
+    'AVISPAS_PACK_2': 'PACK 2 AVISPAS',
 }
 
 def claves(ref, marca):
