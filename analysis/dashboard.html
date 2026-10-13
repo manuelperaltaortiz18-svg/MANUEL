@@ -311,6 +311,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
       <option value="neg">Margen negativo</option>
       <option value="ivamal">El IVA de la hoja está mal</option>
       <option value="sinivac">No recupera el IVA de compra</option>
+      <option value="desvio">Precio real lejos del PVP de la hoja (revisar)</option>
     </select>
     <span class="count" id="vinCount"></span>
   </div>
@@ -773,7 +774,8 @@ if(D.vinfer && D.vinfer.filas.length){
         (f!=='malo'   || (c.pct!=null && c.pct<15)) &&
         (f!=='neg'    || (c.pct!=null && c.pct<0)) &&
         (f!=='ivamal' || Math.abs((r.iva_hoja||0)-r.iva_ok)>0.01) &&
-        (f!=='sinivac'|| !r.tiene_ivac);
+        (f!=='sinivac'|| !r.tiene_ivac) &&
+        (f!=='desvio' || (r.uds>0 && r.pvp && Math.abs(r.precio-r.pvp)/r.pvp>0.12));
     }).sort((a,b)=>{
       const ca=calc(a), cb=calc(b);
       const g=(r,c)=> sk==='contrib'?c.contrib : sk==='pct'?(c.pct??-999) : sk==='env'?(c.env??-1)
@@ -797,7 +799,10 @@ if(D.vinfer && D.vinfer.filas.length){
         if(k==='uds')   return `<td class="n">${r.uds?int(r.uds):'<span style="color:var(--ink-3)">0</span>'}</td>`;
         if(k==='venta') return `<td class="n">${r.venta?eur(r.venta):'—'}</td>`;
         if(k==='precio')return `<td class="n">${r.precio?dec(r.precio)+' €':'—'}</td>`;
-        if(k==='pvp')   return `<td class="n" style="color:var(--ink-3)">${dec(r.pvp||0)} €</td>`;
+        if(k==='pvp'){ const d = r.uds&&r.pvp ? (r.precio-r.pvp)/r.pvp : 0;
+          return `<td class="n" style="color:${Math.abs(d)>0.12?'var(--warn)':'var(--ink-3)'}"
+            ${Math.abs(d)>0.12?`title="el precio real se desvia un ${Math.round(100*d)}%"`:''}
+            >${dec(r.pvp||0)} €${Math.abs(d)>0.12?' !':''}</td>`; }
         if(k==='coste_bruto') return `<td class="n" style="color:var(--ink-3)">${dec(r.coste_bruto)} €</td>`;
         if(k==='iva_real') return `<td class="n"${ivamal?' style="color:var(--warn)" title="la hoja usa otro IVA"':''}
             >${dec(r.iva_real)} €${ivamal?' *':''}</td>`;
@@ -856,7 +861,11 @@ if(D.vinfer && D.vinfer.filas.length){
 
   const ivamal=R.filter(f=>Math.abs((f.iva_hoja||0)-f.iva_ok)>0.01);
   const sinivac=R.filter(f=>!f.tiene_ivac);
-  $('#vinNota').innerHTML = `<strong>*</strong> en la columna IVA marca las
+  const desv=R.filter(f=>f.uds>0&&f.pvp&&Math.abs(f.precio-f.pvp)/f.pvp>0.12);
+  $('#vinNota').innerHTML = `<strong>!</strong> junto al PVP marca las ${int(desv.length)}
+    referencias donde el precio que cobras se aleja más de un 12% del PVP de la hoja: casi siempre
+    es que vendes con descuento, pero en algunas es señal de que el SKU está cayendo en la fila
+    equivocada. Revísalas con el filtro.<br><strong>*</strong> en la columna IVA marca las
     ${int(ivamal.length)} referencias donde tu hoja usa un IVA distinto del que corresponde al PVP
     (en cuatro hojas está escrito a mano como 1,82 €). <strong>«% hoja»</strong> es lo que decía tu
     Excel, para comparar. En ELVIRA, WINS y LA GARRAFITA

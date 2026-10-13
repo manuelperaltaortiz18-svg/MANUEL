@@ -15,23 +15,47 @@ for r in rows:
 F = json.load(open('vinfer_costes.json'))
 def N(s): return re.sub(r'[^A-Z0-9]', '', (s or '').upper())
 
-def candidatos(ref, marca):
-    """SKUs de venta que corresponden a esta REF."""
-    if not ref: return []
+# Emparejamientos confirmados por el usuario (SKU de Amazon -> REF de la hoja)
+MANUAL = {
+    'V101302':       'ROJO_CUCAS',
+    'V101302_PACK3': 'ROJO_CUCAS+PACK3',
+}
+
+def claves(ref, marca):
+    """Variantes normalizadas aceptables de una REF."""
     nr = N(ref)
     alt = {nr}
     m = re.fullmatch(r'W(\d{3})', nr)        # W007 -> WINS007
     if m: alt |= {'WINS'+m.group(1), 'WINS'+m.group(1).lstrip('0')}
-    out = []
-    for s in V:
-        ns = N(s)
-        if ns in alt or any(ns.startswith(a) and len(a) >= 4 for a in alt):
-            out.append(s)
-    return out
+    return alt
 
+def emparejar(F):
+    """Cada SKU de venta va a la REF MAS LARGA que lo prefija.
+       Asi V0012_PACK2 cae en su propia fila y no en la de V0012 suelto."""
+    porref = {}
+    for i, f in enumerate(F):
+        if not f['ref']: continue
+        for a in claves(f['ref'], f['marca']):
+            porref.setdefault(a, []).append(i)
+    asig = collections.defaultdict(list)
+    for s in V:
+        if s in MANUAL:
+            for a in claves(MANUAL[s], None):
+                if a in porref: asig[porref[a][0]].append(s); break
+            continue
+        ns = N(s)
+        mejor, largo = None, -1
+        for a, idxs in porref.items():
+            if len(a) < 4: continue
+            if ns == a or ns.startswith(a):
+                if len(a) > largo: mejor, largo = idxs[0], len(a)
+        if mejor is not None: asig[mejor].append(s)
+    return asig
+
+ASIG = emparejar(F)
 usados = set()
-for f in F:
-    f['skus'] = [s for s in candidatos(f['ref'], f['marca']) if s not in usados]
+for i, f in enumerate(F):
+    f['skus'] = ASIG.get(i, [])
     usados |= set(f['skus'])
     f['uds']   = round(sum(V[s]['u'] for s in f['skus']))
     f['venta'] = round(sum(V[s]['v'] for s in f['skus']), 2)
