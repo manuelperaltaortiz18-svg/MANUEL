@@ -760,7 +760,8 @@ if(D.canal && D.canal.length){
     });
   }
   const COLS=[['sku','SKU'],['title','Producto'],['uds','Uds'],['precio','Precio real'],
-    ['coste','Coste'],['fee','Comisión'],['iva','IVA'],['base','Margen antes de envío'],
+    ['coste','Coste neto'],['coste_dado','Coste dado'],['fee','Comisión'],['iva','IVA'],
+    ['base','Margen antes de envío'],
     ['env','Envío'],['mg','Margen/ud'],['pct','% MARGEN'],['contrib','Contribución']];
 
   function pinta(){
@@ -774,6 +775,8 @@ if(D.canal && D.canal.length){
         if(k==='sku')   return `<td class="sku">${r.sku}</td>`;
         if(k==='title') return `<td>${r.title.slice(0,46)}</td>`;
         if(k==='uds')   return `<td class="n">${int(r.uds)}</td>`;
+        if(k==='coste_dado') return `<td class="n" style="color:var(--ink-3)">${dec(r.coste_dado)} €${
+            r.neteado?' <span title="bruto, neteado /1,21" style="color:var(--brass)">b</span>':''}</td>`;
         if(k==='env')   return `<td class="n"><input class="envio${c.puesto?'':' vacio'}"
             type="number" step="0.01" min="0" inputmode="decimal" data-sku="${r.sku}"
             value="${c.env==null?'':c.env}" placeholder="${canal==='fba'?'tarifa':'envío'}"
@@ -870,7 +873,10 @@ if(D.canal && D.canal.length){
   })();
 
   sub();
-  $('#calcNota').innerHTML = `El margen es sobre <strong>venta neta</strong> (sin IVA) y al
+  const netead = A.filter(f=>f.neteado);
+  $('#calcNota').innerHTML = `«Coste dado» es el número tal cual lo pasaste; la <strong>b</strong>
+    marca los ${int(netead.length)} que venían en bruto y se han dividido entre 1,21 para dejarlos
+    netos (equivale a tu columna K del Excel). El margen es sobre <strong>venta neta</strong> (sin IVA) y al
     <strong>precio que realmente cobras</strong> (venta ÷ unidades de 2026), no a tarifa.
     «Margen antes de envío» ya descuenta coste, comisión del 15,45% e IVA. Lo que escribas se
     guarda y sigue aquí la próxima vez que abras el panel, también si yo republico el panel.`;

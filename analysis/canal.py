@@ -9,6 +9,18 @@ from pl import COSTES, V
 
 RATE     = 0.1545   # comision observada
 FBM_DEF  = 3.30     # media declarada de tu envio propio
+IVA      = 1.21
+
+# Filas de la hoja original cuyo COSTE esta en BRUTO: son las que llevan la
+# columna K (= coste x 17,5%, el IVA soportado que se devuelve al margen).
+# El resto de la hoja ya guarda el coste neto (coste x 1,21 da importe redondo).
+BRUTO_HOJA = {'19301','19302','19303','19304','19305','20251','20271','20250_SC',
+              '11012_24','11012_12','11012_6','28018','28001','28003','28005',
+              '28007','28009'}
+# Marcas que aun no tocamos: sus costes quedan como estan
+FUERA = {'SARTEN 20CM','SARTEN 22CM','SARTEN 24CM','SARTEN26CM','SARTEN28CM',
+         'SARTEN 24CM WOK','SARTEN 26CM WOK','SARTEN 28CM WOK',
+         'PACK 20+24','PACK 24+28','PACK 20+24+28'}
 # Tarifas FBA reales, a rellenar segun las vayas sacando:  {'SKU': 4.12, ...}
 FBA_TARIFA = {}
 
@@ -27,14 +39,19 @@ def ventas(base):
 # --- catalogo de costes: hoja original + altas nuevas ---
 CAT = {}
 for cs, d in COSTES.items():
-    CAT[cs] = dict(sku=cs, coste=d['COSTE'], fbm=d['FBA'], fuente='hoja')
+    bruto = cs in BRUTO_HOJA
+    CAT[cs] = dict(sku=cs, coste=d['COSTE']/IVA if bruto else d['COSTE'],
+                   coste_dado=d['COSTE'], neteado=bruto,
+                   fbm=d['FBA'], fuente='hoja', fuera=cs in FUERA)
 for r in csv.DictReader(open('costes/nuevos.tsv', encoding='utf-8'), delimiter='\t'):
     if r['COSTE'].strip() == '-':
         CAT[r['SKU_COSTE']] = dict(sku=r['SKU_COSTE'], baja=True, nota=r['NOTA']); continue
     her = r['FBA_HEREDADA_DE'].strip()
     fbm = COSTES[her]['FBA'] if her in COSTES else None
-    CAT[r['SKU_COSTE']] = dict(sku=r['SKU_COSTE'], coste=float(r['COSTE']),
-                               fbm=fbm, fuente='alta', nota=r['NOTA'])
+    # los costes que me pasas vienen en BRUTO: se netean aqui
+    CAT[r['SKU_COSTE']] = dict(sku=r['SKU_COSTE'], coste=float(r['COSTE'])/IVA,
+                               coste_dado=float(r['COSTE']), neteado=True,
+                               fbm=fbm, fuente='alta', nota=r['NOTA'], fuera=False)
 
 filas = []
 for cs, c in CAT.items():
@@ -58,7 +75,9 @@ for cs, c in CAT.items():
     filas.append(dict(
         sku=cs, skus=', '.join(sorted(hit)), title=ref['title'][:80], brand=ref['brand'],
         uds=round(u), venta=round(v, 2), precio=round(p, 2),
-        coste=round(c['coste'], 3), fee=round(fee, 3), iva=round(iva, 3), neto=round(neto, 3),
+        coste=round(c['coste'], 3), coste_dado=round(c.get('coste_dado', c['coste']), 3),
+        neteado=c.get('neteado', False), fuera=c.get('fuera', False),
+        fee=round(fee, 3), iva=round(iva, 3), neto=round(neto, 3),
         base=round(base, 3),                              # margen antes de logistica
         envio_fbm=round(fbm, 2), fbm_supuesto=fbm_sup,
         m_fbm=round(m_fbm, 3), pct_fbm=round(100*m_fbm/neto, 1),
