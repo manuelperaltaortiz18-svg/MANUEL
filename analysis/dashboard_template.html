@@ -287,6 +287,38 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
+<section id="vinSec" hidden>
+  <div class="shead">
+    <h2>VINFER · margen por producto</h2>
+    <p id="vinSub"></p>
+  </div>
+  <p class="note" id="vinAviso"></p>
+  <div class="bar" style="margin-top:14px">
+    <div class="seg" id="vinCanal" role="group" aria-label="Canal">
+      <button data-c="fbm" aria-pressed="true">FBM · envío propio</button>
+      <button data-c="fba" aria-pressed="false">FBA · tarifa Amazon</button>
+    </div>
+    <span id="vinEstado" class="savestate">—</span>
+  </div>
+  <div class="kpis" id="vinKpis"></div>
+  <div class="tools" style="margin-top:18px">
+    <input type="search" id="vinQ" placeholder="Buscar por REF, título o marca…" aria-label="Buscar">
+    <select id="vinMarca" aria-label="Marca"></select>
+    <select id="vinF" aria-label="Filtro">
+      <option value="">Con venta</option>
+      <option value="todo">Todas las referencias</option>
+      <option value="malo">Margen &lt; 15%</option>
+      <option value="neg">Margen negativo</option>
+      <option value="ivamal">El IVA de la hoja está mal</option>
+      <option value="sinivac">No recupera el IVA de compra</option>
+    </select>
+    <span class="count" id="vinCount"></span>
+  </div>
+  <div class="scroll"><table id="vinTab"></table></div>
+  <button class="more" id="vinMore" hidden>Ver más</button>
+  <p class="note" id="vinNota"></p>
+</section>
+
 <section id="calcSec" hidden>
   <div class="shead">
     <h2>Calculadora de envío y margen</h2>
@@ -689,6 +721,164 @@ $('#bb').innerHTML = `<thead><tr><th>Producto</th><th>SKU</th><th>Marca</th><th>
 
 
 
+
+
+/* ---------- VINFER ---------- */
+if(D.vinfer && D.vinfer.filas.length){
+  $('#vinSec').hidden = false;
+  const R = D.vinfer.filas, CB = D.vinfer.cobertura;
+  let canal='fbm', shown=40, sk='contrib', sasc=false;
+  const env = {};
+  R.forEach(f=>env[f.marca+'|'+(f.ref||f.title)] = {fbm: f.envio, fba: null});
+  const key = f => f.marca+'|'+(f.ref||f.title);
+
+  let db=null, ok=true;
+  const est=$('#vinEstado'), marcaEst=(t,c)=>{est.textContent=t; est.className='savestate '+(c||'');};
+  const LS='envios-vinfer';
+  const grabaLocal=()=>{try{localStorage.setItem(LS,JSON.stringify(env));}catch(e){}};
+
+  function calc(f){
+    const e = env[key(f)][canal];
+    const v = e==null ? (canal==='fbm' ? f.envio : null) : e;
+    if(v==null || !f.precio) return {env:null,m:null,pct:null,contrib:0,puesto:false};
+    const m = f.base - v;   // base = margen antes de envio (no lo lleva restado)
+    return {env:v, m, pct: f.neto_real? 100*m/f.neto_real : 0, contrib: m*f.uds, puesto: e!=null};
+  }
+
+  const pc = 100*CB.venta_cubierta/CB.venta_total;
+  $('#vinSub').innerHTML = `Una hoja por marca: MATÓN, BIOLEAF, ELVIRA, WINS y LA GARRAFITA.
+    Todos los costes venían en <strong>bruto</strong> y se han dividido entre 1,21.
+    El margen es sobre venta neta y al precio que realmente cobras.`;
+  $('#vinAviso').innerHTML = `<strong>Cubre el ${dec(pc,1)}% de la venta del grupo.</strong>
+    ${eur(CB.venta_total-CB.venta_cubierta)} no casan porque la columna REF está vacía o escrita
+    distinta al SKU de Amazon. No he adivinado ninguna: un coste equivocado es peor que ninguno.`;
+
+  $('#vinMarca').innerHTML='<option value="">Todas las marcas</option>'+
+    [...new Set(R.map(f=>f.marca))].map(m=>`<option>${m}</option>`).join('');
+
+  const COLS=[['marca','Marca'],['ref','REF'],['title','Producto'],['uds','Uds'],
+    ['venta','Venta'],['precio','Precio real'],['pvp','PVP hoja'],['coste_bruto','Coste bruto'],
+    ['coste_neto','Coste neto'],['fee_real','Comisión'],['iva_real','IVA'],
+    ['base','Mg antes de envío'],['env','Envío'],['mg','Margen/ud'],['pct','% MARGEN'],
+    ['pct_hoja','% hoja'],['contrib','Contribución']];
+
+  function filtra(){
+    const q=$('#vinQ').value.trim().toLowerCase(), mb=$('#vinMarca').value, f=$('#vinF').value;
+    return R.filter(r=>{
+      const c=calc(r);
+      return (!q || (r.ref||'').toLowerCase().includes(q) || (r.title||'').toLowerCase().includes(q)
+              || r.marca.toLowerCase().includes(q)) &&
+        (!mb || r.marca===mb) &&
+        (f==='todo' ? true : r.uds>0) &&
+        (f!=='malo'   || (c.pct!=null && c.pct<15)) &&
+        (f!=='neg'    || (c.pct!=null && c.pct<0)) &&
+        (f!=='ivamal' || Math.abs((r.iva_hoja||0)-r.iva_ok)>0.01) &&
+        (f!=='sinivac'|| !r.tiene_ivac);
+    }).sort((a,b)=>{
+      const ca=calc(a), cb=calc(b);
+      const g=(r,c)=> sk==='contrib'?c.contrib : sk==='pct'?(c.pct??-999) : sk==='env'?(c.env??-1)
+                     : sk==='mg'?(c.m??-999) : r[sk];
+      const x=g(a,ca), y=g(b,cb);
+      if(x==null) return 1; if(y==null) return -1;
+      if(typeof x==='string') return sasc?x.localeCompare(y):y.localeCompare(x);
+      return sasc?x-y:y-x;});
+  }
+  function pinta(){
+    const all=filtra(), rs=all.slice(0,shown);
+    const maxC=Math.max(1,...all.map(r=>Math.abs(calc(r).contrib)));
+    $('#vinTab').innerHTML=`<thead><tr>${COLS.map(([k,n])=>
+      `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
+      >${n}</th>`).join('')}</tr></thead><tbody>`+rs.map(r=>{
+      const c=calc(r), ivamal=Math.abs((r.iva_hoja||0)-r.iva_ok)>0.01;
+      const cell=k=>{
+        if(k==='marca') return `<td>${r.marca}</td>`;
+        if(k==='ref')   return `<td class="sku">${r.ref||'—'}</td>`;
+        if(k==='title') return `<td>${(r.title||'').slice(0,42)}</td>`;
+        if(k==='uds')   return `<td class="n">${r.uds?int(r.uds):'<span style="color:var(--ink-3)">0</span>'}</td>`;
+        if(k==='venta') return `<td class="n">${r.venta?eur(r.venta):'—'}</td>`;
+        if(k==='precio')return `<td class="n">${r.precio?dec(r.precio)+' €':'—'}</td>`;
+        if(k==='pvp')   return `<td class="n" style="color:var(--ink-3)">${dec(r.pvp||0)} €</td>`;
+        if(k==='coste_bruto') return `<td class="n" style="color:var(--ink-3)">${dec(r.coste_bruto)} €</td>`;
+        if(k==='iva_real') return `<td class="n"${ivamal?' style="color:var(--warn)" title="la hoja usa otro IVA"':''}
+            >${dec(r.iva_real)} €${ivamal?' *':''}</td>`;
+        if(k==='env')   return `<td class="n"><input class="envio${c.puesto?'':' vacio'}" type="number"
+            step="0.01" min="0" inputmode="decimal" data-k="${key(r)}"
+            value="${c.env==null?'':c.env}" aria-label="Envío"></td>`;
+        if(k==='mg')    return `<td class="mg" style="color:${c.m==null?'var(--ink-3)'
+            :c.m<0?'var(--bad)':'var(--ink)'}">${c.m==null?'—':dec(c.m)+' €'}</td>`;
+        if(k==='pct')   return `<td class="n">${c.pct==null?'<span style="color:var(--ink-3)">—</span>'
+            :`<span class="pill pctbig ${c.pct<0?'b':c.pct<15?'w':'g'}">${dec(c.pct,1)}%</span>`}</td>`;
+        if(k==='pct_hoja') return `<td class="n" style="color:var(--ink-3)">${
+            r.pct_hoja==null?'—':dec(100*r.pct_hoja,0)+'%'}</td>`;
+        if(k==='contrib') return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*Math.abs(c.contrib)/maxC}%;background:${
+            c.contrib<0?'var(--bad)':'var(--s1)'}"></div>
+            <span><strong>${r.uds?eur(c.contrib):'—'}</strong></span></td>`;
+        return `<td class="n">${dec(r[k]||0)} €</td>`;
+      };
+      return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
+    }).join('')+`</tbody>`;
+    const con=all.map(r=>({r,c:calc(r)})).filter(x=>x.c.m!=null && x.r.uds>0);
+    const T={neto:con.reduce((s,x)=>s+x.r.neto_real*x.r.uds,0),
+      c:con.reduce((s,x)=>s+x.c.contrib,0), u:con.reduce((s,x)=>s+x.r.uds,0),
+      v:con.reduce((s,x)=>s+x.r.venta,0)};
+    $('#vinKpis').innerHTML=[
+      ['Canal', canal==='fbm'?'FBM':'FBA', canal==='fbm'?'envío propio':'tarifa Amazon'],
+      ['Referencias', int(con.length), `${int(all.length)} en la vista`],
+      ['Venta', eur(T.v), `${int(T.u)} uds`],
+      ['Venta neta', eur(T.neto), 'sin IVA'],
+      ['Contribución', eur(T.c), T.neto?`${dec(100*T.c/T.neto,1)}% s/neto`:''],
+      ['% MARGEN MEDIO', T.neto?dec(100*T.c/T.neto,1)+'%':'—','ponderado por ventas']
+    ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+      <div class="d">${d}</div></div>`).join('');
+    $('#vinCount').textContent=`${int(all.length)} de ${int(R.length)} referencias`;
+    $('#vinMore').hidden=all.length<=shown;
+    $('#vinMore').textContent=`Ver ${int(Math.min(40,all.length-shown))} más`;
+  }
+  $('#vinTab').addEventListener('input', e=>{
+    const i=e.target.closest('input.envio'); if(!i) return;
+    const k=i.dataset.k, v=i.value.trim();
+    env[k][canal] = v==='' ? null : Math.max(0, parseFloat(v.replace(',','.'))||0);
+    grabaLocal(); pinta();
+    if(db && ok) db.collection('envios_vinfer').doc(k.replace(/[^A-Za-z0-9_-]/g,'_'))
+      .set({...env[k], ts:new Date().toISOString()})
+      .then(()=>marcaEst('guardado ✓','ok'))
+      .catch(()=>{ok=false; marcaEst('sin permiso — queda en este navegador','err');});
+  });
+  $('#vinTab').addEventListener('click', e=>{const th=e.target.closest('th.sortable'); if(!th)return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else {sk=k;sasc=false;} pinta();});
+  $('#vinCanal').onclick=e=>{const b=e.target.closest('button'); if(!b)return;
+    canal=b.dataset.c; shown=40;
+    [...$('#vinCanal').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===canal));
+    pinta();};
+  ['#vinQ','#vinMarca','#vinF'].forEach(x=>$(x).addEventListener('input',()=>{shown=40;pinta();}));
+  $('#vinMore').onclick=()=>{shown+=40;pinta();};
+
+  const ivamal=R.filter(f=>Math.abs((f.iva_hoja||0)-f.iva_ok)>0.01);
+  const sinivac=R.filter(f=>!f.tiene_ivac);
+  $('#vinNota').innerHTML = `<strong>*</strong> en la columna IVA marca las
+    ${int(ivamal.length)} referencias donde tu hoja usa un IVA distinto del que corresponde al PVP
+    (en cuatro hojas está escrito a mano como 1,82 €). <strong>«% hoja»</strong> es lo que decía tu
+    Excel, para comparar. En ELVIRA, WINS y LA GARRAFITA
+    (${int(sinivac.length)} refs) tu hoja <strong>no recupera el IVA de compra</strong>, al
+    contrario que MATÓN y BIOLEAF: por eso su % sale más bajo del que tienes de verdad.`;
+
+  (async()=>{
+    try{ const r=localStorage.getItem(LS); if(r) Object.entries(JSON.parse(r))
+      .forEach(([k,v])=>{ if(env[k]) env[k]=v; }); }catch(e){}
+    pinta();
+    const d=(typeof claude!=='undefined'&&claude.use)?await claude.use('db'):null;
+    if(!d){ marcaEst('guardado solo en este navegador'); return; }
+    db=d;
+    try{
+      const snap=await db.collection('envios_vinfer').get();
+      const idx={}; Object.keys(env).forEach(k=>idx[k.replace(/[^A-Za-z0-9_-]/g,'_')]=k);
+      snap.docs.forEach(s=>{ const k=idx[s.id]; if(!k) return; const v=s.data()||{};
+        env[k]={fbm: v.fbm ?? env[k].fbm, fba: v.fba ?? null}; });
+      marcaEst(snap.empty?'listo para guardar':`${snap.size} guardados`,'ok'); pinta();
+    }catch(e){ marcaEst('no se pudo leer lo guardado','err'); }
+  })();
+}
 
 /* ---------- calculadora de envio y margen ---------- */
 if(D.canal && D.canal.length){
