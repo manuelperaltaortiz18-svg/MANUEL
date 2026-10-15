@@ -1,0 +1,26 @@
+PUBLICIDAD x NEGOCIO REAL — Espana
+  Publicidad: 1 ene - 15 oct 2026 (288 dias)
+  Ventas    : 1 ene - 22 sep 2026 (265 dias)
+  El TACOS se calcula con el gasto prorrateado a la ventana de ventas.
+
+Marca          Venta total Gasto ads % con atrib   ACOS  TACOS Margen min Margen-ads   Veredicto
+------------------------------------------------------------------------------------------------
+Arcos            1,275,996    12,993         11%  12.8%   1.0%    191,399    178,406          ok
+Cuperinox          515,151    35,441         39%  12.9%   6.9%    128,788     93,347          ok
+Hendi              285,277         0          0%   0.0%   0.0%     57,055     57,055          ok
+Vinfermaton        205,874     6,199         55%  25.4%   3.0%     30,881     24,683          ok
+Wins                30,297         0          0%   0.0%   0.0%      4,545      4,545          ok
+Bioleaf             17,452     3,362        102%  42.6%  19.3%      2,618       -744      PIERDE
+Sin marca           14,620         0          0%   0.0%   0.0%      2,193      2,193          ok
+Vinfer               9,311         0          0%   0.0%   0.0%      1,397      1,397          ok
+Vincare              2,054         0          0%   0.0%   0.0%        308        308          ok
+Tradineur            1,218         0          0%   0.0%   0.0%        183        183          ok
+La Garrafita         1,120         0          0%   0.0%   0.0%        168        168          ok
+------------------------------------------------------------------------------------------------
+TOTAL            2,358,370    57,995                     2.5%
+
+El veredicto usa el margen MINIMO de tu rango (el caso prudente).
+'% con atrib' = parte del gasto para la que conozco la venta atribuida;
+el ACOS solo es fiable cuando ese porcentaje es alto.
+ACOS  = gasto / venta atribuida al anuncio (eficiencia del anuncio).
+TACOS = gasto / venta total de la marca (cuanto te cuesta sostenerla).

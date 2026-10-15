@@ -1493,21 +1493,26 @@ if(D.ads && D.ads.rows.length){
     el TACOS, lo que cuesta sostener la marca. El veredicto usa el margen
     <strong>mínimo</strong> de tu rango — el caso prudente.`;
   $('#adsTab').innerHTML = `<thead><tr><th>Marca</th><th>Venta total</th><th>Gasto ads</th>
-    <th>Venta atribuida</th><th>ACOS</th><th>TACOS</th><th>Margen mín.</th>
-    <th>Margen − ads</th></tr></thead><tbody>` +
+    <th>Venta atribuida</th><th>% con atribución</th><th>ACOS</th><th>TACOS</th>
+    <th>Margen mín.</th><th>Margen − ads</th></tr></thead><tbody>` +
     R.map(r=>`<tr><td>${r.marca}</td><td class="n">${eur(r.v)}</td>
       <td class="n">${r.gasto?eur(r.gasto):'<span style="color:var(--ink-3)">sin campañas</span>'}</td>
       <td class="n">${r.vta?eur(r.vta):'—'}</td>
+      <td class="n" style="color:${r.cob>=80?'var(--ink-2)':'var(--warn)'}">${
+        r.gasto?dec(r.cob,0)+'%':'—'}</td>
       <td class="n">${r.acos?`<span class="pill ${r.acos>=r.lo?'b':r.acos>=r.lo/2?'w':'g'}">${dec(r.acos,1)}%</span>`:'—'}</td>
       <td class="n">${r.tacos?dec(r.tacos,2)+'%':'—'}</td>
       <td class="n">${eur(r.v*r.lo/100)}</td>
       <td class="n"><span class="pill ${r.neto<0?'b':'g'}">${eur(r.neto)}</span></td></tr>`).join('') +
     `<tr class="tot"><td>Total</td><td class="n">${eur(tv)}</td><td class="n">${eur(tg)}</td>
-      <td class="n"></td><td class="n"></td><td class="n">${dec(100*tg/tv,2)}%</td>
+      <td class="n"></td><td class="n"></td><td class="n"></td><td class="n">${dec(100*tg/tv,2)}%</td>
       <td class="n"></td><td class="n"></td></tr></tbody>`;
   const bad = R.filter(r=>r.neto<0), zero = R.filter(r=>!r.gasto && r.v>100000);
   $('#adsNote').innerHTML =
-    `TACOS global <strong>${dec(100*tg/tv,2)}%</strong>: prácticamente no inviertes en publicidad.
+    `TACOS global <strong>${dec(100*tg/tv,2)}%</strong>.
+     <strong>«% con atribución»</strong> es la parte del gasto para la que conozco la venta que
+     generó: el ACOS solo es fiable donde ese porcentaje es alto, porque el export con gasto
+     completo no trae ventas y el que las trae venía truncado.
      ${bad.length?`<strong>${bad.map(r=>r.marca).join(', ')}</strong> gasta más en anuncios que
        el margen mínimo que deja — pagas por vender a pérdida. ` : ''}
      ${zero.length?`<strong>${zero.map(r=>r.marca).join(', ')}</strong> factura sin una sola
