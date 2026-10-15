@@ -220,6 +220,18 @@ input.envio.vacio{border-style:dashed;color:var(--ink-3)}
 td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:600}
 .pctbig{font-family:"IBM Plex Mono";font-weight:600;font-size:14px;
   font-variant-numeric:tabular-nums}
+
+.tabs{position:sticky;top:57px;z-index:19;background:var(--surface);
+  border-bottom:1px solid var(--line);display:flex;gap:2px;overflow-x:auto;
+  padding:0 20px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{font:600 13px/1 "IBM Plex Sans",sans-serif;color:var(--ink-3);background:none;
+  border:0;border-bottom:2px solid transparent;padding:13px 14px;cursor:pointer;
+  white-space:nowrap;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink-2)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+.tabs button:focus-visible{outline:2px solid var(--brass);outline-offset:-3px}
+@media(max-width:700px){.tabs{top:auto;position:static}}
 </style>
 
 <header><div class="hin">
@@ -231,12 +243,16 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
 </div></header>
 
+<nav class="tabs" id="tabs" role="tablist" aria-label="Secciones"></nav>
+
 <div class="wrap">
 
-<div class="kpis" id="kpis"></div>
-<p class="note" id="lflNote"></p>
+<section data-tab="resumen" data-ord="1">
+  <div class="kpis" id="kpis"></div>
+  <p class="note" id="lflNote"></p>
+</section>
 
-<section>
+<section data-tab="resumen" data-ord="2">
   <div class="shead">
     <h2>Serie mensual por proveedor</h2>
     <p>Las bandas cálidas marcan noviembre y diciembre. Las cifras de la leyenda son el acumulado de los 20 meses.</p>
@@ -250,7 +266,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
 </section>
 
-<section>
+<section data-tab="resumen" data-ord="3">
   <div class="shead">
     <h2>Comparativa a ventana idéntica</h2>
     <p>Solo los meses presentes en ambos años. Un run-rate anualizado sería
@@ -259,7 +275,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <div class="scroll"><table id="lfl"></table></div>
 </section>
 
-<section>
+<section data-tab="pyl" data-ord="2">
   <div class="shead">
     <h2>Laboratorio de margen</h2>
     <p>Mueve el margen de cada proveedor y mira qué le pasa al rendimiento por sesión.
@@ -278,7 +294,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
 </section>
 
-<section>
+<section data-tab="buybox" data-ord="1">
   <div class="shead">
     <h2>BuyBox perdido</h2>
     <p>ASINs de los últimos 8 meses con demanda probada (&gt;5.000 sesiones) y oferta
@@ -287,7 +303,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <div class="scroll"><table id="bb"></table></div>
 </section>
 
-<section id="vinSec" hidden>
+<section id="vinSec" data-tab="vinfer" data-ord="1" hidden>
   <div class="shead">
     <h2>VINFER · margen por producto</h2>
     <p id="vinSub"></p>
@@ -320,7 +336,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="vinNota"></p>
 </section>
 
-<section id="calcSec" hidden>
+<section id="calcSec" data-tab="cuperinox" data-ord="1" hidden>
   <div class="shead">
     <h2>Calculadora de envío y margen</h2>
     <p id="calcSub"></p>
@@ -350,7 +366,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="calcNota"></p>
 </section>
 
-<section id="pnlSec" hidden>
+<section id="pnlSec" data-tab="pyl" data-ord="1" hidden>
   <div class="shead">
     <h2>Margen y P&amp;L por producto</h2>
     <p id="pnlSub"></p>
@@ -375,7 +391,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="pnlNota2"></p>
 </section>
 
-<section id="invSec" hidden>
+<section id="invSec" data-tab="inventario" data-ord="1" hidden>
   <div class="shead">
     <h2>Inventario y demanda prevista</h2>
     <p id="invSub"></p>
@@ -405,7 +421,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <button class="more" id="invMore" hidden>Ver más</button>
 </section>
 
-<section id="ayoySec" hidden>
+<section id="ayoySec" data-tab="asin" data-ord="1" hidden>
   <div class="shead">
     <h2>ASIN a ASIN: quién ganó y quién perdió</h2>
     <p id="ayoySub"></p>
@@ -430,7 +446,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="ayoyNote"></p>
 </section>
 
-<section id="mkSec" hidden>
+<section id="mkSec" data-tab="mercados" data-ord="1" hidden>
   <div class="shead">
     <h2>Los cuatro mercados</h2>
     <p>Cada informe cubre un rango distinto, así que la comparación se hace en
@@ -447,7 +463,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="mkNote"></p>
 </section>
 
-<section id="adsSec" hidden>
+<section id="adsSec" data-tab="publi" data-ord="1" hidden>
   <div class="shead">
     <h2>Publicidad frente a negocio real</h2>
     <p id="adsSub"></p>
@@ -456,7 +472,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="adsNote"></p>
 </section>
 
-<section>
+<section data-tab="resumen" data-ord="9">
   <div class="shead"><h2>Lectura</h2></div>
   <div class="finding" id="find"></div>
 </section>
@@ -1552,6 +1568,51 @@ if(D.ads && D.ads.rows.length){
   $('#find').innerHTML = items.map(([t,h,p])=>`<div>
     <h3><span class="tag ${t}">${t==='c'?'dato':'criterio'}</span>${h}</h3>
     <p>${p}</p></div>`).join('');
+})();
+
+
+/* ---------- pestanas ---------- */
+(function(){
+  const NOMBRES = [
+    ['resumen',    'Resumen'],
+    ['asin',       'ASIN a ASIN'],
+    ['mercados',   'Mercados'],
+    ['cuperinox',  'Márgenes Cuperinox'],
+    ['vinfer',     'Márgenes Vinfer'],
+    ['pyl',        'P&L y margen'],
+    ['publi',      'Publicidad'],
+    ['inventario', 'Inventario'],
+    ['buybox',     'BuyBox perdido'],
+  ];
+  const secs = [...document.querySelectorAll('section[data-tab]')];
+  // una pestana existe si alguna de sus secciones tiene contenido
+  const vivos = NOMBRES.filter(([k]) => secs.some(s => s.dataset.tab===k && !s.hidden));
+  if(vivos.length < 2) return;
+  secs.forEach(s => { s.dataset.vacio = s.hidden ? '1' : '0'; });
+
+  const nav = document.getElementById('tabs');
+  nav.innerHTML = vivos.map(([k,n],i)=>
+    `<button role="tab" data-t="${k}" aria-selected="${i===0}">${n}</button>`).join('');
+
+  function abrir(k, guardar){
+    secs.forEach(s => { s.hidden = s.dataset.vacio==='1' || s.dataset.tab!==k; });
+    [...nav.children].forEach(b => b.setAttribute('aria-selected', b.dataset.t===k));
+    if(guardar){ try{ localStorage.setItem('panel-tab', k); }catch(e){} }
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  nav.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(b) abrir(b.dataset.t, true);
+  });
+  nav.addEventListener('keydown', e=>{
+    if(e.key!=='ArrowLeft' && e.key!=='ArrowRight') return;
+    const bs=[...nav.children], i=bs.findIndex(b=>b.getAttribute('aria-selected')==='true');
+    const n=bs[(i + (e.key==='ArrowRight'?1:bs.length-1)) % bs.length];
+    n.focus(); abrir(n.dataset.t, true); e.preventDefault();
+  });
+  let ini = vivos[0][0];
+  try{ const g=localStorage.getItem('panel-tab');
+       if(g && vivos.some(([k])=>k===g)) ini=g; }catch(e){}
+  abrir(ini, false);
 })();
 
 $('#foot').innerHTML = `Business Reports de Seller Central, ${N} meses (${D.periodo}).
