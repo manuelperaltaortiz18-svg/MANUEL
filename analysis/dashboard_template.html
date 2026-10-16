@@ -1551,19 +1551,27 @@ if(D.ads && D.ads.rows.length){
     el TACOS, lo que cuesta sostener la marca. El veredicto usa el margen
     <strong>mínimo</strong> de tu rango — el caso prudente.`;
   $('#adsTab').innerHTML = `<thead><tr><th>Marca</th><th>Venta total</th><th>Gasto ads</th>
-    <th>Venta atribuida</th><th>% con atribución</th><th>ACOS</th><th>TACOS</th>
-    <th>Margen mín.</th><th>Margen − ads</th></tr></thead><tbody>` +
+    <th>De eso, en pausa</th><th>Gasto vivo</th><th>Venta atribuida</th>
+    <th>% con atribución</th><th>ACOS</th><th>TACOS</th><th>TACOS vivo</th>
+    <th>Margen mín.</th><th>Margen − ads vivos</th></tr></thead><tbody>` +
     R.map(r=>`<tr><td>${r.marca}</td><td class="n">${eur(r.v)}</td>
       <td class="n">${r.gasto?eur(r.gasto):'<span style="color:var(--ink-3)">sin campañas</span>'}</td>
+      <td class="n">${r.pausa?`<span class="pill w">${eur(r.pausa)}</span>`
+        :'<span style="color:var(--ink-3)">—</span>'}</td>
+      <td class="n"><strong>${r.gasto_bruto?eur(r.activo):'—'}</strong></td>
       <td class="n">${r.vta?eur(r.vta):'—'}</td>
       <td class="n" style="color:${r.cob>=80?'var(--ink-2)':'var(--warn)'}">${
         r.gasto?dec(r.cob,0)+'%':'—'}</td>
       <td class="n">${r.acos?`<span class="pill ${r.acos>=r.lo?'b':r.acos>=r.lo/2?'w':'g'}">${dec(r.acos,1)}%</span>`:'—'}</td>
       <td class="n">${r.tacos?dec(r.tacos,2)+'%':'—'}</td>
+      <td class="n">${r.tacos_act?`<strong>${dec(r.tacos_act,2)}%</strong>`:'—'}</td>
       <td class="n">${eur(r.v*r.lo/100)}</td>
-      <td class="n"><span class="pill ${r.neto<0?'b':'g'}">${eur(r.neto)}</span></td></tr>`).join('') +
+      <td class="n"><span class="pill ${r.neto_act<0?'b':'g'}">${eur(r.neto_act)}</span></td></tr>`).join('') +
     `<tr class="tot"><td>Total</td><td class="n">${eur(tv)}</td><td class="n">${eur(tg)}</td>
-      <td class="n"></td><td class="n"></td><td class="n"></td><td class="n">${dec(100*tg/tv,2)}%</td>
+      <td class="n">${eur(R.reduce((s,r)=>s+r.pausa,0))}</td>
+      <td class="n">${eur(R.reduce((s,r)=>s+r.activo,0))}</td>
+      <td class="n"></td><td class="n"></td><td class="n"></td>
+      <td class="n">${dec(100*tg/tv,2)}%</td><td class="n"></td>
       <td class="n"></td><td class="n"></td></tr></tbody>`;
   const bad = R.filter(r=>r.neto<0), zero = R.filter(r=>!r.gasto && r.v>100000);
   $('#adsNote').innerHTML =

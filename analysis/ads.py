@@ -50,7 +50,8 @@ def load_ads(path, pais='España'):
     """Agrupa por marca. Usa la cartera cuando existe (agrupa mejor que el
        nombre de campana) y cae al nombre cuando no."""
     g = collections.defaultdict(lambda: dict(gasto=0.0, vta=0.0, clics=0.0,
-                                             impr=0.0, n=0))
+                                             impr=0.0, n=0,
+                                             activo=0.0, pausa=0.0, sin_pptto=0.0))
     for r in csv.DictReader(open(path, encoding='utf-8-sig')):
         if col(r, 'País', 'País de la campaña') != pais: continue
         c = money(r['Coste total (convertido)'])
@@ -67,6 +68,9 @@ def load_ads(path, pais='España'):
         a['clics'] += money(r.get('Clics', '0'))
         a['impr']  += money(r.get('Impresiones', '0'))
         a['n'] += 1
+        est = (r.get('Estado') or '').strip()
+        a['activo'    if est == 'Mostrando'
+          else 'pausa' if est == 'En pausa' else 'sin_pptto'] += c
     return g
 
 def combinar(pais='España'):
@@ -79,6 +83,8 @@ def combinar(pais='España'):
         f, a = full.get(b, {}), atr.get(b, {})
         out[b] = dict(gasto=f.get('gasto', 0.0), clics=f.get('clics', 0.0),
                       n=f.get('n', 0),
+                      activo=f.get('activo', 0.0), pausa=f.get('pausa', 0.0),
+                      sin_pptto=f.get('sin_pptto', 0.0),
                       vta=a.get('vta', 0.0), gasto_atr=a.get('gasto', 0.0))
     return out
 
