@@ -476,6 +476,23 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
   <div class="scroll"><table id="ayTab"></table></div>
   <p class="note" id="ayNote"></p>
+  <div class="shead" style="margin-top:34px">
+    <h2 style="font-size:17px">Publicidad ASIN a ASIN · 2025</h2>
+    <p id="aaHead"></p>
+  </div>
+  <div class="tools">
+    <input type="search" id="aaQ" placeholder="Buscar por ASIN o producto…" aria-label="Buscar">
+    <select id="aaF" aria-label="Filtro">
+      <option value="">Todos</option>
+      <option value="malo">ACOS por encima del 25%</option>
+      <option value="bueno">ACOS por debajo del 10%</option>
+      <option value="depende">Depende de la publicidad (TACOS &gt; 15%)</option>
+    </select>
+    <span class="count" id="aaCount"></span>
+  </div>
+  <div class="scroll"><table id="aaTab"></table></div>
+  <button class="more" id="aaMore" hidden>Ver más</button>
+  <p class="note" id="aaNote"></p>
 </section>
 
 <section data-tab="resumen" data-ord="9">
@@ -1577,6 +1594,74 @@ if(D.ads && D.ads.rows.length){
 })();
 
 
+
+
+/* ---------- publicidad por ASIN ---------- */
+if(D.adsAsin && D.adsAsin.length){
+  const R = D.adsAsin;
+  let shown=20, sk='gasto', sasc=false;
+  const tg=R.reduce((s,x)=>s+x.gasto,0), tv=R.reduce((s,x)=>s+x.vta_atrib,0);
+  $('#aaHead').innerHTML = `${int(R.length)} ASINs anunciados en España durante 2025.
+    <strong>${eur(tg)}</strong> de gasto y <strong>${eur(tv)}</strong> de venta atribuida —
+    ACOS global <strong>${dec(100*tg/tv,1)}%</strong>, CPC medio
+    <strong>${dec(tg/R.reduce((s,x)=>s+x.clics,0))} €</strong>.`;
+  const COLS=[['asin','ASIN'],['title','Producto'],['marca','Marca'],['gasto','Gasto'],
+    ['clics','Clics'],['cpc','CPC'],['vta_atrib','Venta atribuida'],['acos','ACOS'],
+    ['venta_total','Venta total'],['tacos','TACOS'],['pct_organico','% orgánico']];
+  function filtra(){
+    const q=$('#aaQ').value.trim().toLowerCase(), f=$('#aaF').value;
+    return R.filter(x=>
+      (!q || x.asin.toLowerCase().includes(q) || (x.title||'').toLowerCase().includes(q)) &&
+      (f!=='malo'    || (x.acos!=null && x.acos>25)) &&
+      (f!=='bueno'   || (x.acos!=null && x.acos<10)) &&
+      (f!=='depende' || (x.tacos!=null && x.tacos>15))
+    ).sort((a,b)=>{const x=a[sk],y=b[sk];
+      if(x==null) return 1; if(y==null) return -1;
+      if(typeof x==='string') return sasc?x.localeCompare(y):y.localeCompare(x);
+      return sasc?x-y:y-x;});
+  }
+  function pinta(){
+    const all=filtra(), rs=all.slice(0,shown), mx=Math.max(1,...all.map(x=>x.gasto));
+    $('#aaTab').innerHTML=`<thead><tr>${COLS.map(([k,n])=>
+      `<th class="sortable" data-k="${k}" aria-sort="${k===sk?(sasc?'ascending':'descending'):'none'}"
+      >${n}</th>`).join('')}</tr></thead><tbody>`+rs.map(x=>{
+      const cell=k=>{
+        if(k==='asin')  return `<td class="sku">${x.asin}</td>`;
+        if(k==='title') return `<td>${(x.title||'—').slice(0,44)}</td>`;
+        if(k==='marca') return `<td>${x.marca||'—'}</td>`;
+        if(k==='gasto') return `<td class="n bar-cell u"><div class="fill p"
+            style="left:0;width:${92*x.gasto/mx}%;background:var(--s2)"></div>
+            <span><strong>${eur(x.gasto)}</strong></span></td>`;
+        if(k==='clics') return `<td class="n">${int(x.clics)}</td>`;
+        if(k==='cpc')   return `<td class="n">${x.cpc==null?'—':dec(x.cpc)+' €'}</td>`;
+        if(k==='acos')  return `<td class="n">${x.acos==null?'—'
+            :`<span class="pill ${x.acos>25?'b':x.acos>15?'w':'g'}">${dec(x.acos,1)}%</span>`}</td>`;
+        if(k==='tacos') return `<td class="n">${x.tacos==null?'—'
+            :`<span class="pill ${x.tacos>15?'w':'g'}">${dec(x.tacos,1)}%</span>`}</td>`;
+        if(k==='pct_organico') return `<td class="n" style="color:var(--ink-3)">${
+            x.pct_organico==null?'—':dec(x.pct_organico,0)+'%'}</td>`;
+        return `<td class="n">${eur(x[k]||0)}</td>`;
+      };
+      return `<tr>${COLS.map(([k])=>cell(k)).join('')}</tr>`;
+    }).join('')+`</tbody>`;
+    $('#aaCount').textContent=`${int(all.length)} de ${int(R.length)} ASINs`;
+    $('#aaMore').hidden=all.length<=shown;
+    $('#aaMore').textContent=`Ver ${int(Math.min(20,all.length-shown))} más`;
+  }
+  $('#aaTab').addEventListener('click',e=>{const th=e.target.closest('th.sortable');if(!th)return;
+    const k=th.dataset.k; if(k===sk) sasc=!sasc; else {sk=k;sasc=false;} pinta();});
+  ['#aaQ','#aaF'].forEach(x=>$(x).addEventListener('input',()=>{shown=20;pinta();}));
+  $('#aaMore').onclick=()=>{shown+=20;pinta();};
+  pinta();
+  const mal=R.filter(x=>x.gasto>100 && x.acos!=null && x.acos>25);
+  $('#aaNote').innerHTML = `<strong>El gasto por ASIN es un reparto, no una medición:</strong>
+    Amazon da el gasto por campaña y las ventas por ASIN, así que reparto el gasto de cada campaña
+    entre sus ASINs <strong>según los clics</strong>. Es exacto a nivel campaña y aproximado a
+    nivel producto. <strong>TACOS</strong> compara el gasto con la venta total del ASIN, no solo
+    con la atribuida: dice cuánto depende ese producto de la publicidad.
+    ${mal.length?`<strong>${int(mal.length)} ASINs</strong> gastan más de 100 € con ACOS por
+    encima del 25% (${eur(mal.reduce((s,x)=>s+x.gasto,0))} en total).`:''}`;
+}
 
 /* ---------- publicidad: 2025 vs 2026 ---------- */
 if(D.adsYoY){
