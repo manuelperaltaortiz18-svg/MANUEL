@@ -471,6 +471,15 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <div class="scroll"><table id="adsTab"></table></div>
   <p class="note" id="adsNote"></p>
   <div class="shead" style="margin-top:34px">
+    <h2 style="font-size:17px">¿Ha salido a cuenta subir la publicidad?</h2>
+    <p id="roiHead"></p>
+  </div>
+  <div class="kpis" id="roiKpis"></div>
+  <div class="scroll" style="margin-top:14px"><table id="roiTab"></table></div>
+  <p class="note" id="roiCtrl"></p>
+  <p class="note" id="roiNota"></p>
+
+  <div class="shead" style="margin-top:34px">
     <h2 style="font-size:17px">Cuánto has subido la inversión</h2>
     <p id="ayHead"></p>
   </div>
@@ -1661,6 +1670,69 @@ if(D.adsAsin && D.adsAsin.length){
     con la atribuida: dice cuánto depende ese producto de la publicidad.
     ${mal.length?`<strong>${int(mal.length)} ASINs</strong> gastan más de 100 € con ACOS por
     encima del 25% (${eur(mal.reduce((s,x)=>s+x.gasto,0))} en total).`:''}`;
+}
+
+
+/* ---------- ha salido a cuenta? ---------- */
+if(D.roi && D.roi.length){
+  const R = D.roi;
+  const S = k => R.reduce((s,f)=>s+f[k],0);
+  const dv=S('dv'), da=S('da'), mg=S('mg_extra'), neto=S('neto');
+  $('#roiHead').innerHTML = `Enero–agosto 2025 frente a enero–agosto 2026, España, ventana
+    idéntica. El margen es el <strong>mínimo</strong> de tu rango por marca — el caso prudente.
+    «Mg extra» es el margen bruto que aporta el crecimiento de ventas; «Neto» le resta lo que
+    costó el aumento de publicidad.`;
+  $('#roiKpis').innerHTML = [
+    ['Ventas de más', eur(dv), `+${dec(100*dv/S('v25'),0)}% sobre ${eur(S('v25'))}`],
+    ['Publicidad de más', eur(da), `+${dec(100*da/S('a25'),0)}% sobre ${eur(S('a25'))}`],
+    ['Margen que aporta', eur(mg), 'al margen mínimo'],
+    ['NETO', (neto>=0?'+':'−')+eur(Math.abs(neto)), neto>=0?'sale a cuenta':'no sale a cuenta'],
+    ['€ de venta por € de ads', dec(dv/da,0)+'×', 'crecimiento ÷ aumento de gasto'],
+    ['Margen por € de ads', dec(mg/da,1)+'×', 'lo que de verdad te queda']
+  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d}</div></div>`).join('');
+
+  const maxN = Math.max(1, ...R.map(f=>Math.abs(f.neto)));
+  $('#roiTab').innerHTML = `<thead><tr><th>Marca</th><th>Venta ene–ago 25</th>
+    <th>Venta ene–ago 26</th><th>Δ venta</th><th>Ads 25</th><th>Ads 26</th><th>Δ ads</th>
+    <th>Margen</th><th>Margen extra</th><th>Neto</th><th>Venta por € de ads</th>
+    </tr></thead><tbody>` + R.map(f=>`<tr>
+      <td><strong>${f.marca}</strong></td>
+      <td class="n">${eur(f.v25)}</td><td class="n">${eur(f.v26)}</td>
+      <td class="n delta" style="color:${f.dv>=0?'var(--good)':'var(--bad)'}">${
+        f.dv>=0?'+':'−'}${eur(Math.abs(f.dv))}</td>
+      <td class="n">${eur(f.a25)}</td><td class="n">${eur(f.a26)}</td>
+      <td class="n delta" style="color:${f.da>0?'var(--warn)':'var(--ink-3)'}">${
+        f.da>0?'+':''}${eur(f.da)}</td>
+      <td class="n" style="color:var(--ink-3)">${f.mg}%</td>
+      <td class="n">${eur(f.mg_extra)}</td>
+      <td class="n bar-cell u"><div class="fill p" style="left:0;width:${
+        92*Math.abs(f.neto)/maxN}%;background:${f.neto<0?'var(--bad)':'var(--s3)'}"></div>
+        <span><strong style="color:${f.neto<0?'var(--bad)':'var(--ink)'}">${
+        f.neto>=0?'+':'−'}${eur(Math.abs(f.neto))}</strong></span></td>
+      <td class="n">${f.roas_inc?`<span class="pill ${f.roas_inc>=10?'g':f.roas_inc>=5?'w':'b'}"
+        >${dec(f.roas_inc,0)}×</span>`:'<span style="color:var(--ink-3)">sin ads</span>'}</td>
+    </tr>`).join('') + `<tr class="tot"><td>Total</td>
+      <td class="n">${eur(S('v25'))}</td><td class="n">${eur(S('v26'))}</td>
+      <td class="n">+${eur(dv)}</td><td class="n">${eur(S('a25'))}</td>
+      <td class="n">${eur(S('a26'))}</td><td class="n">+${eur(da)}</td><td></td>
+      <td class="n">${eur(mg)}</td><td class="n">+${eur(neto)}</td>
+      <td class="n">${dec(dv/da,0)}×</td></tr></tbody>`;
+
+  const con = R.filter(f=>f.da>200), sin = R.filter(f=>f.da<=200);
+  const g = xs => ({a:xs.reduce((s,f)=>s+f.v25,0), b:xs.reduce((s,f)=>s+f.v26,0)});
+  const C = g(con), N = g(sin);
+  $('#roiCtrl').innerHTML = `<strong>La prueba de control.</strong> Las marcas donde subiste la
+    inversión (${con.map(f=>f.marca).join(', ')}) crecieron un
+    <strong>${dec(100*(C.b-C.a)/C.a,0)}%</strong>. Las marcas donde no la subiste
+    (${sin.filter(f=>f.dv>0).map(f=>f.marca).join(', ')}) crecieron un
+    <strong>${dec(100*(N.b-N.a)/N.a,0)}%</strong>, con cero euros de publicidad.`;
+  $('#roiNota').innerHTML = `<strong>Los 28× no son causales.</strong> Comparan todo el
+    crecimiento con todo el aumento de gasto, y buena parte de ese crecimiento no tiene nada que
+    ver con los anuncios: marcas nuevas, productos nuevos y temporada. El dato causal de verdad es
+    el <strong>ACOS</strong> de la tabla de arriba, que solo cuenta la venta que vino de un clic
+    en un anuncio. Lee esta tabla para descartar lo que claramente no funciona, no para atribuirte
+    el crecimiento.`;
 }
 
 /* ---------- publicidad: 2025 vs 2026 ---------- */
