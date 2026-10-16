@@ -252,6 +252,16 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="lflNote"></p>
 </section>
 
+<section data-tab="resumen" data-ord="0" id="ritSec" hidden>
+  <div class="shead">
+    <h2 id="ritTit">Cómo va el mes</h2>
+    <p id="ritSub"></p>
+  </div>
+  <div class="kpis" id="ritKpis"></div>
+  <div class="scroll" style="margin-top:14px"><table id="ritTab"></table></div>
+  <p class="note" id="ritNota"></p>
+</section>
+
 <section data-tab="resumen" data-ord="2">
   <div class="shead">
     <h2>Serie mensual por proveedor</h2>
@@ -1773,6 +1783,48 @@ if(D.adsYoY){
     <strong>${dec(t25,2)}%</strong> a <strong>${dec(t26,2)}%</strong>. Inviertes más y más rápido
     de lo que creces — sostenible mientras el ACOS siga por debajo del margen, que es lo que hay
     que vigilar marca a marca en la tabla de arriba.`;
+}
+
+
+/* ---------- ritmo del mes en curso ---------- */
+if(D.ritmo && D.ritmo.filas.length){
+  $('#ritSec').hidden = false;
+  const T = D.ritmo.total, R = D.ritmo.filas;
+  const yoy = 100*(T.dia-T.dia_ant)/T.dia_ant, mom = 100*(T.dia-T.dia_pre)/T.dia_pre;
+  $('#ritTit').textContent = `Cómo va ${T.mes} de ${T.anio}`;
+  $('#ritSub').innerHTML = `Días 1 a ${T.dias} de ${T.dias_mes}. Un mes a medias no entra en la
+    serie mensual — rompería la ventana comparable —, así que se lee como <strong>ritmo
+    diario</strong>: lo vendido dividido entre los días transcurridos, frente al mismo mes del año
+    pasado y frente al mes anterior.`;
+  const sg = v => (v>=0?'+':'−')+dec(Math.abs(v),0)+'%';
+  $('#ritKpis').innerHTML = [
+    ['Vendido', eur(T.v), `${int(T.u)} uds en ${T.dias} días`],
+    ['Ritmo', eur(T.dia)+'/día', ''],
+    [`Frente a ${T.mes} ${T.anio-1}`, sg(yoy), `${eur(T.dia_ant)}/día entonces`],
+    ['Frente al mes anterior', sg(mom), `${eur(T.dia_pre)}/día`],
+    ['Proyección del mes', eur(T.proy), `${eur(T.v_ant)} el año pasado`],
+    ['Cierre estimado vs. año pasado', sg(100*(T.proy-T.v_ant)/T.v_ant), 'a este ritmo']
+  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d}</div></div>`).join('');
+  const pil = v => v==null ? '—'
+    : `<span class="pill ${v<0?'b':v<10?'w':'g'}">${sg(v)}</span>`;
+  $('#ritTab').innerHTML = `<thead><tr><th>Marca</th><th>Vendido</th><th>€/día</th>
+    <th>€/día ${T.anio-1}</th><th>Frente al año pasado</th><th>Frente al mes anterior</th>
+    <th>Proyección del mes</th></tr></thead><tbody>` + R.map(f=>`<tr>
+      <td><strong>${f.marca}</strong></td><td class="n">${eur(f.v)}</td>
+      <td class="n"><strong>${eur(f.dia)}</strong></td>
+      <td class="n" style="color:var(--ink-3)">${eur(f.dia_ant)}</td>
+      <td class="n">${pil(f.yoy)}</td><td class="n">${pil(f.mom)}</td>
+      <td class="n">${eur(f.proy)}</td></tr>`).join('') +
+    `<tr class="tot"><td>Total</td><td class="n">${eur(T.v)}</td>
+      <td class="n">${eur(T.dia)}</td><td class="n">${eur(T.dia_ant)}</td>
+      <td class="n">${pil(yoy)}</td><td class="n">${pil(mom)}</td>
+      <td class="n">${eur(T.proy)}</td></tr></tbody>`;
+  const cae = R.filter(f=>f.yoy!=null && f.yoy<0);
+  $('#ritNota').innerHTML = `La proyección supone que el resto del mes va al mismo ritmo, y en
+    ${T.mes} eso se queda corto: la campaña de Q4 carga la segunda mitad.
+    ${cae.length ? `<strong>${cae.map(f=>f.marca).join(', ')}</strong>
+      ${cae.length===1?'va':'van'} por debajo del año pasado.` : ''}`;
 }
 
 /* ---------- pestanas ---------- */
