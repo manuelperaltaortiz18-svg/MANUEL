@@ -5,7 +5,9 @@ from parse_br import load
 from brands import brand
 from ads import ad_brand, money, col, load_ads, ADS_CSV
 
-D25, D26, W = 365, 288, 273        # dias del ano / del export 2026 / de ene-sep
+MESES = 9                          # ultimo mes completo disponible en ambos anos
+D25, D26 = 365, 288                # dias del ano / del export de publicidad 2026
+W = sum([31,28,31,30,31,30,31,31,30,31,30,31][:MESES])   # dias de la ventana
 
 def n(s):
     try: return float((s or '').strip())
@@ -26,7 +28,7 @@ for b, v in load_ads(ADS_CSV, 'España').items():
 # --- ventas por marca, ene-sep ---
 def ventas(anio):
     g = collections.Counter()
-    for m in [f'{anio}-{i:02d}' for i in range(1, 10)]:
+    for m in [f'{anio}-{i:02d}' for i in range(1, MESES+1)]:
         for r in load(f'mensual/{m}.csv'): g[brand(r)] += r['sales']
     return g
 V25, V26 = ventas(2025), ventas(2026)
@@ -49,7 +51,9 @@ for b in set(V25) | set(V26) | set(A25) | set(A26):
         # cuanto tendria que haber crecido para pagar el aumento de publicidad
         umbral=round(da*100/mg) if da > 0 else 0))
 filas.sort(key=lambda f: -f['dv'])
-json.dump(filas, open('roi.json', 'w'), ensure_ascii=False)
+MES_FIN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][MESES-1]
+VENTANA = f"ene–{MES_FIN}"
+json.dump(dict(ventana=VENTANA, filas=filas), open('roi.json', 'w'), ensure_ascii=False)
 
 if __name__ == '__main__':
     T = {k: sum(f[k] for f in filas) for k in ('v25','v26','dv','a25','a26','da','mg_extra','neto')}
