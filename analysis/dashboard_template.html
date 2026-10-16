@@ -470,6 +470,12 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
   <div class="scroll"><table id="adsTab"></table></div>
   <p class="note" id="adsNote"></p>
+  <div class="shead" style="margin-top:34px">
+    <h2 style="font-size:17px">Cuánto has subido la inversión</h2>
+    <p id="ayHead"></p>
+  </div>
+  <div class="scroll"><table id="ayTab"></table></div>
+  <p class="note" id="ayNote"></p>
 </section>
 
 <section data-tab="resumen" data-ord="9">
@@ -1570,6 +1576,47 @@ if(D.ads && D.ads.rows.length){
     <p>${p}</p></div>`).join('');
 })();
 
+
+
+/* ---------- publicidad: 2025 vs 2026 ---------- */
+if(D.adsYoY){
+  const Y = D.adsYoY, F = Y.dias25/Y.dias26;
+  const fila = (k, a, b) => {
+    const ba = b*F, yoy = a ? 100*(ba-a)/a : null;
+    return `<tr><td>${k}</td><td class="n">${eur(a)}</td><td class="n">${eur(b)}</td>
+      <td class="n"><strong>${eur(ba)}</strong></td>
+      <td class="n">${yoy==null?'<span class="pill w">nuevo</span>'
+        :`<span class="delta" style="color:${yoy>=0?'var(--good)':'var(--bad)'}">${
+          yoy>=0?'+':'−'}${dec(Math.abs(yoy),0)}%</span>`}</td></tr>`;
+  };
+  const cab = `<thead><tr><th>&nbsp;</th><th>2025 completo</th>
+    <th>2026 a 15 oct</th><th>2026 anualizado</th><th>YoY</th></tr></thead><tbody>`;
+  const sum = (xs,k) => xs.reduce((s,x)=>s+x[k],0);
+  $('#ayTab').innerHTML = cab +
+    `<tr class="tot"><td colspan="5" style="text-align:left;font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--ink-3)">Por mercado</td></tr>` +
+    Y.paises.map(x=>fila(x.k, x.a, x.b)).join('') +
+    `<tr class="tot"><td>Total</td><td class="n">${eur(sum(Y.paises,'a'))}</td>
+      <td class="n">${eur(sum(Y.paises,'b'))}</td>
+      <td class="n"><strong>${eur(sum(Y.paises,'b')*F)}</strong></td>
+      <td class="n"><span class="delta" style="color:var(--good)">+${
+        dec(100*(sum(Y.paises,'b')*F-sum(Y.paises,'a'))/sum(Y.paises,'a'),0)}%</span></td></tr>` +
+    `<tr class="tot"><td colspan="5" style="text-align:left;font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--ink-3)">España, por marca</td></tr>` +
+    Y.marcas.map(x=>fila(x.k, x.a, x.b)).join('') + `</tbody>`;
+
+  const T = Y.tacos;
+  const t25 = 100*T.a25/T.v25, t26 = 100*T.a26/T.v26;
+  $('#ayHead').innerHTML = `2026 solo cubre hasta el 15 de octubre, así que la columna
+    <strong>anualizada</strong> es la comparable. El informe de 2025 es de facturación: trae gasto
+    e impresiones, no ventas atribuidas, así que de ese año no hay ACOS.`;
+  $('#ayNote').innerHTML = `A ventana idéntica (ene–ago, España) las ventas crecen
+    <strong>+${dec(100*(T.v26-T.v25)/T.v25,0)}%</strong> y la publicidad
+    <strong>+${dec(100*(T.a26-T.a25)/T.a25,0)}%</strong>: el TACOS sube de
+    <strong>${dec(t25,2)}%</strong> a <strong>${dec(t26,2)}%</strong>. Inviertes más y más rápido
+    de lo que creces — sostenible mientras el ACOS siga por debajo del margen, que es lo que hay
+    que vigilar marca a marca en la tabla de arriba.`;
+}
 
 /* ---------- pestanas ---------- */
 (function(){
