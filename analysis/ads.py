@@ -12,8 +12,8 @@ ADS_CSV = 'ads/campaigns_2026_full.csv'
 # Export anterior, truncado a 200 filas sin ordenar: solo sirve para el ACOS
 # de las campanas que si aparecen.
 ADS_ATRIB = 'ads/campaigns_2026-01_2026-10-15.csv'
-DIAS_ADS, DIAS_BR = 288, 265
-MESES = [f'2026-{m:02d}' for m in range(1,9)]   # ene-ago completos
+DIAS_ADS, DIAS_BR = 288, 273   # ads a 15 oct; ventas ene-sep
+MESES = [f'2026-{m:02d}' for m in range(1,10)]  # ene-sep completos
 
 # marca inferida del nombre de campana
 ADRULES = [
@@ -85,8 +85,8 @@ def combinar(pais='España'):
 def load_br(meses):
     """Ventas 2026 hasta el 22 de septiembre (el YTD, no solo los meses)."""
     g = collections.defaultdict(lambda: dict(v=0.0, ses=0.0, uds=0.0))
-    for m in ['__ytd__']:
-        rows = load('data_BusinessReport_2026ytd_22sep.csv')
+    for m in meses:
+        rows = load(f'mensual/{m}.csv')
         by = collections.defaultdict(list)
         for r in rows: by[r['child']].append(r)
         for rs in by.values():
@@ -101,7 +101,7 @@ MG = {'Arcos':(15,25),'Cuperinox':(25,35),'Hendi':(20,35),'Vinfermaton':(15,25),
 ads, br = combinar(), load_br(MESES)
 print(f"PUBLICIDAD x NEGOCIO REAL — Espana\n"
       f"  Publicidad: 1 ene - 15 oct 2026 ({DIAS_ADS} dias)\n"
-      f"  Ventas    : 1 ene - 22 sep 2026 ({DIAS_BR} dias)\n"
+      f"  Ventas    : 1 ene - 30 sep 2026 ({DIAS_BR} dias)\n"
       f"  El TACOS se calcula con el gasto prorrateado a la ventana de ventas.\n")
 h = (f"{'Marca':<14}{'Venta total':>12}{'Gasto ads':>10}{'% con atrib':>12}{'ACOS':>7}"
      f"{'TACOS':>7}{'Margen min':>11}{'Margen-ads':>11}{'Veredicto':>12}")

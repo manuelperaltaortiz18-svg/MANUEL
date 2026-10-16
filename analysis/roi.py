@@ -1,11 +1,11 @@
 """Que ha pasado con las ventas cuando ha subido la inversion publicitaria.
-   Ventana identica ene-ago, Espana. El gasto anual se prorratea a esa ventana."""
+   Ventana identica ene-sep, Espana. El gasto anual se prorratea a esa ventana."""
 import csv, collections, json, re
 from parse_br import load
 from brands import brand
 from ads import ad_brand, money, col, load_ads, ADS_CSV
 
-D25, D26, W = 365, 288, 243        # dias del ano / del export 2026 / de ene-ago
+D25, D26, W = 365, 288, 273        # dias del ano / del export 2026 / de ene-sep
 
 def n(s):
     try: return float((s or '').strip())
@@ -23,10 +23,10 @@ A26 = collections.Counter()
 for b, v in load_ads(ADS_CSV, 'España').items():
     A26[b] += v['gasto'] * W / D26
 
-# --- ventas por marca, ene-ago ---
+# --- ventas por marca, ene-sep ---
 def ventas(anio):
     g = collections.Counter()
-    for m in [f'{anio}-{i:02d}' for i in range(1, 9)]:
+    for m in [f'{anio}-{i:02d}' for i in range(1, 10)]:
         for r in load(f'mensual/{m}.csv'): g[brand(r)] += r['sales']
     return g
 V25, V26 = ventas(2025), ventas(2026)
@@ -54,7 +54,7 @@ json.dump(filas, open('roi.json', 'w'), ensure_ascii=False)
 if __name__ == '__main__':
     T = {k: sum(f[k] for f in filas) for k in ('v25','v26','dv','a25','a26','da','mg_extra','neto')}
     print("¿HA SALIDO A CUENTA SUBIR LA PUBLICIDAD?")
-    print("Ventana identica ene-ago, Espana. Margen = el minimo de tu rango.\n")
+    print("Ventana identica ene-sep, Espana. Margen = el minimo de tu rango.\n")
     print(f"  Ventas    {T['v25']:>11,.0f}  ->  {T['v26']:>11,.0f}   {T['dv']:>+11,.0f}  ({100*T['dv']/T['v25']:+.0f}%)")
     print(f"  Publicidad{T['a25']:>11,.0f}  ->  {T['a26']:>11,.0f}   {T['da']:>+11,.0f}  ({100*T['da']/T['a25']:+.0f}%)")
     print(f"\n  Margen bruto que aporta ese crecimiento : {T['mg_extra']:>+10,.0f} EUR")

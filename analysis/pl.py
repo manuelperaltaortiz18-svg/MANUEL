@@ -11,12 +11,15 @@ for r in csv.DictReader(open('costes/margenes.tsv', encoding='utf-8'), delimiter
     d = {k: (n(v) if k not in ('SKU','PCT') else v) for k, v in r.items()}
     COSTES[d['SKU']] = d
 
-rows = load('data_BusinessReport_2026ytd_22sep.csv')
+# Ventas 2026: enero a septiembre, meses completos (unidades y ventas suman bien
+# entre meses; las sesiones no, pero aqui no se usan).
+MESES_26 = [f'2026-{i:02d}' for i in range(1, 10)]
 V = collections.defaultdict(lambda: dict(u=0.0, v=0.0, title='', brand='', asin=''))
-for r in rows:
-    a = V[r['sku']]
-    a['u'] += r['units']; a['v'] += r['sales']
-    a['title'] = r['title']; a['brand'] = brand(r); a['asin'] = r['child']
+for _m in MESES_26:
+    for r in load(f'mensual/{_m}.csv'):
+        a = V[r['sku']]
+        a['u'] += r['units']; a['v'] += r['sales']
+        a['title'] = r['title']; a['brand'] = brand(r); a['asin'] = r['child']
 
 # emparejar SKU de coste -> SKUs de venta (admite sufijos FBA/FBM/_/us...)
 casados = collections.defaultdict(list)
@@ -31,7 +34,7 @@ if __name__ == '__main__':
     todos = {s for hs in casados.values() for s in hs}
     cu = sum(V[s]['u'] for s in todos); cv = sum(V[s]['v'] for s in todos)
     TU = sum(a['u'] for a in V.values()); TV = sum(a['v'] for a in V.values())
-    print("COBERTURA DE LA TABLA DE COSTES (ventas 2026 hasta 22 sep)\n")
+    print("COBERTURA DE LA TABLA DE COSTES (ventas 2026 ene-sep)\n")
     print(f"  SKUs con coste declarado : {len(COSTES)}   |   SKUs con venta 2026: {len(V)}")
     print(f"  SKUs de venta que casan  : {len(todos)}")
     print(f"  Cubren {cv:,.0f} EUR de {TV:,.0f} ({100*cv/TV:.1f}%) | {cu:,.0f} uds de {TU:,.0f} ({100*cu/TU:.1f}%)")

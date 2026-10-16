@@ -25,8 +25,8 @@ def window(meses):
         a['p']    = a['v']/a['uds'] if a['uds'] else 0
     return acc
 
-A = window([f'2025-{m:02d}' for m in range(1,9)])
-B = window([f'2026-{m:02d}' for m in range(1,9)])
+A = window([f'2025-{m:02d}' for m in range(1,10)])
+B = window([f'2026-{m:02d}' for m in range(1,10)])
 Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0, skus=set())
 
 def descompon(a, b):
@@ -71,7 +71,7 @@ def tabla(fs, titulo):
               f"{f['bb0']:>5.0f}%{f['bb1']:>5.0f}%{f['c0']:>5.1f}%{f['c1']:>5.1f}%"
               f"{f['p0']:>6.1f}{f['p1']:>6.1f}  {f['causa']:<13}{f['sku'][:23]:<24} {f['title'][:42]}")
 
-print(f"ESPANA — ene-ago 2025 vs ene-ago 2026, {len(filas)} ASINs con >300 EUR en algun periodo")
+print(f"ESPANA — ene-sep 2025 vs ene-sep 2026, {len(filas)} ASINs con >300 EUR en algun periodo")
 print(f"Delta neto: {TOT_D:>+,.0f} EUR   |   {len(pos)} suben (+{sum(f['d'] for f in pos):,.0f})"
       f"   |   {len(neg)} bajan ({sum(f['d'] for f in neg):,.0f})")
 tabla(filas[:20], "=== LOS 20 QUE MAS VENTA PIERDEN ===")

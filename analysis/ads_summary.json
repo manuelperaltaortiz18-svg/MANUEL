@@ -1,38 +1,38 @@
 {
- "periodo": "gasto 1 ene – 15 oct 2026 (completo, 98,9% del declarado) · ventas 1 ene – 22 sep 2026 · España",
+ "periodo": "gasto 1 ene – 15 oct 2026 (completo) · ventas 1 ene – 30 sep 2026 · España",
  "nota": "gasto prorrateado a la ventana de ventas; el ACOS solo usa las campañas con venta atribuida conocida",
  "rows": [
   {
    "marca": "Arcos",
-   "v": 1275996,
-   "gasto": 12993,
+   "v": 1323782,
+   "gasto": 13386,
    "gasto_bruto": 14121,
    "vta": 12501,
    "clics": 51818,
    "cob": 11.0,
    "acos": 12.8,
-   "tacos": 1.02,
+   "tacos": 1.01,
    "lo": 15,
    "hi": 25,
-   "neto": 178406
+   "neto": 185182
   },
   {
    "marca": "Cuperinox",
-   "v": 515151,
-   "gasto": 35441,
+   "v": 544185,
+   "gasto": 36511,
    "gasto_bruto": 38517,
    "vta": 114956,
    "clics": 122957,
    "cob": 39.0,
    "acos": 12.9,
-   "tacos": 6.88,
+   "tacos": 6.71,
    "lo": 25,
    "hi": 35,
-   "neto": 93347
+   "neto": 99535
   },
   {
    "marca": "Hendi",
-   "v": 285277,
+   "v": 292143,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -42,12 +42,12 @@
    "tacos": 0.0,
    "lo": 20,
    "hi": 35,
-   "neto": 57055
+   "neto": 58429
   },
   {
    "marca": "Vinfermaton",
-   "v": 205874,
-   "gasto": 6199,
+   "v": 212282,
+   "gasto": 6386,
    "gasto_bruto": 6737,
    "vta": 14456,
    "clics": 20620,
@@ -56,11 +56,11 @@
    "tacos": 3.01,
    "lo": 15,
    "hi": 25,
-   "neto": 24683
+   "neto": 25457
   },
   {
    "marca": "Wins",
-   "v": 30297,
+   "v": 31671,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -70,25 +70,25 @@
    "tacos": 0.0,
    "lo": 15,
    "hi": 25,
-   "neto": 4545
+   "neto": 4751
   },
   {
    "marca": "Bioleaf",
-   "v": 17452,
-   "gasto": 3362,
+   "v": 18113,
+   "gasto": 3464,
    "gasto_bruto": 3654,
    "vta": 8779,
    "clics": 8142,
    "cob": 102.0,
    "acos": 42.6,
-   "tacos": 19.27,
+   "tacos": 19.12,
    "lo": 15,
    "hi": 25,
-   "neto": -744
+   "neto": -747
   },
   {
    "marca": "Sin marca",
-   "v": 14620,
+   "v": 11128,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -98,11 +98,11 @@
    "tacos": 0.0,
    "lo": 15,
    "hi": 25,
-   "neto": 2193
+   "neto": 1669
   },
   {
    "marca": "Vinfer",
-   "v": 9311,
+   "v": 9953,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -112,11 +112,11 @@
    "tacos": 0.0,
    "lo": 15,
    "hi": 25,
-   "neto": 1397
+   "neto": 1493
   },
   {
    "marca": "Vincare",
-   "v": 2054,
+   "v": 2144,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -126,25 +126,11 @@
    "tacos": 0.0,
    "lo": 15,
    "hi": 25,
-   "neto": 308
-  },
-  {
-   "marca": "Tradineur",
-   "v": 1218,
-   "gasto": 0,
-   "gasto_bruto": 0,
-   "vta": 0,
-   "clics": 0,
-   "cob": 0,
-   "acos": 0,
-   "tacos": 0.0,
-   "lo": 15,
-   "hi": 25,
-   "neto": 183
+   "neto": 322
   },
   {
    "marca": "La Garrafita",
-   "v": 1120,
+   "v": 1350,
    "gasto": 0,
    "gasto_bruto": 0,
    "vta": 0,
@@ -154,7 +140,21 @@
    "tacos": 0.0,
    "lo": 15,
    "hi": 25,
-   "neto": 168
+   "neto": 203
+  },
+  {
+   "marca": "Tradineur",
+   "v": 1336,
+   "gasto": 0,
+   "gasto_bruto": 0,
+   "vta": 0,
+   "clics": 0,
+   "cob": 0,
+   "acos": 0,
+   "tacos": 0.0,
+   "lo": 15,
+   "hi": 25,
+   "neto": 200
   }
  ]
 }
