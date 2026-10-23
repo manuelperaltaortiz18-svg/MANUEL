@@ -475,6 +475,17 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
 
 <section id="adsSec" data-tab="publi" data-ord="1" hidden>
   <div class="shead">
+    <h2>Publicidad por mercado</h2>
+    <p id="apHead"></p>
+  </div>
+  <div class="bar">
+    <div class="seg" id="apSeg" role="group" aria-label="Mercado"></div>
+  </div>
+  <div class="kpis" id="apKpis"></div>
+  <div class="scroll" style="margin-top:16px"><table id="apTab"></table></div>
+  <p class="note" id="apNota"></p>
+
+  <div class="shead" style="margin-top:34px">
     <h2>Publicidad frente a negocio real</h2>
     <p id="adsSub"></p>
   </div>
@@ -1541,6 +1552,66 @@ if(D.mercados && D.mercados.length){
     (${int(peor.quema_ses)} sesiones, ${dec(peor.quema_pct,1)}% de su tráfico).
     <strong>${mejor.nombre}</strong> es el mercado más eficiente por sesión
     (${dec(mejor.eur)} €), aunque no el mayor.`;
+}
+
+/* ---------- publicidad por mercado ---------- */
+if(D.adsPais && D.adsPais.paises && D.adsPais.paises.length){
+  $('#adsSec').hidden = false;
+  const PS = D.adsPais.paises, VEN = D.adsPais.ventana || '';
+  let selP = PS[0].code;
+  $('#apSeg').innerHTML = PS.map(p =>
+    `<button data-p="${p.code}" aria-pressed="${p.code===selP}">${p.nombre}</button>`).join('');
+
+  function pintaPais(){
+    const o = PS.find(x => x.code===selP), a = o.a, b = o.b;
+    const d2 = (n,o_) => (n!=null && o_!=null) ? dSpan(pct(n,o_)) : '';
+    $('#apHead').innerHTML = `Ventana <strong>${VEN}</strong> en los dos años, idéntica, para que
+      la comparación sea limpia. El ACOS incluye el arrastre a otros productos del catálogo.`;
+    $('#apKpis').innerHTML = [
+      ['Gasto',            eur(b.c),                        d2(b.c, a&&a.c)],
+      ['Venta atribuida',  eur(b.v),                        d2(b.v, a&&a.v)],
+      ['ROAS',             b.roas!=null?dec(b.roas,2)+'×':'—',  a&&a.roas!=null?`2025: ${dec(a.roas,2)}×`:''],
+      ['ACOS',             b.acos!=null?dec(b.acos,1)+'%':'—',  a&&a.acos!=null?`2025: ${dec(a.acos,1)}%`:''],
+      ['CPC',              b.cpc!=null?dec(b.cpc,3)+' €':'—',   a&&a.cpc!=null?`2025: ${dec(a.cpc,3)} €`:''],
+      ['Arrastre',         b.halo!=null?dec(b.halo,1)+'%':'—',  'de la venta atribuida']
+    ].map(([k,v,d]) => `<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+      <div class="d">${d||''}</div></div>`).join('');
+
+    const M = o.marcas.filter(m => m.b);
+    $('#apTab').innerHTML = `<thead><tr><th>Marca</th><th>Gasto 2025</th><th>Gasto 2026</th>
+      <th>Venta atribuida</th><th>ACOS 2025</th><th>ACOS 2026</th><th>Equilibrio</th>
+      <th>Veredicto</th></tr></thead><tbody>` + M.map(m => {
+      const A_=m.a, B_=m.b, eq=m.eq;
+      const sobra = (eq!=null && B_.acos!=null) ? B_.acos - eq : null;
+      const pill = sobra==null ? '<span style="color:var(--ink-3)">sin coste</span>'
+        : sobra > 2  ? `<span class="pill b">pierde ${dec(sobra,1)} pp</span>`
+        : sobra > -2 ? `<span class="pill w">al límite</span>`
+        : `<span class="pill g">margen de ${dec(-sobra,1)} pp</span>`;
+      return `<tr><td>${m.marca}</td>
+        <td class="n">${A_?eur(A_.c):'<span style="color:var(--ink-3)">—</span>'}</td>
+        <td class="n"><strong>${eur(B_.c)}</strong></td>
+        <td class="n">${eur(B_.v)}</td>
+        <td class="n">${A_&&A_.acos!=null?dec(A_.acos,1)+'%':'—'}</td>
+        <td class="n">${B_.acos!=null?dec(B_.acos,1)+'%':'—'}</td>
+        <td class="n" style="color:var(--ink-3)">${eq!=null?dec(eq,1)+'%':'—'}</td>
+        <td class="n">${pill}</td></tr>`;
+    }).join('') + `</tbody>`;
+
+    const tot = PS.reduce((s_,p) => s_ + p.b.c, 0);
+    $('#apNota').innerHTML = `<strong>${o.nombre}</strong> es el ${dec(100*o.c_share,1)}% del gasto
+      publicitario (${eur(o.b.c)} de ${eur(tot)}). «Equilibrio» es el ACOS a partir del cual el
+      producto deja de aportar margen, calculado con coste real donde lo tenemos y con el margen
+      declarado en Arcos. Un mercado por encima de su equilibrio compra ventas por debajo de coste.`;
+  }
+
+  PS.forEach(p => { p.c_share = p.b.c / PS.reduce((s_,q)=>s_+q.b.c,0); });
+  $('#apSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    selP = b.dataset.p;
+    [...$('#apSeg').children].forEach(x => x.setAttribute('aria-pressed', x.dataset.p===selP));
+    pintaPais();
+  });
+  pintaPais();
 }
 
 /* ---------- ads ---------- */
