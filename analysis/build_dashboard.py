@@ -130,7 +130,7 @@ for nombre, path, meses, etiqueta in MERCADOS:
 mercados.sort(key=lambda d: -d['vmes'])
 payload['mercados'] = mercados
 
-for _k, _f in (('asinYoY','asin_yoy.json'), ('asinFR','asin_yoy_fr.json'), ('inv','inventario.json'), ('pnl','pnl.json'), ('canal','canal.json'), ('vinfer','vinfer_pl.json'), ('adsYoY','ads_yoy.json'), ('adsAsin','ads_asin_2025.json'), ('roi','roi.json'), ('ritmo','ritmo.json'), ('adsPais','ads_pais.json')):
+for _k, _f in (('asinYoY','asin_yoy.json'), ('asinFR','asin_yoy_fr.json'), ('inv','inventario.json'), ('pnl','pnl.json'), ('canal','canal.json'), ('vinfer','vinfer_pl.json'), ('adsYoY','ads_yoy.json'), ('adsAsin','ads_asin_2025.json'), ('roi','roi.json'), ('ritmo','ritmo.json'), ('adsPais','ads_pais.json'), ('b2b','b2b.json')):
     try:
         payload[_k] = json.load(open(_f, encoding='utf-8'))
     except FileNotFoundError:

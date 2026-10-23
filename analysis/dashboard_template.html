@@ -304,6 +304,32 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
 </section>
 
+<section id="b2bSec" data-tab="b2b" data-ord="1" hidden>
+  <div class="shead">
+    <h2>Canal B2B · red comercial</h2>
+    <p id="b2bSub"></p>
+  </div>
+  <div class="kpis" id="b2bKpis"></div>
+  <div class="shead" style="margin-top:30px">
+    <h2 style="font-size:17px">Comercial a comercial</h2>
+    <p id="b2bHead"></p>
+  </div>
+  <div class="bar">
+    <div class="seg" id="b2bSeg" role="group" aria-label="Ventana">
+      <button data-v="lfl" aria-pressed="true">Ventana comparable</button>
+      <button data-v="anual" aria-pressed="false">Año completo</button>
+    </div>
+  </div>
+  <div class="scroll"><table id="b2bTab"></table></div>
+  <p class="note" id="b2bNota"></p>
+  <div class="shead" style="margin-top:30px">
+    <h2 style="font-size:17px">Estacionalidad del canal</h2>
+    <p id="b2bEstHead"></p>
+  </div>
+  <div class="scroll"><table id="b2bMes"></table></div>
+  <p class="note" id="b2bAviso"></p>
+</section>
+
 <section data-tab="buybox" data-ord="1">
   <div class="shead">
     <h2>BuyBox perdido</h2>
@@ -1908,6 +1934,84 @@ if(D.ritmo && D.ritmo.filas.length){
 
 /* ---------- pestanas ---------- */
 (function(){
+/* ---------- B2B red comercial ---------- */
+if(D.b2b && D.b2b.filas && D.b2b.filas.length){
+  $('#b2bSec').hidden = false;
+  const B = D.b2b, AN = B.anios, U = AN[AN.length-1], P = AN[AN.length-2], W = B.ventana;
+  const ML = B.meses_lab, wLab2 = `ene–${ML[W-1]}`;
+  let vista = 'lfl';
+
+  const vr = (b,a) => a ? dSpan(pct(b,a)) : (b ? '<span class="up">nuevo</span>' : '');
+  $('#b2bSub').innerHTML = `Facturación del canal de comerciales, de ${AN[0]} a ${U}.
+    Los datos de ${U} llegan a <strong>${ML[W-1]}</strong>, así que la comparación por defecto
+    usa la ventana <strong>${wLab2}</strong> de cada año. Fuente: hoja mensual del fichero de
+    rendimiento comercial.`;
+  $('#b2bKpis').innerHTML = [
+    [`Canal ${wLab2} ${U}`, eur(B.lfl[U]), vr(B.lfl[U], B.lfl[P])],
+    [`Año ${P} completo`,   eur(B.total[P]), `${AN[0]}: ${eur(B.total[AN[0]])}`],
+    ['Desde ' + AN[0],      dec(100*(B.total[P]/B.total[AN[0]]-1),0)+'%', 'año completo, acumulado'],
+    ['Comerciales activos', int(B.filas.filter(f=>f.activo).length), `de ${int(B.filas.length)} en la serie`],
+    ['Mayor comercial',     B.filas[0].comercial, `${dec(100*B.filas[0].lfl[U]/B.lfl[U],0)}% del canal`]
+  ].map(([k,v,d]) => `<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d||''}</div></div>`).join('');
+
+  function pintaB2B(){
+    const key = vista==='lfl' ? 'lfl' : 'anual';
+    const tot = AN.reduce((o,y)=>(o[y]=B.filas.reduce((s,f)=>s+f[key][y],0),o),{});
+    const max = Math.max(...B.filas.map(f=>f[key][U]));
+    $('#b2bHead').innerHTML = vista==='lfl'
+      ? `Ventana <strong>${wLab2}</strong> de cada año: es la única comparación limpia, porque ${U}
+         está incompleto.`
+      : `Año natural completo. <strong>${U} está incompleto</strong> (hasta ${ML[W-1]}): no lo
+         compares con los anteriores en esta vista.`;
+    $('#b2bTab').innerHTML = `<thead><tr><th>Comercial</th>` +
+      AN.map(y=>`<th>${y}</th>`).join('') +
+      `<th>${U} vs ${P}</th><th>Peso en ${U}</th></tr></thead><tbody>` +
+      B.filas.map(f=>{
+        const b=f[key][U], a=f[key][P];
+        const estado = !f.activo ? ' <span class="pill b">inactivo</span>' : '';
+        return `<tr><td><strong>${f.comercial}</strong>${estado}</td>` +
+          AN.map(y=>`<td class="n"${y===U?' style="font-weight:600"':''}>${
+            f[key][y] ? eur(f[key][y]) : '<span style="color:var(--ink-3)">—</span>'}</td>`).join('') +
+          `<td class="n">${vr(b,a)}</td>
+           <td class="n bar-cell u"><div class="fill p" style="left:0;width:${
+             max?92*b/max:0}%;background:var(--s1)"></div>
+             <span><strong>${tot[U]?dec(100*b/tot[U],1):'0'}%</strong></span></td></tr>`;
+      }).join('') +
+      `<tr style="border-top:2px solid var(--line)"><td><strong>TOTAL</strong></td>` +
+      AN.map(y=>`<td class="n"><strong>${eur(tot[y])}</strong></td>`).join('') +
+      `<td class="n">${vr(tot[U],tot[P])}</td><td></td></tr></tbody>`;
+  }
+
+  $('#b2bSeg').addEventListener('click', e => {
+    const b=e.target.closest('button'); if(!b) return;
+    vista=b.dataset.v;
+    [...$('#b2bSeg').children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.v===vista));
+    pintaB2B();
+  });
+  pintaB2B();
+
+  const M = B.mensual;
+  const maxM = Math.max(...AN.flatMap(y=>M[y]));
+  $('#b2bEstHead').innerHTML = `Facturación del canal por mes. Sirve para ver si la caída es
+    estacional o estructural.`;
+  $('#b2bMes').innerHTML = `<thead><tr><th>Año</th>` + ML.map(m=>`<th>${m}</th>`).join('') +
+    `<th>Total</th></tr></thead><tbody>` + AN.map(y=>
+    `<tr><td><strong>${y}</strong></td>` + M[y].map((v,i)=>
+      `<td class="n" style="${v?`background:color-mix(in srgb, var(--s1) ${
+        Math.round(100*v/maxM*0.55)}%, transparent)`:''}">${v?int(Math.round(v/1000))+'k':
+        '<span style="color:var(--ink-3)">—</span>'}</td>`).join('') +
+    `<td class="n"><strong>${eur(M[y].reduce((s,v)=>s+v,0))}</strong></td></tr>`).join('') +
+    `</tbody>`;
+  $('#b2bNota').innerHTML = `«Peso» es la cuota de cada comercial sobre el canal en ${U}.
+    Un comercial marcado como inactivo no tiene ventas registradas en ${U}.`;
+  $('#b2bAviso').innerHTML = `<strong>Aviso sobre el fichero de origen.</strong> La hoja
+    <em>ANUAL COMERCIALES</em> tiene la columna de ${U} desplazada una fila a partir de Ángel,
+    de modo que atribuye a cada comercial la cifra del siguiente, duplica un importe y omite a
+    Juan Antonio. Su total (492.183 €) es incorrecto. Este panel lee la hoja mensual, que sí
+    cuadra: <strong>${eur(B.total[U])}</strong>.`;
+}
+
   const NOMBRES = [
     ['resumen',    'Resumen'],
     ['asin',       'ASIN a ASIN'],
@@ -1917,6 +2021,7 @@ if(D.ritmo && D.ritmo.filas.length){
     ['pyl',        'P&L y margen'],
     ['publi',      'Publicidad'],
     ['inventario', 'Inventario'],
+    ['b2b',        'Red comercial'],
     ['buybox',     'BuyBox perdido'],
   ];
   const secs = [...document.querySelectorAll('section[data-tab]')];
