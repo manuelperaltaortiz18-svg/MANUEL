@@ -2003,8 +2003,20 @@ if(D.b2b && D.b2b.filas && D.b2b.filas.length){
         '<span style="color:var(--ink-3)">—</span>'}</td>`).join('') +
     `<td class="n"><strong>${eur(M[y].reduce((s,v)=>s+v,0))}</strong></td></tr>`).join('') +
     `</tbody>`;
+  let relTxt = '';
+  (B.relevos || []).forEach(r => {
+    const serie = AN.map(y => `${y}: <strong>${eur(r.lfl[y])}</strong>`).join(' · ');
+    relTxt += `<br><strong>Plaza de ${r.plaza}</strong> (${r.de} → ${r.a}), sumando a los dos:
+      ${serie}. El relevo costó un bache en ${AN[AN.length-2]} y ya está casi recuperado.`;
+  });
+  if(B.resto){
+    const a = B.resto[P], b = B.resto[U];
+    relTxt += `<br><strong>El resto de la red, sin las plazas en relevo</strong>, pasa de
+      ${eur(a)} a ${eur(b)} en la misma ventana: <strong>${dec(100*(b/a-1),1)}%</strong>.
+      La caída del canal no se explica por los relevos — es más profunda sin ellos.`;
+  }
   $('#b2bNota').innerHTML = `«Peso» es la cuota de cada comercial sobre el canal en ${U}.
-    Un comercial marcado como inactivo no tiene ventas registradas en ${U}.`;
+    Un comercial marcado como inactivo no tiene ventas registradas en ${U}.` + relTxt;
   $('#b2bAviso').innerHTML = `<strong>Aviso sobre el fichero de origen.</strong> La hoja
     <em>ANUAL COMERCIALES</em> tiene la columna de ${U} desplazada una fila a partir de Ángel,
     de modo que atribuye a cada comercial la cifra del siguiente, duplica un importe y omite a
