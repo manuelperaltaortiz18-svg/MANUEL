@@ -1,0 +1,825 @@
+{
+ "desde": "01/01/2025",
+ "hasta": "24/10/2026",
+ "meses": 22.0,
+ "total": 510032.07,
+ "uds": 11921,
+ "refs": 1835,
+ "cuadra": true,
+ "total_declarado": 510032.07,
+ "plataformas": [
+  {
+   "k": "Makro España",
+   "v": 399541.09,
+   "u": 10023,
+   "n": 1315,
+   "mes": 18160.96
+  },
+  {
+   "k": "Makro Portugal",
+   "v": 96538.39,
+   "u": 1573,
+   "n": 446,
+   "mes": 4388.11
+  },
+  {
+   "k": "Metro Italia",
+   "v": 11114.35,
+   "u": 241,
+   "n": 48,
+   "mes": 505.2
+  },
+  {
+   "k": "Makro Países Bajos",
+   "v": 2838.24,
+   "u": 84,
+   "n": 26,
+   "mes": 129.01
+  }
+ ],
+ "marcas": [
+  {
+   "k": "Hendi",
+   "v": 472756.79,
+   "u": 9948,
+   "n": 1642,
+   "mes": 21488.94
+  },
+  {
+   "k": "Arcos",
+   "v": 23336.95,
+   "u": 1169,
+   "n": 142,
+   "mes": 1060.77
+  },
+  {
+   "k": "Cuperinox",
+   "v": 8694.54,
+   "u": 431,
+   "n": 17,
+   "mes": 395.21
+  },
+  {
+   "k": "Vinfer",
+   "v": 3094.85,
+   "u": 300,
+   "n": 22,
+   "mes": 140.67
+  },
+  {
+   "k": "Sin clasificar",
+   "v": 2148.94,
+   "u": 73,
+   "n": 12,
+   "mes": 97.68
+  }
+ ],
+ "categorias": [
+  {
+   "k": "Catering equipment",
+   "v": 256108.71,
+   "u": 1475,
+   "n": 371,
+   "mes": 11641.3
+  },
+  {
+   "k": "Catering accessories",
+   "v": 136097.35,
+   "u": 5644,
+   "n": 908,
+   "mes": 6186.24
+  },
+  {
+   "k": "Hotel & front of house",
+   "v": 84029.05,
+   "u": 3832,
+   "n": 404,
+   "mes": 3819.5
+  },
+  {
+   "k": "Cleaning",
+   "v": 11509.97,
+   "u": 433,
+   "n": 61,
+   "mes": 523.18
+  },
+  {
+   "k": "BBQ",
+   "v": 8590.88,
+   "u": 201,
+   "n": 24,
+   "mes": 390.49
+  },
+  {
+   "k": "Household",
+   "v": 8424.45,
+   "u": 91,
+   "n": 23,
+   "mes": 382.93
+  },
+  {
+   "k": "Disposables",
+   "v": 2269.87,
+   "u": 102,
+   "n": 22,
+   "mes": 103.18
+  },
+  {
+   "k": "DIY, Maintenance & Tools",
+   "v": 1805.75,
+   "u": 61,
+   "n": 11,
+   "mes": 82.08
+  },
+  {
+   "k": "Office",
+   "v": 703.96,
+   "u": 54,
+   "n": 6,
+   "mes": 32.0
+  },
+  {
+   "k": "Gardening",
+   "v": 264.42,
+   "u": 4,
+   "n": 3,
+   "mes": 12.02
+  },
+  {
+   "k": "Personal care & health",
+   "v": 165.66,
+   "u": 14,
+   "n": 1,
+   "mes": 7.53
+  },
+  {
+   "k": "Work wear",
+   "v": 62.0,
+   "u": 10,
+   "n": 1,
+   "mes": 2.82
+  }
+ ],
+ "top": [
+  {
+   "mpn": "230688",
+   "gtin": "8711369230688",
+   "nombre": "HENDI, Batidora con cubierta antirruido para bares, 2,5L, Negro, 220-2",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Hand mixers",
+   "v": 13214.77,
+   "u": 46,
+   "pvp": 287.28
+  },
+  {
+   "mpn": "225899",
+   "gtin": "8711369225899",
+   "nombre": "Fogão Linha Cozinha - 6 bocas com forno elétrico de convecção GN 1/1 ,",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Gas hobs professional",
+   "v": 8815.75,
+   "u": 3,
+   "pvp": 2938.58
+  },
+  {
+   "mpn": "232187",
+   "gtin": "8711369232187",
+   "nombre": "Congelador rápido Arktic para 10xGN1/1 o 10xEN y 1 puerta fabricado en",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Shock freezers",
+   "v": 7051.0,
+   "u": 2,
+   "pvp": 3525.5
+  },
+  {
+   "mpn": "470411",
+   "gtin": "8711369470411",
+   "nombre": "HENDI, Chafing dish HENDI UNIQ, Negro, 220-240V/700W, 607x402x(H)245mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Chafing dishes professional",
+   "v": 5920.15,
+   "u": 43,
+   "pvp": 137.68
+  },
+  {
+   "mpn": "227060",
+   "gtin": "8711369227060",
+   "nombre": "Horno de convección Hendi H90 con 2670W hasta 300°C y 2 ventiladores 4",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Convection ovens",
+   "v": 5798.3,
+   "u": 12,
+   "pvp": 483.19
+  },
+  {
+   "mpn": "508831",
+   "gtin": "8711369508831",
+   "nombre": "Bandeja de servicio oval XL, HENDI, 735x600mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Trays professional",
+   "v": 5306.14,
+   "u": 86,
+   "pvp": 61.7
+  },
+  {
+   "mpn": "630402",
+   "gtin": "8711369630402",
+   "nombre": "Cortador de patatas fritas, HENDI, 430x168x(H)290mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Cutters",
+   "v": 5135.77,
+   "u": 36,
+   "pvp": 142.66
+  },
+  {
+   "mpn": "877906",
+   "gtin": "8711369877906",
+   "nombre": "Carro portaplatos Hendi para transportar 6 pilas de 50 platos y 4 rued",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Trolleys",
+   "v": 4535.2,
+   "u": 6,
+   "pvp": 755.87
+  },
+  {
+   "mpn": "232798",
+   "gtin": "8711369232798",
+   "nombre": "Arktic Saladette con protección higiénica transparente y 3 puertas y 3",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Salad bars",
+   "v": 3935.46,
+   "u": 3,
+   "pvp": 1311.82
+  },
+  {
+   "mpn": "274156",
+   "gtin": "8711369274156",
+   "nombre": "Fuente de chocolate Hendi de 5 niveles Ø332mm y 265W fabricada en acer",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Chocolate warmers",
+   "v": 3695.2,
+   "u": 11,
+   "pvp": 335.93
+  },
+  {
+   "mpn": "229026",
+   "gtin": "8711369229026",
+   "nombre": "Deshidratador Hendi Profi Line con 10 estantes 1000W digital y puerta ",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Dehydrators",
+   "v": 3058.1,
+   "u": 10,
+   "pvp": 305.81
+  },
+  {
+   "mpn": "227060",
+   "gtin": "8711369227060",
+   "nombre": "Forno de convecção H90, HENDI, 62L, 230V/2670W, 595x624x(H)572mm",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Convection ovens",
+   "v": 2974.8,
+   "u": 6,
+   "pvp": 495.8
+  },
+  {
+   "mpn": "221761",
+   "gtin": "8711369221761",
+   "nombre": "Robot de cocina multiusos HENDICHEF, HENDI, 230V/1400W, 210x380x(H)320",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Kitchen machines",
+   "v": 2973.75,
+   "u": 5,
+   "pvp": 594.75
+  },
+  {
+   "mpn": "274163",
+   "gtin": "8711369274163",
+   "nombre": "Fuente de chocolate Hendi de 6 niveles Ø372mm y 300W fabricada en acer",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Chocolate warmers",
+   "v": 2967.49,
+   "u": 6,
+   "pvp": 494.58
+  },
+  {
+   "mpn": "470411",
+   "gtin": "8711369470411",
+   "nombre": "Chafing dish UNIQ , HENDI, Preto, 220-240V/700W, 607x402x(H)245mm",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Chafing dishes professional",
+   "v": 2958.31,
+   "u": 20,
+   "pvp": 147.92
+  },
+  {
+   "mpn": "702000",
+   "gtin": "28421002702000",
+   "nombre": "Arcos Cuchillos Chuletero, Monoblock de una pieza, Acero Inoxidable 11",
+   "plat": "Makro España",
+   "marca": "Arcos",
+   "cat": "Cutlery sets professional",
+   "v": 2892.41,
+   "u": 76,
+   "pvp": 38.06
+  },
+  {
+   "mpn": "261354",
+   "gtin": "8711369261354",
+   "nombre": "Tostadora con cinta transportadora Hendi en color negro con velocidad ",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Toasters professional",
+   "v": 2846.8,
+   "u": 7,
+   "pvp": 406.69
+  },
+  {
+   "mpn": "222393",
+   "gtin": "8711369222393",
+   "nombre": "Juego de batidora de mano Hendi con batidor y soporte de pared",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Immersion blenders",
+   "v": 2845.17,
+   "u": 10,
+   "pvp": 284.52
+  },
+  {
+   "mpn": "230695",
+   "gtin": "8711369230695",
+   "nombre": "Digital Blender Bar con carcasa insonorizada",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Hand mixers",
+   "v": 2721.46,
+   "u": 8,
+   "pvp": 340.18
+  },
+  {
+   "mpn": "226636",
+   "gtin": "8711369226636",
+   "nombre": "Rodillo de masa para pizza Hendi con funcionamiento manual de 250W par",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Dough sheeters",
+   "v": 2700.78,
+   "u": 3,
+   "pvp": 900.26
+  },
+  {
+   "mpn": "233344",
+   "gtin": "8711369233344",
+   "nombre": "Cámara frigorífica de dos puertas Kitchen Line (220 litros), Arktic, K",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Horizontal showcase refrigerators (customer facing)",
+   "v": 2685.11,
+   "u": 2,
+   "pvp": 1342.56
+  },
+  {
+   "mpn": "225806",
+   "gtin": "8711369225806",
+   "nombre": "Cocina de gas Hendi - 5 quemadores con soporte para sartenes y base ab",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Gas hobs professional",
+   "v": 2498.42,
+   "u": 2,
+   "pvp": 1249.21
+  },
+  {
+   "mpn": "154922",
+   "gtin": "8711369154922",
+   "nombre": "HENDI, Plancha Eléctrica, Kitchen Line, 220-240V/2000W, 326x445x(H)225",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Griddles",
+   "v": 2399.88,
+   "u": 13,
+   "pvp": 184.61
+  },
+  {
+   "mpn": "230213",
+   "gtin": "8711369230213",
+   "nombre": "Batidora de alta potencia sin BPA - HENDI",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Countertop blenders",
+   "v": 2394.04,
+   "u": 12,
+   "pvp": 199.5
+  },
+  {
+   "mpn": "250174",
+   "gtin": "8711369250174",
+   "nombre": "Armario calientaplatos Hendi 108 piezas Ø240mm / 64 piezas Ø330mm con ",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Hot cabinets",
+   "v": 2339.19,
+   "u": 4,
+   "pvp": 584.8
+  },
+  {
+   "mpn": "212127",
+   "gtin": "8711369212127",
+   "nombre": "Plancha para gofres Hendi Bruselas 2 modelos rectangulares de acero in",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Waffle irons professional",
+   "v": 2336.3,
+   "u": 9,
+   "pvp": 259.59
+  },
+  {
+   "mpn": "221433",
+   "gtin": "8711369221433",
+   "nombre": "Hendi Armário de maturação de carne, 233L, 595x760x1270mm",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Dry-Aging fridges and cabinets",
+   "v": 2325.0,
+   "u": 1,
+   "pvp": 2325.0
+  },
+  {
+   "mpn": "933688",
+   "gtin": "8711369933688",
+   "nombre": "Jarra para batidora sin BPA, HENDI, 2,5L, 200x170x(H)360mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Countertop blenders",
+   "v": 2320.71,
+   "u": 21,
+   "pvp": 110.51
+  },
+  {
+   "mpn": "239346",
+   "gtin": "8711369239346",
+   "nombre": "Placa de indução modelo 7000, HENDI, Profi Line, 400V/7000W, 405x698x(",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Stoves",
+   "v": 2319.3,
+   "u": 3,
+   "pvp": 773.1
+  },
+  {
+   "mpn": "221600",
+   "gtin": "8711369221600",
+   "nombre": "Batidora- Design by Bronwasser, HENDI, Negro, 220-240V/400W, 170x196x(",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Countertop blenders",
+   "v": 2206.51,
+   "u": 17,
+   "pvp": 129.79
+  },
+  {
+   "mpn": "810125",
+   "gtin": "8711369810125",
+   "nombre": "Carrito de servicio Hendi con 5 estantes y 4 ruedas, 2 de ellas con fr",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Trolleys",
+   "v": 2203.0,
+   "u": 8,
+   "pvp": 275.38
+  },
+  {
+   "mpn": "267264",
+   "gtin": "8711369267264",
+   "nombre": "Cuchillo para kebab Hendi con 1 hoja lisa y 1 dentada Ø80mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Kebab Grills",
+   "v": 2200.25,
+   "u": 9,
+   "pvp": 244.47
+  },
+  {
+   "mpn": "232811",
+   "gtin": "8711369232811",
+   "nombre": "Arktic Saladette con tapa y 3 puertas 3 estantes de acero inoxidable",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Salad bars",
+   "v": 2180.75,
+   "u": 2,
+   "pvp": 1090.38
+  },
+  {
+   "mpn": "943489",
+   "gtin": "8711369943489",
+   "nombre": "Jarra para batidora con cuchillas recubiertas de titanio",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Hand mixers",
+   "v": 2138.9,
+   "u": 24,
+   "pvp": 89.12
+  },
+  {
+   "mpn": "707944",
+   "gtin": "8711369707944",
+   "nombre": "Hendi Thermobox Profi Line 80 litros de EPP",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Insulated Food Boxes",
+   "v": 2087.74,
+   "u": 27,
+   "pvp": 77.32
+  },
+  {
+   "mpn": "271575",
+   "gtin": "8711369271575",
+   "nombre": "Máquina de fazer gelo, Arktic, 230V/300W, 448x400x(H)798mm",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Ice cube machines professional",
+   "v": 2085.0,
+   "u": 3,
+   "pvp": 695.0
+  },
+  {
+   "mpn": "201435",
+   "gtin": "8711369201435",
+   "nombre": "Envasadora al vacío Hendi Profi Line 300 de sobremesa con 950 W y 2 mo",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Vacuum machines",
+   "v": 1971.45,
+   "u": 2,
+   "pvp": 985.73
+  },
+  {
+   "mpn": "893643",
+   "gtin": "8711369274149",
+   "nombre": "Dispensador de chocolate caliente, HENDI, 10L, 230V/1006W, 410x280x(H)",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Liquid dispensers professional",
+   "v": 1931.63,
+   "u": 5,
+   "pvp": 386.33
+  },
+  {
+   "mpn": "271575",
+   "gtin": "8711369271575",
+   "nombre": "Máquina de cubitos de hielo Hendi con carcasa de acero inoxidable de 3",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Ice cube machines professional",
+   "v": 1905.99,
+   "u": 3,
+   "pvp": 635.33
+  },
+  {
+   "mpn": "250167",
+   "gtin": "8711369250167",
+   "nombre": "Armario calientaplatos Hendi 72 piezas Ø240mm / 40 piezas Ø330mm con 4",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Hot cabinets",
+   "v": 1892.62,
+   "u": 5,
+   "pvp": 378.52
+  },
+  {
+   "mpn": "146804",
+   "gtin": "8711369146804",
+   "nombre": "Parrilla de gas Hendi Fiesta 800 fabricada en acero cromado con paelle",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Gas grills",
+   "v": 1870.0,
+   "u": 2,
+   "pvp": 935.0
+  },
+  {
+   "mpn": "222140",
+   "gtin": "8711369222140",
+   "nombre": "Batidora de mano Hendi 160 de 4000 a 20000 rpm y 270W con batidora de ",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Immersion blenders",
+   "v": 1835.05,
+   "u": 13,
+   "pvp": 141.16
+  },
+  {
+   "mpn": "280800",
+   "gtin": "8421002280849",
+   "nombre": "Cuchillo cocina 30cm Universal",
+   "plat": "Makro España",
+   "marca": "Arcos",
+   "cat": "Knives professional",
+   "v": 1813.67,
+   "u": 73,
+   "pvp": 24.84
+  },
+  {
+   "mpn": "225707",
+   "gtin": "8711369225707",
+   "nombre": "Fogão a gás Hendi Fogão de 5 bicos e forno 2700W porta de vidro em aço",
+   "plat": "Makro Portugal",
+   "marca": "Hendi",
+   "cat": "Gas hobs professional",
+   "v": 1796.0,
+   "u": 1,
+   "pvp": 1796.0
+  },
+  {
+   "mpn": "893637",
+   "gtin": "8711369274125",
+   "nombre": "Hendi Dispensador de chocolate, acero inoxidable/policarbonato, 36 x 4",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Liquid dispensers professional",
+   "v": 1757.4,
+   "u": 5,
+   "pvp": 351.48
+  },
+  {
+   "mpn": "877913",
+   "gtin": "8711369877913",
+   "nombre": "Carrito para ingredientes, HENDI, 82L, 333x743x(H)711mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Trolleys",
+   "v": 1683.45,
+   "u": 11,
+   "pvp": 153.04
+  },
+  {
+   "mpn": "225448",
+   "gtin": "8711369225448",
+   "nombre": "Aparato Sous-Vide Hendi GN2/3 con tapa para cocina gourmet con 600W",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Sous vide",
+   "v": 1658.8,
+   "u": 5,
+   "pvp": 331.76
+  },
+  {
+   "mpn": "470411",
+   "gtin": "8711369470411",
+   "nombre": "Chafing dish UNIQ, HENDI, Nero, 220-240V/700W, 607x402x(H)250mm",
+   "plat": "Metro Italia",
+   "marca": "Hendi",
+   "cat": "Chafing dishes professional",
+   "v": 1654.46,
+   "u": 11,
+   "pvp": 150.41
+  },
+  {
+   "mpn": "230664",
+   "gtin": "8711369230664",
+   "nombre": "Batidora digital con caja insonorizante sin BPA - HENDI",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Countertop blenders",
+   "v": 1654.0,
+   "u": 5,
+   "pvp": 330.8
+  },
+  {
+   "mpn": "948828",
+   "gtin": "8711369222836",
+   "nombre": "Batidora planetaria",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Kitchen machines",
+   "v": 1619.5,
+   "u": 2,
+   "pvp": 809.75
+  },
+  {
+   "mpn": "239346",
+   "gtin": "8711369239346",
+   "nombre": "Cocina de inducción Hendi 2x3500W 400V Profi Line con funcionamiento m",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Stoves",
+   "v": 1617.82,
+   "u": 2,
+   "pvp": 808.91
+  },
+  {
+   "mpn": "14015_6pzs",
+   "gtin": "8435153304194",
+   "nombre": "Cuchillos de Mesa con Mango de Madera – Set 6 Cuchillos para Carne con",
+   "plat": "Makro España",
+   "marca": "Cuperinox",
+   "cat": "Steak knives",
+   "v": 1606.11,
+   "u": 117,
+   "pvp": 13.73
+  },
+  {
+   "mpn": "230602",
+   "gtin": "8711369230602",
+   "nombre": "Blender Bar con carcasa insonorizada y jarra sin BPA , HENDI, 230V/168",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Countertop blenders",
+   "v": 1496.25,
+   "u": 5,
+   "pvp": 299.25
+  },
+  {
+   "mpn": "808856",
+   "gtin": "8711369808856",
+   "nombre": "Bandeja para huevos, con recubrimiento antiadherente CONVECTOMAT EGGPL",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Baking trays professional",
+   "v": 1485.18,
+   "u": 35,
+   "pvp": 42.43
+  },
+  {
+   "mpn": "220283",
+   "gtin": "8711369220283",
+   "nombre": "Horno de pizza Hendi con ventana, de ladrillo refractario hasta 350°C ",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Pizza ovens",
+   "v": 1483.92,
+   "u": 3,
+   "pvp": 494.64
+  },
+  {
+   "mpn": "225707",
+   "gtin": "8711369225707",
+   "nombre": "Cocina a gas Hendi de 5 fuegos y horno 2700W puerta de cristal fabrica",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Gas hobs professional",
+   "v": 1464.75,
+   "u": 1,
+   "pvp": 1464.75
+  },
+  {
+   "mpn": "226827",
+   "gtin": "8711369226827",
+   "nombre": "Rallador de queso, HENDI, 30 kg/h, 230V/380W, 280x250x(H)310mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Graters",
+   "v": 1441.16,
+   "u": 4,
+   "pvp": 360.29
+  },
+  {
+   "mpn": "263655",
+   "gtin": "8711369263655",
+   "nombre": "Parrilla de contacto Hendi Panini con superficie de parrilla acanalada",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Panini contact grills",
+   "v": 1435.42,
+   "u": 7,
+   "pvp": 205.06
+  },
+  {
+   "mpn": "810507",
+   "gtin": "8711369810507",
+   "nombre": "Soporte de bandeja plegable, HENDI, 520x410x(H)800mm",
+   "plat": "Makro España",
+   "marca": "Hendi",
+   "cat": "Tray stands professional",
+   "v": 1418.25,
+   "u": 23,
+   "pvp": 61.66
+  },
+  {
+   "mpn": "20265",
+   "gtin": "8435153308673",
+   "nombre": "Soporte Jamonero Balancín | Jamonero Giratorio Profesional | Jamonero ",
+   "plat": "Makro España",
+   "marca": "Cuperinox",
+   "cat": "Ham stands",
+   "v": 1412.65,
+   "u": 19,
+   "pvp": 74.35
+  }
+ ]
+}

@@ -330,6 +330,43 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <p class="note" id="b2bAviso"></p>
 </section>
 
+<section id="mkoSec" data-tab="makro" data-ord="1" hidden>
+  <div class="shead">
+    <h2>Canal Makro / Metro</h2>
+    <p id="mkoSub"></p>
+  </div>
+  <div class="kpis" id="mkoKpis"></div>
+  <div class="shead" style="margin-top:30px">
+    <h2 style="font-size:17px">Reparto del canal</h2>
+    <p id="mkoRepHead"></p>
+  </div>
+  <div class="bar">
+    <div class="seg" id="mkoSeg" role="group" aria-label="Agrupación">
+      <button data-g="plataformas" aria-pressed="true">Por plataforma</button>
+      <button data-g="marcas" aria-pressed="false">Por marca</button>
+      <button data-g="categorias" aria-pressed="false">Por categoría</button>
+    </div>
+  </div>
+  <div class="scroll"><table id="mkoRep"></table></div>
+  <div class="shead" style="margin-top:30px">
+    <h2 style="font-size:17px">Las 60 referencias que más facturan</h2>
+    <p id="mkoTopHead"></p>
+  </div>
+  <div class="tools">
+    <input type="search" id="mkoQ" placeholder="Buscar por referencia o producto…" aria-label="Buscar">
+    <select id="mkoF" aria-label="Filtro">
+      <option value="">Todas las plataformas</option>
+      <option value="Makro España">Makro España</option>
+      <option value="Makro Portugal">Makro Portugal</option>
+      <option value="Metro Italia">Metro Italia</option>
+      <option value="Makro Países Bajos">Makro Países Bajos</option>
+    </select>
+    <span class="count" id="mkoCount"></span>
+  </div>
+  <div class="scroll"><table id="mkoTab"></table></div>
+  <p class="note" id="mkoAviso"></p>
+</section>
+
 <section data-tab="buybox" data-ord="1">
   <div class="shead">
     <h2>BuyBox perdido</h2>
@@ -2024,6 +2061,80 @@ if(D.b2b && D.b2b.filas && D.b2b.filas.length){
     cuadra: <strong>${eur(B.total[U])}</strong>.`;
 }
 
+/* ---------- Makro / Metro ---------- */
+if(D.makro && D.makro.total){
+  $('#mkoSec').hidden = false;
+  const K = D.makro, MES = K.meses;
+  let grp = 'plataformas';
+
+  $('#mkoSub').innerHTML = `Export del <strong>${K.desde}</strong> al <strong>${K.hasta}</strong>:
+    ${dec(MES,0)} meses en <strong>un solo agregado</strong>. El fichero no trae fecha por línea,
+    así que no se puede separar 2025 de 2026 — todo lo de abajo es el acumulado del periodo, y la
+    columna «€/mes» es lo que sirve para comparar con otros canales.`;
+  $('#mkoKpis').innerHTML = [
+    ['Facturación del periodo', eur(K.total), `${dec(MES,0)} meses`],
+    ['Equivalente mensual',     eur(K.total/MES), 'base de comparación'],
+    ['Ritmo anualizado',        eur(K.total/MES*12), 'si el ritmo se mantiene'],
+    ['Unidades',                int(K.uds), `${int(K.refs)} referencias`],
+    ['Ticket medio',            eur(K.total/K.uds), 'por unidad'],
+    ['Peso de Hendi', (()=>{const h=K.marcas.find(m=>m.k==='Hendi');
+      return h?dec(100*h.v/K.total,1)+'%':'—';})(), 'del canal']
+  ].map(([k,v,d]) => `<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d||''}</div></div>`).join('');
+
+  const LAB = {plataformas:'Plataforma', marcas:'Marca', categorias:'Categoría'};
+  function pintaRep(){
+    const G = K[grp], mx = Math.max(...G.map(x=>x.v));
+    $('#mkoRepHead').innerHTML = `Acumulado de ${dec(MES,0)} meses, con su equivalente mensual.`;
+    $('#mkoRep').innerHTML = `<thead><tr><th>${LAB[grp]}</th><th>Facturación</th><th>€/mes</th>
+      <th>Unidades</th><th>Referencias</th><th>Ticket medio</th><th>Peso</th></tr></thead><tbody>` +
+      G.map(x=>`<tr><td><strong>${x.k}</strong></td>
+        <td class="n">${eur(x.v)}</td>
+        <td class="n">${eur(x.mes)}</td>
+        <td class="n">${int(x.u)}</td>
+        <td class="n" style="color:var(--ink-3)">${int(x.n)}</td>
+        <td class="n">${x.u?eur(x.v/x.u):'—'}</td>
+        <td class="n bar-cell u"><div class="fill p" style="left:0;width:${92*x.v/mx}%;
+          background:var(--s1)"></div><span><strong>${dec(100*x.v/K.total,1)}%</strong></span></td>
+        </tr>`).join('') + `</tbody>`;
+  }
+  $('#mkoSeg').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    grp=b.dataset.g;
+    [...$('#mkoSeg').children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.g===grp));
+    pintaRep();
+  });
+  pintaRep();
+
+  function pintaTop(){
+    const q=($('#mkoQ').value||'').toLowerCase(), fp=$('#mkoF').value;
+    const L=K.top.filter(r=>(!fp||r.plat===fp) &&
+      (!q || r.nombre.toLowerCase().includes(q) || r.mpn.toLowerCase().includes(q)));
+    $('#mkoTopHead').innerHTML = `Ordenadas por facturación del periodo completo.`;
+    $('#mkoCount').textContent = `${int(L.length)} de ${int(K.top.length)}`;
+    $('#mkoTab').innerHTML = `<thead><tr><th>Ref.</th><th>Producto</th><th>Plataforma</th>
+      <th>Marca</th><th>Facturación</th><th>€/mes</th><th>Uds</th><th>PVP medio</th>
+      </tr></thead><tbody>` + L.map(r=>`<tr>
+        <td class="sku">${r.mpn||'—'}</td>
+        <td>${r.nombre}</td>
+        <td style="color:var(--ink-2)">${r.plat}</td>
+        <td>${r.marca}</td>
+        <td class="n"><strong>${eur(r.v)}</strong></td>
+        <td class="n">${eur(r.v/MES)}</td>
+        <td class="n">${int(r.u)}</td>
+        <td class="n">${r.pvp!=null?eur(r.pvp):'—'}</td></tr>`).join('') + `</tbody>`;
+  }
+  $('#mkoQ').addEventListener('input', pintaTop);
+  $('#mkoF').addEventListener('change', pintaTop);
+  pintaTop();
+
+  $('#mkoAviso').innerHTML = `<strong>Limitación del dato.</strong> El export es un único agregado
+    de ${K.desde} a ${K.hasta}; no hay desglose temporal, así que no se puede medir crecimiento ni
+    estacionalidad en este canal. Para tenerlos hacen falta dos exports con el filtro de fecha
+    puesto por año. El total cuadra con la fila «Total» del propio fichero
+    (${eur(K.total_declarado||K.total)}), así que no falta nada dentro del periodo.`;
+}
+
   const NOMBRES = [
     ['resumen',    'Resumen'],
     ['asin',       'ASIN a ASIN'],
@@ -2034,6 +2145,7 @@ if(D.b2b && D.b2b.filas && D.b2b.filas.length){
     ['publi',      'Publicidad'],
     ['inventario', 'Inventario'],
     ['b2b',        'Red comercial'],
+    ['makro',      'Makro'],
     ['buybox',     'BuyBox perdido'],
   ];
   const secs = [...document.querySelectorAll('section[data-tab]')];
