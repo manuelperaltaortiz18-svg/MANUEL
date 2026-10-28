@@ -337,7 +337,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   </div>
   <div class="kpis" id="mkoKpis"></div>
   <div class="shead" style="margin-top:30px">
-    <h2 style="font-size:17px">Reparto del canal</h2>
+    <h2 style="font-size:17px">2025 frente a 2026</h2>
     <p id="mkoRepHead"></p>
   </div>
   <div class="bar">
@@ -348,8 +348,9 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
     </div>
   </div>
   <div class="scroll"><table id="mkoRep"></table></div>
+  <p class="note" id="mkoRepNota"></p>
   <div class="shead" style="margin-top:30px">
-    <h2 style="font-size:17px">Las 60 referencias que más facturan</h2>
+    <h2 style="font-size:17px">Las 70 referencias que más facturan en 2026</h2>
     <p id="mkoTopHead"></p>
   </div>
   <div class="tools">
@@ -360,6 +361,11 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
       <option value="Makro Portugal">Makro Portugal</option>
       <option value="Metro Italia">Metro Italia</option>
       <option value="Makro Países Bajos">Makro Países Bajos</option>
+    </select>
+    <select id="mkoN" aria-label="Novedad">
+      <option value="">Todas</option>
+      <option value="nuevo">Solo nuevas en 2026</option>
+      <option value="baja">Solo las que bajan</option>
     </select>
     <span class="count" id="mkoCount"></span>
   </div>
@@ -2062,41 +2068,45 @@ if(D.b2b && D.b2b.filas && D.b2b.filas.length){
 }
 
 /* ---------- Makro / Metro ---------- */
-if(D.makro && D.makro.total){
+if(D.makro && D.makro.meta){
   $('#mkoSec').hidden = false;
-  const K = D.makro, MES = K.meses;
+  const K = D.makro, A = K.meta['2025'], B = K.meta['2026'];
   let grp = 'plataformas';
+  const vSpan = v => v==null ? '<span class="up">nuevo</span>' : dSpan(v);
 
-  $('#mkoSub').innerHTML = `Export del <strong>${K.desde}</strong> al <strong>${K.hasta}</strong>:
-    ${dec(MES,0)} meses en <strong>un solo agregado</strong>. El fichero no trae fecha por línea,
-    así que no se puede separar 2025 de 2026 — todo lo de abajo es el acumulado del periodo, y la
-    columna «€/mes» es lo que sirve para comparar con otros canales.`;
+  $('#mkoSub').innerHTML = `<strong>2025</strong> es año natural completo (${A.desde} →
+    ${A.hasta}); <strong>2026</strong> llega al ${B.hasta}. Para que la comparación sea limpia todo
+    se mide en <strong>€/mes</strong>, no en total. Los dos ficheros cuadran con su propia fila
+    «Total», así que no falta nada dentro de cada periodo.`;
   $('#mkoKpis').innerHTML = [
-    ['Facturación del periodo', eur(K.total), `${dec(MES,0)} meses`],
-    ['Equivalente mensual',     eur(K.total/MES), 'base de comparación'],
-    ['Ritmo anualizado',        eur(K.total/MES*12), 'si el ritmo se mantiene'],
-    ['Unidades',                int(K.uds), `${int(K.refs)} referencias`],
-    ['Ticket medio',            eur(K.total/K.uds), 'por unidad'],
-    ['Peso de Hendi', (()=>{const h=K.marcas.find(m=>m.k==='Hendi');
-      return h?dec(100*h.v/K.total,1)+'%':'—';})(), 'del canal']
+    ['€/mes 2026',       eur(B.mes),      vSpan(pct(B.mes, A.mes))],
+    ['Ritmo anualizado', eur(B.mes*12),   `2025 cerró en ${eur(A.total)}`],
+    ['Facturación 2026', eur(B.total),    `${dec(B.meses,0)} meses`],
+    ['Unidades 2026',    int(B.uds),      vSpan(pct(B.uds/B.meses, A.uds/A.meses))+' /mes'],
+    ['Referencias',      int(B.refs),     `${int(A.refs)} en 2025`],
+    ['Ticket medio',     eur(B.total/B.uds), `2025: ${eur(A.total/A.uds)}`]
   ].map(([k,v,d]) => `<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
     <div class="d">${d||''}</div></div>`).join('');
 
   const LAB = {plataformas:'Plataforma', marcas:'Marca', categorias:'Categoría'};
   function pintaRep(){
-    const G = K[grp], mx = Math.max(...G.map(x=>x.v));
-    $('#mkoRepHead').innerHTML = `Acumulado de ${dec(MES,0)} meses, con su equivalente mensual.`;
-    $('#mkoRep').innerHTML = `<thead><tr><th>${LAB[grp]}</th><th>Facturación</th><th>€/mes</th>
-      <th>Unidades</th><th>Referencias</th><th>Ticket medio</th><th>Peso</th></tr></thead><tbody>` +
+    const G = K[grp], mx = Math.max(...G.map(x=>x.m26));
+    $('#mkoRepHead').innerHTML = `Todo en €/mes: ${dec(A.meses,0)} meses de 2025 frente a
+      ${dec(B.meses,0)} de 2026.`;
+    $('#mkoRep').innerHTML = `<thead><tr><th>${LAB[grp]}</th><th>€/mes 2025</th>
+      <th>€/mes 2026</th><th>Variación</th><th>Refs 2025</th><th>Refs 2026</th>
+      <th>Peso en 2026</th></tr></thead><tbody>` +
       G.map(x=>`<tr><td><strong>${x.k}</strong></td>
-        <td class="n">${eur(x.v)}</td>
-        <td class="n">${eur(x.mes)}</td>
-        <td class="n">${int(x.u)}</td>
-        <td class="n" style="color:var(--ink-3)">${int(x.n)}</td>
-        <td class="n">${x.u?eur(x.v/x.u):'—'}</td>
-        <td class="n bar-cell u"><div class="fill p" style="left:0;width:${92*x.v/mx}%;
-          background:var(--s1)"></div><span><strong>${dec(100*x.v/K.total,1)}%</strong></span></td>
+        <td class="n">${x.m25?eur(x.m25):'<span style="color:var(--ink-3)">—</span>'}</td>
+        <td class="n"><strong>${eur(x.m26)}</strong></td>
+        <td class="n">${vSpan(x.var)}</td>
+        <td class="n" style="color:var(--ink-3)">${int(x.n25)}</td>
+        <td class="n" style="color:var(--ink-3)">${int(x.n26)}</td>
+        <td class="n bar-cell u"><div class="fill p" style="left:0;width:${mx?92*x.m26/mx:0}%;
+          background:var(--s1)"></div><span><strong>${dec(100*x.m26/B.mes,1)}%</strong></span></td>
         </tr>`).join('') + `</tbody>`;
+    $('#mkoRepNota').innerHTML = `«Refs» es cuántas referencias distintas facturaron en cada año:
+      es la medida de la ampliación de surtido, que es de donde viene buena parte del crecimiento.`;
   }
   $('#mkoSeg').addEventListener('click', e=>{
     const b=e.target.closest('button'); if(!b) return;
@@ -2107,32 +2117,36 @@ if(D.makro && D.makro.total){
   pintaRep();
 
   function pintaTop(){
-    const q=($('#mkoQ').value||'').toLowerCase(), fp=$('#mkoF').value;
+    const q=($('#mkoQ').value||'').toLowerCase(), fp=$('#mkoF').value, fn=$('#mkoN').value;
     const L=K.top.filter(r=>(!fp||r.plat===fp) &&
+      (!fn || (fn==='nuevo' ? r.nuevo : (!r.nuevo && r.v26/B.meses < r.v25/A.meses))) &&
       (!q || r.nombre.toLowerCase().includes(q) || r.mpn.toLowerCase().includes(q)));
-    $('#mkoTopHead').innerHTML = `Ordenadas por facturación del periodo completo.`;
+    $('#mkoTopHead').innerHTML = `Ordenadas por facturación de 2026, con su 2025 al lado en €/mes.`;
     $('#mkoCount').textContent = `${int(L.length)} de ${int(K.top.length)}`;
     $('#mkoTab').innerHTML = `<thead><tr><th>Ref.</th><th>Producto</th><th>Plataforma</th>
-      <th>Marca</th><th>Facturación</th><th>€/mes</th><th>Uds</th><th>PVP medio</th>
-      </tr></thead><tbody>` + L.map(r=>`<tr>
+      <th>Marca</th><th>2026</th><th>Uds</th><th>€/mes 25</th><th>€/mes 26</th><th>Var</th>
+      <th>PVP medio</th></tr></thead><tbody>` + L.map(r=>{
+        const a=r.v25/A.meses, b=r.v26/B.meses;
+        return `<tr>
         <td class="sku">${r.mpn||'—'}</td>
-        <td>${r.nombre}</td>
+        <td>${r.nombre}${r.nuevo?' <span class="pill g">nueva</span>':''}</td>
         <td style="color:var(--ink-2)">${r.plat}</td>
         <td>${r.marca}</td>
-        <td class="n"><strong>${eur(r.v)}</strong></td>
-        <td class="n">${eur(r.v/MES)}</td>
-        <td class="n">${int(r.u)}</td>
-        <td class="n">${r.pvp!=null?eur(r.pvp):'—'}</td></tr>`).join('') + `</tbody>`;
+        <td class="n"><strong>${eur(r.v26)}</strong></td>
+        <td class="n">${int(r.u26)}</td>
+        <td class="n">${r.v25?eur(a):'<span style="color:var(--ink-3)">—</span>'}</td>
+        <td class="n">${eur(b)}</td>
+        <td class="n">${r.v25?dSpan(pct(b,a)):'<span class="up">nueva</span>'}</td>
+        <td class="n">${r.pvp!=null?eur(r.pvp):'—'}</td></tr>`;
+      }).join('') + `</tbody>`;
   }
-  $('#mkoQ').addEventListener('input', pintaTop);
-  $('#mkoF').addEventListener('change', pintaTop);
+  ['#mkoQ','#mkoF','#mkoN'].forEach(id => $(id).addEventListener(
+    id==='#mkoQ'?'input':'change', pintaTop));
   pintaTop();
 
-  $('#mkoAviso').innerHTML = `<strong>Limitación del dato.</strong> El export es un único agregado
-    de ${K.desde} a ${K.hasta}; no hay desglose temporal, así que no se puede medir crecimiento ni
-    estacionalidad en este canal. Para tenerlos hacen falta dos exports con el filtro de fecha
-    puesto por año. El total cuadra con la fila «Total» del propio fichero
-    (${eur(K.total_declarado||K.total)}), así que no falta nada dentro del periodo.`;
+  $('#mkoAviso').innerHTML = `El fichero no trae fecha por línea dentro de cada año, así que de
+    este canal no hay estacionalidad mensual: solo los dos periodos completos. Para ver el detalle
+    por mes habría que exportar mes a mes.`;
 }
 
   const NOMBRES = [
