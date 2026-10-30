@@ -9,7 +9,7 @@ def window(meses):
     acc = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0,
                                                title='', brand='', n=0, skus=set()))
     for m in meses:
-        rows = load(f'mensual/{m}.csv')
+        rows = load(f'mensual/{m}.csv', iva='ES')   # neto
         by = collections.defaultdict(list)
         for r in rows: by[r['child']].append(r)
         for c, rs in by.items():
@@ -109,8 +109,8 @@ json.dump([{k:(round(v,2) if isinstance(v,float) else v)
 print(f"\n-> asin_yoy.json ({len(filas)} ASINs)")
 
 # ---------- Francia: solo cuota (periodos distintos) ----------
-def col(f):
-    rows = load(f); by = collections.defaultdict(list); out = {}
+def col(f, pais='FR'):
+    rows = load(f, iva=pais); by = collections.defaultdict(list); out = {}
     for r in rows: by[r['child']].append(r)
     for c, rs in by.items():
         s = max(r['sessions'] for r in rs); u = sum(r['units'] for r in rs)

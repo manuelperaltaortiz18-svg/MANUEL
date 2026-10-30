@@ -13,7 +13,7 @@ MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
 
 def por_marca(path):
     g = collections.Counter(); u = collections.Counter()
-    for r in load(path):
+    for r in load(path, iva='ES'):   # neto
         g[brand(r)] += r['sales']; u[brand(r)] += r['units']
     return g, u
 

@@ -15,7 +15,7 @@ for r in raw[1:]:
     F.setdefault(r[0], {})[r[2]] = [float(x or 0) for x in r[4:30]]
 
 def porasin(f):
-    rr = load(f); by = collections.defaultdict(list); out = {}
+    rr = load(f, iva='ES'); by = collections.defaultdict(list); out = {}
     for r in rr: by[r['child']].append(r)
     for c, rs in by.items():
         out[c] = dict(title=rs[0]['title'], brand=brand(rs[0]),

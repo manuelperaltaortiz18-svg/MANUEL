@@ -11,8 +11,8 @@ JAM = re.compile(r'JAMONER|SOPORTE JAMON|JAMONERA')
 
 def zero(): return dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0, n=0)
 
-def read_month(path):
-    rows = load(path)
+def read_month(path, pais='ES'):
+    rows = load(path, iva=pais)          # neto de IVA
     by = collections.defaultdict(list)
     for r in rows: by[r['child']].append(r)
     out = []
@@ -79,10 +79,10 @@ payload = dict(
 # ---------- mercados exteriores ----------
 # Cada export cubre un rango distinto; se normaliza a EUR/mes.
 MERCADOS = [
-    ('España',   None,                    8.0,  'ene–ago 2026'),
-    ('Francia',  'fr/br_fr_2026ytd.csv',  8.1,  'ene–3 sep 2026'),
-    ('Italia',   'it/br_it.csv',         20.2,  '1 ene 2025 – 6 sep 2026'),
-    ('Alemania', 'de/br_de.csv',         20.2,  '1 ene 2025 – 6 sep 2026'),
+    ('España',   None,                    8.0,  'ene–ago 2026',           'ES'),
+    ('Francia',  'fr/br_fr_2026ytd.csv',  8.1,  'ene–3 sep 2026',         'FR'),
+    ('Italia',   'it/br_it.csv',         20.2,  '1 ene 2025 – 6 sep 2026', 'IT'),
+    ('Alemania', 'de/br_de.csv',         20.2,  '1 ene 2025 – 6 sep 2026', 'DE'),
 ]
 
 def mercado(items, meses):
@@ -103,9 +103,9 @@ def mercado(items, meses):
         quema_eur=round(sum(x['v'] for x in quema)/qs, 2) if qs else 0,
         mix={k: round(100*val/v, 1) for k, val in mix.most_common() if v and 100*val/v >= 0.3})
 
-def flat(path):
+def flat(path, pais='ES'):
     out = []
-    for x in read_month(path):
+    for x in read_month(path, pais):
         out.append(dict(brand=x['brand'], ses=x['ses'], uds=x['uds'], v=x['v'], bb=x['bb']))
     return out
 
@@ -120,9 +120,9 @@ ES = [dict(brand=a['brand'], ses=a['ses'], uds=a['uds'], v=a['v'],
            bb=a['bbw']/a['ses'] if a['ses'] else 0) for a in _es.values()]
 
 mercados = []
-for nombre, path, meses, etiqueta in MERCADOS:
+for nombre, path, meses, etiqueta, pais in MERCADOS:
     try:
-        items = ES if path is None else flat(path)
+        items = ES if path is None else flat(path, pais)
     except FileNotFoundError:
         continue
     d = mercado(items, meses); d['nombre'] = nombre; d['etiqueta'] = etiqueta

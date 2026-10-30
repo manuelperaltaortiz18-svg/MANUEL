@@ -1,5 +1,10 @@
 import csv, re, sys, json
 
+# Amazon reporta la venta CON IVA. load(path, iva='ES') la devuelve neta.
+# Los scripts de margen NO lo usan: necesitan el precio bruto para la
+# comision de referencia, y netean ellos por dentro.
+IVA = {'ES': 1.21, 'FR': 1.20, 'IT': 1.22, 'DE': 1.19, 'NL': 1.21, 'PT': 1.23}
+
 def num(s):
     s = (s or "").strip().replace('"','')
     if not s or s in ('-','—'): return 0.0
@@ -15,7 +20,8 @@ def pct(s):
     if not s: return 0.0
     return float(s)
 
-def load(path):
+def load(path, iva=None):
+    k = IVA[iva] if iva else 1.0
     rows=[]
     with open(path, encoding='utf-8-sig') as f:
         for r in csv.DictReader(f):
@@ -25,8 +31,8 @@ def load(path):
                 'sessions': num(r['Sesiones: total']),
                 'bb': pct(r['Porcentaje de ofertas destacadas (Buy Box)']),
                 'units': num(r['Unidades encargadas']),
-                'sales': eur(r['Ventas de productos encargados']),
-                'b2b_sales': eur(r['Ventas de productos encargados: B2B']),
+                'sales': eur(r['Ventas de productos encargados']) / k,
+                'b2b_sales': eur(r['Ventas de productos encargados: B2B']) / k,
                 'b2b_units': num(r['Unidades encargadas - B2B']),
             })
     return rows
