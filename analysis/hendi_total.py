@@ -6,7 +6,9 @@ from openpyxl import load_workbook
 from parse_br import load
 from brands import brand
 
-IVA, DTO, FEE_AMZ = 1.21, 0.55, 0.1545
+# Amazon reporta la venta CON IVA; Makro reporta "Net Sales", ya neto.
+IVA = {'ES': 1.21, 'FR': 1.20, 'IT': 1.22, 'DE': 1.19, 'NL': 1.21, 'PT': 1.23}
+DTO, FEE_AMZ = 0.55, 0.1545
 
 def num(x):
     if x is None: return 0.0
@@ -38,7 +40,9 @@ def amz(ms):
     return D
 A25 = amz([f'2025-{i:02d}' for i in range(1, 10)])
 A26 = amz([f'2026-{i:02d}' for i in range(1, 10)])
-EXT = {'Francia': (3035.0, 8.2), 'Italia': (11406.0, 20.2), 'Alemania': (339.0, 20.2)}
+# (bruto, meses, pais) -> se netea con el IVA de cada mercado
+EXT = {'Francia': (3035.0, 8.2, 'FR'), 'Italia': (11406.0, 20.2, 'IT'),
+       'Alemania': (339.0, 20.2, 'DE')}
 
 # ---- Makro por MPN
 def makro(p, meses):
@@ -56,11 +60,11 @@ M25, m25 = makro('makro_raw/makro_2025.xlsx', 12.0)
 M26, m26 = makro('makro_raw/makro_2026.xlsx', 10.0)
 
 sv = lambda D: sum(d['v'] for d in D.values())
-A_ES_25, A_ES_26 = sv(A25), sv(A26)
+A_ES_25, A_ES_26 = sv(A25)/IVA['ES'], sv(A26)/IVA['ES']   # neteado
 MK_25, MK_26 = sv(M25), sv(M26)
-ext_mes = sum(v / m for v, m in EXT.values())
+ext_mes = sum(v / IVA[c] / m for v, m, c in EXT.values())
 
-print("="*78); print("HENDI CONSOLIDADO"); print("="*78)
+print("="*78); print("HENDI CONSOLIDADO — TODO NETO DE IVA"); print("="*78)
 print(f"{'canal':28s}{'base':>16s}{'€/mes':>11s}{'anualizado':>13s}")
 fil = [('Amazon España', A_ES_26, 9.0, A_ES_25, 9.0),
        ('Makro / Metro (4 países)', MK_26, m26, MK_25, m25)]
@@ -93,7 +97,7 @@ def margen(D, fee_pct):
         c = COSTE.get(k)
         if c is None or not d['u']: continue
         p = d['v'] / d['u']
-        M += (p / IVA - p * fee_pct - c) * d['u']; C += d['v']
+        M += (p / IVA['ES'] - p * fee_pct - c) * d['u']; C += d['v']
     return M, C
 ma_, ca_ = margen(A26, FEE_AMZ)
 mm_, cm_ = margen(M26, 0.0)      # en Makro la comision va en el neto reportado
