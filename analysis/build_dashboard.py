@@ -3,13 +3,15 @@ Uso:  python3 build_dashboard.py      (desde analysis/)
 Anade un mes nuevo como mensual/AAAA-MM.csv y vuelve a ejecutar."""
 import glob, json, os, re, collections
 from parse_br import load
-from brands import brand, SUPPLIER
+from brands import brand, SUPPLIER, herencia, marca_de
 
 SUPS = ['Arcos','Cuperinox','Hendi','Vinfer (grupo)','Otros']
 MARGINS = {'Arcos':[15,25],'Cuperinox':[25,35],'Hendi':[20,35],'Vinfer (grupo)':[15,25],'Otros':[15,25]}
 JAM = re.compile(r'JAMONER|SOPORTE JAMON|JAMONERA')
 
 def zero(): return dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0, n=0)
+
+HER = {}   # child -> marca heredada del padre; se llena mas abajo
 
 def read_month(path, pais='ES'):
     rows = load(path, iva=pais)          # neto de IVA
@@ -18,7 +20,7 @@ def read_month(path, pais='ES'):
     out = []
     for child, rs in by.items():
         s = max(r['sessions'] for r in rs)
-        out.append(dict(child=child, title=rs[0]['title'], brand=brand(rs[0]),
+        out.append(dict(child=child, title=rs[0]['title'], brand=marca_de(rs[0], HER),
                         ses=s, uds=sum(r['units'] for r in rs),
                         v=sum(r['sales'] for r in rs), bb=max(r['bb'] for r in rs),
                         skus=len({r['sku'] for r in rs}),
@@ -27,6 +29,10 @@ def read_month(path, pais='ES'):
 
 files = sorted(glob.glob('mensual/*.csv'))
 months = [os.path.basename(f)[:-4] for f in files]
+# Amazon crea variantes sin la marca en el titulo: se heredan del ASIN padre,
+# con TODOS los meses a la vista para tener el maximo de hermanos.
+_todo = [r for f in files for r in load(f)]
+HER.update(herencia(_todo))
 data = {m: read_month(f) for m, f in zip(months, files)}
 
 def bucket(items):

@@ -25,8 +25,8 @@ def window(meses):
         a['p']    = a['v']/a['uds'] if a['uds'] else 0
     return acc
 
-A = window([f'2025-{m:02d}' for m in range(1,10)])
-B = window([f'2026-{m:02d}' for m in range(1,10)])
+A = window([f'2025-{m:02d}' for m in range(1,11)])
+B = window([f'2026-{m:02d}' for m in range(1,11)])
 Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0, skus=set())
 
 def descompon(a, b):

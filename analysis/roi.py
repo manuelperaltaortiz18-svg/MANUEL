@@ -5,7 +5,7 @@ from parse_br import load
 from brands import brand
 from ads import ad_brand, money, col, load_ads, ADS_CSV
 
-MESES = 9                          # ultimo mes completo disponible en ambos anos
+MESES = 10                         # ultimo mes completo disponible en ambos anos
 D25, D26 = 365, 288                # dias del ano / del export de publicidad 2026
 W = sum([31,28,31,30,31,30,31,31,30,31,30,31][:MESES])   # dias de la ventana
 

@@ -20,20 +20,54 @@ def pct(s):
     if not s: return 0.0
     return float(s)
 
+# Amazon exporta el mismo informe en dos idiomas y dos formatos de numero.
+# La version inglesa NO trae columna de SKU: lo que dependa del SKU
+# (margenes, inventario, listados por SKU) necesita el export en espanol.
+CAMPOS = {
+  'es': dict(parent='ASIN (parent)', child='ASIN (child)', title='Título', sku='SKU',
+             sessions='Sesiones: total',
+             bb='Porcentaje de ofertas destacadas (Buy Box)',
+             units='Unidades encargadas', sales='Ventas de productos encargados',
+             b2b_sales='Ventas de productos encargados: B2B',
+             b2b_units='Unidades encargadas - B2B'),
+  'en': dict(parent='(Parent) ASIN', child='(Child) ASIN', title='Title', sku=None,
+             sessions='Sessions – Total',
+             bb='Featured Offer (Buy Box) percentage',
+             units='Units ordered', sales='Ordered Product Sales',
+             b2b_sales='Ordered product sales – B2B',
+             b2b_units='Units ordered – B2B'),
+}
+
+def ang(s):
+    """1,234.56 -> 1234.56 (formato anglosajon, con o sin simbolo)."""
+    s = (s or "").replace('€', '').replace('\xa0', '').replace(',', '').strip()
+    if not s or s in ('-', '—'): return 0.0
+    try: return float(s)
+    except ValueError: return 0.0
+
+def idioma(cab):
+    cab = [c.lstrip('\ufeff') for c in cab]
+    return 'es' if 'ASIN (parent)' in cab else 'en'
+
 def load(path, iva=None):
     k = IVA[iva] if iva else 1.0
-    rows=[]
+    rows = []
     with open(path, encoding='utf-8-sig') as f:
-        for r in csv.DictReader(f):
+        rd = csv.DictReader(f)
+        lang = idioma(rd.fieldnames or [])
+        C = CAMPOS[lang]
+        n, e = (num, eur) if lang == 'es' else (ang, ang)
+        for r in rd:
             rows.append({
-                'parent': r['ASIN (parent)'], 'child': r['ASIN (child)'],
-                'title': r['Título'], 'sku': r['SKU'],
-                'sessions': num(r['Sesiones: total']),
-                'bb': pct(r['Porcentaje de ofertas destacadas (Buy Box)']),
-                'units': num(r['Unidades encargadas']),
-                'sales': eur(r['Ventas de productos encargados']) / k,
-                'b2b_sales': eur(r['Ventas de productos encargados: B2B']) / k,
-                'b2b_units': num(r['Unidades encargadas - B2B']),
+                'parent': r[C['parent']], 'child': r[C['child']],
+                'title': r[C['title']],
+                'sku': r[C['sku']] if C['sku'] else '',
+                'sessions': n(r[C['sessions']]),
+                'bb': pct(r[C['bb']]),
+                'units': n(r[C['units']]),
+                'sales': e(r[C['sales']]) / k,
+                'b2b_sales': e(r[C['b2b_sales']]) / k,
+                'b2b_units': n(r[C['b2b_units']]),
             })
     return rows
 

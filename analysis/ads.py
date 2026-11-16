@@ -13,7 +13,7 @@ ADS_CSV = 'ads/campaigns_2026_full.csv'
 # de las campanas que si aparecen.
 ADS_ATRIB = 'ads/campaigns_2026-01_2026-10-15.csv'
 DIAS_ADS, DIAS_BR = 288, 273   # ads a 15 oct; ventas ene-sep
-MESES = [f'2026-{m:02d}' for m in range(1,10)]  # ene-sep completos
+MESES = [f'2026-{m:02d}' for m in range(1,11)]  # ene-oct completos
 
 # marca inferida del nombre de campana
 ADRULES = [
