@@ -5,8 +5,17 @@ from parse_br import load
 from brands import brand
 
 IVA = 1.21
-DTO = 0.55          # descuento de Hendi sobre su Net price
 FEE = 0.1545        # comision de referencia estimada sobre PVP bruto
+
+# El descuento de Hendi cambio tras la negociacion de noviembre de 2026.
+# Hendi lo aplica desde el 15 de octubre, pero se toma desde el 1 de noviembre
+# para no partir un mes: infravalora un poco el margen de la segunda quincena
+# de octubre, que es el lado prudente.
+DTO_HASTA_OCT, DTO_DESDE_NOV = 0.50, 0.55
+
+def dto(mes):
+    """mes = 'AAAA-MM'. Antes de noviembre de 2026, 50%; desde entonces, 55%."""
+    return DTO_DESDE_NOV if mes >= '2026-11' else DTO_HASTA_OCT
 
 def num(x):
     if x is None: return None
@@ -28,13 +37,21 @@ for r in ws.iter_rows(min_row=2, values_only=True):
     H[mpn] = dict(gtin=r[0], neto_hendi=num(r[4]), bb_ganada=(str(r[5] or '').strip().lower() == 'si'),
                   bb_precio=num(r[6]))
 
-# ---- ventas Hendi ene-sep 2026
-V = collections.defaultdict(lambda: dict(u=0., v=0., s=0., b=0., t=''))
-for i in range(1, 10):
-    for row in load(f'mensual/2026-{i:02d}.csv'):
+# ---- ventas Hendi 2026, guardando las unidades POR MES para poder aplicar
+#      el descuento vigente en cada uno
+MESES = [f'2026-{i:02d}' for i in range(1, 11)]
+V = collections.defaultdict(lambda: dict(u=0., v=0., s=0., b=0., t='',
+                                         um=collections.defaultdict(float)))
+sin_sku = 0.0
+for mes in MESES:
+    for row in load(f'mensual/{mes}.csv'):
         if brand(row) != 'Hendi': continue
+        if not row['sku']:
+            # el export por ASIN padre/hijo no trae SKU: sin el no hay coste
+            sin_sku += row['sales']; continue
         d = V[row['sku']]
         d['u'] += row['units']; d['v'] += row['sales']
+        d['um'][mes] += row['units']
         d['s'] += row['sessions']; d['b'] += row['bb'] * row['sessions']
         if not d['t']: d['t'] = row['title'][:40]
 
@@ -49,7 +66,9 @@ for sku, d in V.items():
     m = mpn_de(sku)
     if m is None or not H[m]['neto_hendi']: continue
     h = H[m]
-    coste = h['neto_hendi'] * (1 - DTO)
+    # coste medio ponderado: cada unidad al descuento que regia su mes
+    coste = sum(h['neto_hendi'] * (1 - dto(mes)) * u
+                for mes, u in d['um'].items()) / d['u']
     pvp = d['v'] / d['u']                  # PVP bruto medio realizado
     neto = pvp / IVA
     margen = neto - pvp * FEE - coste
@@ -63,10 +82,14 @@ F.sort(key=lambda r: -r['venta'])
 tv = sum(d['v'] for d in V.values())
 cub = sum(r['venta'] for r in F)
 print(f"Hoja: {len(H)} referencias | ventas Hendi: {len(V)} SKU, {tv:,.0f} €")
-print(f"Emparejadas: {len(F)} SKU, {cub:,.0f} € ({cub/tv:.1%} de la venta Hendi)")
+print(f"Emparejadas: {len(F)} SKU, {cub:,.0f} € ({cub/(tv+sin_sku):.1%} de la venta Hendi)")
+if sin_sku:
+    print(f"Fuera por venir el export SIN columna de SKU: {sin_sku:,.0f} € "
+          f"({sin_sku/(tv+sin_sku):.1%}) — pedir el Business Report en espanol")
 M = sum(r['margen'] * r['uds'] for r in F); G = sum(r['pvp'] * r['uds'] for r in F)
 N = sum(r['pvp'] / IVA * r['uds'] for r in F)
-print(f"\nMARGEN AGREGADO (dto {DTO:.0%}, fee {FEE:.2%})")
+print(f"\nMARGEN AGREGADO (dto {DTO_HASTA_OCT:.0%} hasta oct y "
+      f"{DTO_DESDE_NOV:.0%} desde nov, fee {FEE:.2%})")
 print(f"  venta bruta {G:,.0f} € | margen {M:,.0f} €")
 print(f"  margen s/neto      : {100*M/N:5.1f}%")
 print(f"  ACOS DE EQUILIBRIO : {100*M/G:5.1f}%")

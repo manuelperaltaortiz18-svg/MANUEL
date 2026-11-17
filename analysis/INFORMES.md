@@ -200,6 +200,27 @@ corregidas cuando las señalé como problema. **Separar siempre por
 
 ---
 
+## 7 bis. Descuentos de proveedor con fecha
+
+Un descuento de compra no es una constante: cambia y hay que fecharlo, o el
+margen histórico sale inflado.
+
+| Proveedor | Periodo | Descuento |
+|---|---|---|
+| **Hendi** | hasta octubre de 2026 | **50 %** |
+| **Hendi** | desde noviembre de 2026 | **55 %** |
+
+El 55 % sale de la negociación de noviembre de 2026. Hendi lo aplica desde el
+15 de octubre, pero en el modelo se toma **desde el 1 de noviembre** para no
+partir un mes: infravalora un poco la segunda quincena de octubre, que es el
+lado prudente. Vale **47.443 €/año** de margen recurrente sobre la compra
+estimada.
+
+`hendi.py` lo aplica con `dto(mes)` y pondera el coste por las unidades de cada
+mes. Si cambia otra vez, se añade un tramo ahí y se anota en esta tabla.
+
+---
+
 ## 8. Lo que hace falta y no está
 
 - **Costes de Arcos.** Es el 44 % de la venta y el 24 % del gasto publicitario,
