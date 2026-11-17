@@ -55,7 +55,9 @@ def load(path, iva=None):
     with open(path, encoding='utf-8-sig') as f:
         rd = csv.DictReader(f)
         lang = idioma(rd.fieldnames or [])
-        C = CAMPOS[lang]
+        C = dict(CAMPOS[lang])
+        # el informe por ASIN padre/hijo no trae SKU en ninguno de los dos idiomas
+        if C['sku'] and C['sku'] not in (rd.fieldnames or []): C['sku'] = None
         n, e = (num, eur) if lang == 'es' else (ang, ang)
         for r in rd:
             rows.append({
