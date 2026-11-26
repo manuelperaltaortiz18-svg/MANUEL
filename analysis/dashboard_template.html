@@ -1946,20 +1946,35 @@ if(D.adsYoY){
 if(D.ritmo && D.ritmo.filas.length){
   $('#ritSec').hidden = false;
   const T = D.ritmo.total, R = D.ritmo.filas;
-  const yoy = 100*(T.dia-T.dia_ant)/T.dia_ant, mom = 100*(T.dia-T.dia_pre)/T.dia_pre;
+  // El interanual solo existe si hay parcial equivalente del año anterior, con el
+  // mismo día de corte. Comparar contra la media del mes completo infla la
+  // referencia (los días 1-16 de noviembre de 2025 fueron el 36% del mes, no el 53%).
+  const yoy = T.hay_ref ? T.yoy : null;
+  const mom = 100*(T.dia-T.dia_pre)/T.dia_pre;
+  const nd  = v => v==null ? 'n/d' : v;
   $('#ritTit').textContent = `Cómo va ${T.mes} de ${T.anio}`;
   $('#ritSub').innerHTML = `Días 1 a ${T.dias} de ${T.dias_mes}. Un mes a medias no entra en la
     serie mensual — rompería la ventana comparable —, así que se lee como <strong>ritmo
-    diario</strong>: lo vendido dividido entre los días transcurridos, frente al mismo mes del año
-    pasado y frente al mes anterior.`;
-  const sg = v => (v>=0?'+':'−')+dec(Math.abs(v),0)+'%';
+    diario</strong>. ` + (T.hay_ref
+    ? `La referencia del año pasado es <strong>la misma ventana</strong> (${T.ref}), no la media
+       del mes: a este día de ${T.anio-1} solo había pasado el <strong>${dec(T.cuota,1)}%</strong>
+       del mes.`
+    : `<strong>El interanual no es medible:</strong> falta el parcial equivalente de
+       ${T.anio-1} (<code>${T.falta}</code>). Comparar contra la media del mes completo
+       inflaría la referencia, así que no se compara.`);
+  const sg = v => v==null ? 'n/d' : (v>=0?'+':'−')+dec(Math.abs(v),0)+'%';
   $('#ritKpis').innerHTML = [
     ['Vendido', eur(T.v), `${int(T.u)} uds en ${T.dias} días`],
     ['Ritmo', eur(T.dia)+'/día', ''],
-    [`Frente a ${T.mes} ${T.anio-1}`, sg(yoy), `${eur(T.dia_ant)}/día entonces`],
-    ['Frente al mes anterior', sg(mom), `${eur(T.dia_pre)}/día`],
-    ['Proyección del mes', eur(T.proy), `${eur(T.v_ant)} el año pasado`],
-    ['Cierre estimado vs. año pasado', sg(100*(T.proy-T.v_ant)/T.v_ant), 'a este ritmo']
+    [`Frente a ${T.mes} ${T.anio-1}`, sg(yoy),
+      T.hay_ref ? `${eur(T.dia_ant)}/día en la misma ventana` : `falta ${T.falta}`],
+    ['Frente al mes anterior', sg(mom), `${eur(T.dia_pre)}/día — solo ritmo diario`],
+    ['Proyección del mes', T.proy==null?'n/d':eur(T.proy),
+      T.proy==null ? 'sin la forma real del mes no se proyecta'
+                   : `${eur(T.v_ant)} el año pasado`],
+    ['Cierre estimado vs. año pasado',
+      (T.proy==null||!T.v_ant) ? 'n/d' : sg(100*(T.proy-T.v_ant)/T.v_ant),
+      T.proy==null ? '' : 'según la forma del mes del año pasado']
   ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
     <div class="d">${d}</div></div>`).join('');
   const pil = v => v==null ? '—'
@@ -1969,18 +1984,24 @@ if(D.ritmo && D.ritmo.filas.length){
     <th>Proyección del mes</th></tr></thead><tbody>` + R.map(f=>`<tr>
       <td><strong>${f.marca}</strong></td><td class="n">${eur(f.v)}</td>
       <td class="n"><strong>${eur(f.dia)}</strong></td>
-      <td class="n" style="color:var(--ink-3)">${eur(f.dia_ant)}</td>
+      <td class="n" style="color:var(--ink-3)">${f.dia_ant==null?'n/d':eur(f.dia_ant)}</td>
       <td class="n">${pil(f.yoy)}</td><td class="n">${pil(f.mom)}</td>
-      <td class="n">${eur(f.proy)}</td></tr>`).join('') +
+      <td class="n">${f.proy==null?'n/d':eur(f.proy)}</td></tr>`).join('') +
     `<tr class="tot"><td>Total</td><td class="n">${eur(T.v)}</td>
-      <td class="n">${eur(T.dia)}</td><td class="n">${eur(T.dia_ant)}</td>
+      <td class="n">${eur(T.dia)}</td><td class="n">${T.dia_ant==null?'n/d':eur(T.dia_ant)}</td>
       <td class="n">${pil(yoy)}</td><td class="n">${pil(mom)}</td>
-      <td class="n">${eur(T.proy)}</td></tr></tbody>`;
+      <td class="n">${T.proy==null?'n/d':eur(T.proy)}</td></tr></tbody>`;
   const cae = R.filter(f=>f.yoy!=null && f.yoy<0);
-  $('#ritNota').innerHTML = `La proyección supone que el resto del mes va al mismo ritmo, y en
-    ${T.mes} eso se queda corto: la campaña de Q4 carga la segunda mitad.
-    ${cae.length ? `<strong>${cae.map(f=>f.marca).join(', ')}</strong>
-      ${cae.length===1?'va':'van'} por debajo del año pasado.` : ''}`;
+  $('#ritNota').innerHTML = (T.proy==null
+    ? `No hay proyección: se calcularía con la forma real que tuvo el mes el año pasado, y para
+       eso hace falta <code>${T.falta}</code>. Proyectar en línea recta no vale en ${T.mes} —
+       probado: en 2025, a día 16 solo había pasado el 36% del mes, así que la recta se queda
+       un 33% corta.`
+    : `La proyección NO es lineal: parte de que a este día de ${T.anio-1} había pasado el
+       ${dec(T.cuota,1)}% del mes, y aplica esa misma forma. Cada marca usa su propia cuota,
+       porque la estacionalidad intramensual no es igual en todas.`)
+    + (cae.length ? ` <strong>${cae.map(f=>f.marca).join(', ')}</strong>
+      ${cae.length===1?'va':'van'} por debajo del año pasado en la misma ventana.` : '');
 }
 
 /* ---------- pestanas ---------- */
