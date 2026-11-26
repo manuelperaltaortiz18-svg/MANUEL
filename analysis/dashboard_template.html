@@ -1573,7 +1573,9 @@ if(D.asinYoY && D.asinYoY.length){
   function setSub(){
     if(pais==='ES'){
       const up = ES_ROWS.filter(r=>r.d>0), dn = ES_ROWS.filter(r=>r.d<0);
-      $('#ayoySub').innerHTML = `Enero–agosto 2025 frente a enero–agosto 2026, misma ventana.
+      const VEN = (D.asinYoyMeta && D.asinYoyMeta.ventana) || 'misma ventana';
+      $('#ayoySub').innerHTML = `<strong>${VEN}</strong> de 2025 frente a ${VEN} de 2026, misma
+        ventana en los dos años.
         <strong>${int(up.length)}</strong> ASINs suben (+${eur(up.reduce((s,r)=>s+r.d,0))}) y
         <strong>${int(dn.length)}</strong> bajan (${eur(dn.reduce((s,r)=>s+r.d,0))}).
         La causa dominante se calcula descomponiendo cada movimiento en tráfico × conversión × precio.`;

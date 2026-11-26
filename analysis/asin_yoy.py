@@ -5,11 +5,14 @@ import collections, sys
 from parse_br import load
 from brands import brand
 
-def window(meses):
+def window(meses, parcial=None):
     acc = collections.defaultdict(lambda: dict(ses=0.0, uds=0.0, v=0.0, bbw=0.0,
                                                title='', brand='', n=0, skus=set()))
-    for m in meses:
-        rows = load(f'mensual/{m}.csv', iva='ES')   # neto
+    for m in meses + ([parcial] if parcial else []):
+        # un mes cerrado vive en mensual/, un parcial en parcial/; el parcial solo
+        # entra si existe el equivalente del OTRO año con el mismo dia de corte,
+        # porque si no se comparan ventanas de distinta longitud (regla 2)
+        rows = load(m if '/' in m else f'mensual/{m}.csv', iva='ES')   # neto
         by = collections.defaultdict(list)
         for r in rows: by[r['child']].append(r)
         for c, rs in by.items():
@@ -25,8 +28,32 @@ def window(meses):
         a['p']    = a['v']/a['uds'] if a['uds'] else 0
     return acc
 
-A = window([f'2025-{m:02d}' for m in range(1,11)])
-B = window([f'2026-{m:02d}' for m in range(1,11)])
+# --- la ventana se construye con lo que hay, no a mano ---
+# Meses cerrados que existen en los DOS años, y despues el parcial mas largo de
+# noviembre que tenga pareja exacta. Antes esto estaba fijo a range(1,11) y el
+# subtitulo del panel decia "enero-agosto" mientras la tabla era enero-octubre:
+# dos sitios que hay que acordarse de tocar, y nadie se acuerda.
+import glob, os, re
+MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+            'septiembre','octubre','noviembre','diciembre']
+def cerrados(anio):
+    return {int(re.search(r'-(\d{2})\.csv$', f).group(1))
+            for f in glob.glob(f'mensual/{anio}-*.csv')}
+COMUNES = sorted(cerrados(2025) & cerrados(2026))
+# el parcial mas largo de un mes posterior que exista en ambos años
+PAR25 = PAR26 = None; PAR_TXT = ''
+siguiente = (max(COMUNES) + 1) if COMUNES else 1
+for d in range(31, 0, -1):
+    a = f'parcial/2025-{siguiente:02d}-{d:02d}.csv'
+    b = f'parcial/2026-{siguiente:02d}-{d:02d}.csv'
+    if os.path.exists(a) and os.path.exists(b):
+        PAR25, PAR26 = a, b
+        PAR_TXT = f' + 1-{d} de {MESES_ES[siguiente-1]}'
+        break
+
+A = window([f'2025-{m:02d}' for m in COMUNES], PAR25)
+B = window([f'2026-{m:02d}' for m in COMUNES], PAR26)
+VENTANA = (f'{MESES_ES[COMUNES[0]-1]}–{MESES_ES[COMUNES[-1]-1]}' if COMUNES else '') + PAR_TXT
 Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0, skus=set())
 
 def descompon(a, b):
@@ -71,7 +98,7 @@ def tabla(fs, titulo):
               f"{f['bb0']:>5.0f}%{f['bb1']:>5.0f}%{f['c0']:>5.1f}%{f['c1']:>5.1f}%"
               f"{f['p0']:>6.1f}{f['p1']:>6.1f}  {f['causa']:<13}{f['sku'][:23]:<24} {f['title'][:42]}")
 
-print(f"ESPANA — ene-sep 2025 vs ene-sep 2026, {len(filas)} ASINs con >300 EUR en algun periodo")
+print(f"ESPANA — {VENTANA} 2025 vs {VENTANA} 2026, {len(filas)} ASINs con >300 EUR en algun periodo")
 print(f"Delta neto: {TOT_D:>+,.0f} EUR   |   {len(pos)} suben (+{sum(f['d'] for f in pos):,.0f})"
       f"   |   {len(neg)} bajan ({sum(f['d'] for f in neg):,.0f})")
 tabla(filas[:20], "=== LOS 20 QUE MAS VENTA PIERDEN ===")
@@ -138,6 +165,13 @@ for ch in set(FA) | set(FB):
         bb0=round(a['bb'],1), bb1=round(b['bb'],1), c0=round(a['conv'],2), c1=round(b['conv'],2)))
 fr.sort(key=lambda f: f['d'])
 json.dump(fr, open('asin_yoy_fr.json','w'), ensure_ascii=False)
+
+# La ventana se emite como dato, no se escribe a mano en la plantilla. El
+# subtitulo del panel decia "enero-agosto" mientras la tabla era enero-octubre
+# porque eran dos sitios distintos y solo se actualizaba uno.
+json.dump(dict(ventana=VENTANA, meses=COMUNES, parcial=PAR_TXT.strip(' +') or None,
+               n=len(filas)), open('asin_yoy_meta.json','w'), ensure_ascii=False)
+print(f"ventana: {VENTANA}  ({len(filas)} ASIN)")
 
 print(f"\n\nFRANCIA — cuota de la venta del pais (2025 completo vs 2026 YTD), {len(fr)} ASINs")
 print("Los euros no son comparables (12m vs 8m); la cuota si.\n")
