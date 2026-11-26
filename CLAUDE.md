@@ -44,8 +44,19 @@ Arcos ha bajado del 70 % al 44 % de la facturación de Amazon.
 
 ```bash
 cd analysis
-python3 build_dashboard.py      # lee mensual/*.csv y todos los *.json
+python3 actualizar.py           # ejecuta TODO en orden y comprueba frescura
 ```
+
+**Usar siempre `actualizar.py`, nunca los scripts a mano.** Existe porque
+regenerar de memoria se olvida, y ha pasado: `pnl.json` llegó a ir un 8,3 %
+desfasado y `hendi_total.json` publicaba 68.795 €/mes de Hendi cuando el dato
+real eran 62.995 — el panel y los informes decían cosas distintas del mismo
+negocio. El script hace tres cosas: ejecuta cada paso en orden de dependencia,
+avisa si un JSON es más viejo que sus ficheros de entrada, y lista lo que hay
+en el repo que el panel todavía no lee. Si falla algo, **no publicar**.
+
+`build_dashboard.py` por sí solo monta el HTML con los JSON que encuentre, estén
+al día o no. Por eso no se llama directamente.
 
 Cada pestaña se alimenta de un script que emite su JSON. Si se añade un mes o un
 fichero nuevo, hay que volver a ejecutar el script correspondiente **y después**
@@ -69,6 +80,21 @@ fichero nuevo, hay que volver a ejecutar el script correspondiente **y después*
 
 `parse_br.py` es el parser de los Business Report y `brands.py` la
 clasificación de marcas. Todo lo demás depende de esos dos.
+
+**Dos agujeros conocidos en esta cadena:**
+
+- **`ads_summary.json` no lo genera nadie.** `ads.py` solo imprime por pantalla.
+  Ese JSON está hecho a mano y su ventana se quedó en el 15 de octubre (gasto) y
+  el 30 de septiembre (ventas). La pestaña de Publicidad publica, por tanto, un
+  número que no se puede volver a calcular. Es la deuda más peligrosa del repo.
+- **El panel no lee el informe maestro ni la estructura de campañas.**
+  `ads/maestro/` y `ads/estructura/` están versionados pero fuera del panel, así
+  que el presupuesto por campaña, el estado de entrega y el **porcentaje de
+  impresiones del top de búsquedas** no aparecen en ninguna pestaña. Esa última
+  columna es la que midió que en jamoneros se escapa más del 80 % de la demanda.
+
+Lo que cierra los dos de una vez es un `ads_maestro.py` que alimente la pestaña
+de Publicidad desde `ads/maestro/` y `ads/estructura/`.
 
 ### Publicar
 
