@@ -149,6 +149,12 @@ except FileNotFoundError:
 
 tpl = open('dashboard_template.html', encoding='utf-8').read()
 out = tpl.replace('/*__DATA__*/null', json.dumps(payload, ensure_ascii=False))
+# Sello de version visible en la cabecera. Esta aqui porque se perdieron casi
+# dos horas discutiendo si el panel publicado estaba actualizado: el servidor
+# tenia la version nueva y el navegador seguia sirviendo la vieja, y no habia
+# forma de saberlo mirando la pagina. Ahora si.
+import datetime as _dt
+out = out.replace('__BUILD__', _dt.datetime.now().strftime('%d-%b-%Y %H:%M'))
 open('dashboard.html', 'w', encoding='utf-8').write(out)
 print(f"dashboard.html generado · {len(months)} meses ({months[0]} → {months[-1]}) · "
       f"{sum(t['v'] for t in total):,.0f} EUR · {len(bbloss)} ASINs con BuyBox bajo")
