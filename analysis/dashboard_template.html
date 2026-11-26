@@ -508,6 +508,29 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <button class="more" id="invMore" hidden>Ver más</button>
 </section>
 
+<section id="amesSec" data-tab="asin" data-ord="0" hidden>
+  <div class="shead">
+    <h2 id="amesTit">ASIN a ASIN del mes en curso</h2>
+    <p id="amesSub"></p>
+  </div>
+  <div id="amesKpis" class="kpis"></div>
+  <div class="tools">
+    <input type="search" id="amesQ" placeholder="Buscar por producto, ASIN o SKU…" aria-label="Buscar">
+    <select id="amesMarca" aria-label="Marca"></select>
+    <select id="amesFiltro" aria-label="Filtro">
+      <option value="">Todos</option>
+      <option value="bb">BuyBox por debajo del 70 %</option>
+      <option value="frena">Frenan en campaña</option>
+      <option value="acel">Aceleran en campaña</option>
+      <option value="baja">Caen frente al año pasado</option>
+    </select>
+    <span class="count" id="amesCount"></span>
+  </div>
+  <div class="scroll"><table id="amesTab"></table></div>
+  <button class="more" id="amesMore" hidden>Ver más</button>
+  <p class="note" id="amesNote"></p>
+</section>
+
 <section id="ayoySec" data-tab="asin" data-ord="1" hidden>
   <div class="shead">
     <h2>ASIN a ASIN: quién ganó y quién perdió</h2>
@@ -1943,6 +1966,85 @@ if(D.adsYoY){
 
 
 /* ---------- ritmo del mes en curso ---------- */
+/* ---- ASIN a ASIN del mes en curso ---- */
+if(D.asinMes && D.asinMes.filas.length){
+  $('#amesSec').hidden = false;
+  const T = D.asinMes.total, R = D.asinMes.filas;
+  const TR = T.tramos;
+  $('#amesTit').textContent = `ASIN a ASIN de ${T.mes} de ${T.anio}`;
+  $('#amesSub').innerHTML = `Días 1 a ${T.dias}, ${T.n} ASIN con más de 200 €. Lo que la pestaña
+    anual no puede dar: <strong>el ritmo diario de cada ASIN tramo a tramo dentro del mes</strong>,
+    que no necesita el año anterior para nada. `
+    + (T.yoy_dia ? `El interanual sí lo necesita, y solo existe para la ventana
+        <strong>1-${T.yoy_dia}</strong>, contra <code>${T.yoy_ref}</code> con el mismo día de corte.`
+      : `No hay interanual por ASIN: falta el parcial equivalente del año anterior.`)
+    + (T.falta ? ` El de 1-${T.dias} no es medible: falta <code>${T.falta}</code>.` : '');
+  const bajos = R.filter(f=>f.bb<70), frenan = R.filter(f=>f.acel!=null && f.acel<0);
+  const caen  = R.filter(f=>f.yoy && f.yoy.pct!=null && f.yoy.pct<0);
+  $('#amesKpis').innerHTML = [
+    ['Vendido en el mes', eur(T.v), `${int(T.u)} uds · neto de IVA`],
+    ['ASIN con BuyBox < 70 %', int(bajos.length),
+      eur(bajos.reduce((a,f)=>a+f.v,0))+' dentro'],
+    ['Frenan en campaña', int(frenan.length),
+      eur(frenan.reduce((a,f)=>a+f.v,0))+' dentro'],
+    [T.yoy_dia ? `Caen frente a 1-${T.yoy_dia} de ${T.anio-1}` : 'Caen frente al año pasado',
+      T.yoy_dia ? int(caen.length) : 'n/d',
+      T.yoy_dia ? eur(caen.reduce((a,f)=>a+f.v,0))+' dentro' : 'sin parcial de referencia']
+  ].map(([k,v,d])=>`<div class="kpi"><div class="k">${k}</div><div class="v num">${v}</div>
+    <div class="d">${d}</div></div>`).join('');
+
+  const marcas = [...new Set(R.map(f=>f.brand))].sort();
+  $('#amesMarca').innerHTML = '<option value="">Todas las marcas</option>' +
+    marcas.map(m=>`<option>${m}</option>`).join('');
+
+  const sg = v => v==null ? 'n/d' : (v>=0?'+':'−')+dec(Math.abs(v),0)+'%';
+  const pil = v => v==null ? '<span class="pill">n/d</span>'
+    : `<span class="pill ${v<0?'b':v<10?'w':'g'}">${sg(v)}</span>`;
+  const bbpil = v => `<span class="pill ${v<40?'b':v<70?'w':'g'}">${dec(v,0)}%</span>`;
+  let tope = 40;
+  function pinta(){
+    const q = $('#amesQ').value.trim().toLowerCase();
+    const mk = $('#amesMarca').value, fl = $('#amesFiltro').value;
+    let L = R.filter(f=>{
+      if(mk && f.brand!==mk) return false;
+      if(q && !((f.title||'')+' '+f.ch+' '+(f.sku||'')).toLowerCase().includes(q)) return false;
+      if(fl==='bb'    && !(f.bb<70)) return false;
+      if(fl==='frena' && !(f.acel!=null && f.acel<0)) return false;
+      if(fl==='acel'  && !(f.acel!=null && f.acel>0)) return false;
+      if(fl==='baja'  && !(f.yoy && f.yoy.pct!=null && f.yoy.pct<0)) return false;
+      return true;
+    });
+    $('#amesCount').textContent = `${L.length} de ${R.length} · ${eur(L.reduce((a,f)=>a+f.v,0))}`;
+    const th = TR.map(t=>`<th title="€/día entre el ${t.ini} y el ${t.fin}">€/día ${t.ini}-${t.fin}</th>`).join('');
+    $('#amesTab').innerHTML = `<thead><tr><th>Producto</th><th>Marca</th><th>Venta</th>
+      ${th}<th>Acel.</th><th>BuyBox</th><th>Conv.</th>
+      <th>${T.yoy_dia?`1-${T.yoy_dia} vs ${T.anio-1}`:'Año pasado'}</th><th>Causa</th></tr></thead><tbody>`
+      + L.slice(0,tope).map(f=>`<tr>
+        <td><strong>${(f.title||f.ch).slice(0,58)}</strong>
+          <div class="sub">${f.ch}${f.sku?' · '+f.sku:''}</div></td>
+        <td>${f.brand}</td><td class="n"><strong>${eur(f.v)}</strong></td>
+        ${f.tramos.map((x,i)=>`<td class="n">${eur(x)}</td>`).join('')}
+        <td class="n">${f.acel==null?'—':pil(f.acel)}</td>
+        <td class="n">${bbpil(f.bb)}</td>
+        <td class="n">${dec(f.cvr,1)}%</td>
+        <td class="n">${f.yoy?pil(f.yoy.pct):'<span class="pill">n/d</span>'}</td>
+        <td>${f.yoy?f.yoy.causa:'—'}</td></tr>`).join('')
+      + '</tbody>';
+    $('#amesMore').hidden = L.length <= tope;
+  }
+  ['#amesQ','#amesMarca','#amesFiltro'].forEach(x=>{
+    $(x).addEventListener('input', ()=>{ tope=40; pinta(); });
+  });
+  $('#amesMore').addEventListener('click', ()=>{ tope+=60; pinta(); });
+  pinta();
+  $('#amesNote').innerHTML = `Las sesiones se toman con <strong>máximo por ASIN hijo</strong>, no
+    sumando: varios SKU comparten hijo y Amazon repite la sesión en cada fila. Las cifras van
+    <strong>netas de IVA</strong>; en Seller Central las verás un 21 % más altas.
+    «Acel.» compara el €/día del último tramo contra el del primero, así que mide si el ASIN entra
+    o no en la campaña. La causa descompone <code>venta = sesiones × conversión × precio</code>
+    y solo existe donde hay interanual.`;
+}
+
 if(D.ritmo && D.ritmo.filas.length){
   $('#ritSec').hidden = false;
   const T = D.ritmo.total, R = D.ritmo.filas;

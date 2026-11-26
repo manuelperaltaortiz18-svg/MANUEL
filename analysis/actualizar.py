@@ -18,6 +18,7 @@ import glob, os, subprocess, sys, time
 PASOS = [
     ('asin_yoy.py',    ['asin_yoy.json','asin_yoy_fr.json'], ['mensual/*.csv','fr/*.csv','brands.py','parse_br.py']),
     ('ritmo.py',       ['ritmo.json'],        ['parcial/*.csv','mensual/*.csv','brands.py','parse_br.py']),
+    ('asin_mes.py',    ['asin_mes.json'],     ['parcial/*.csv','mensual/*.csv','brands.py','parse_br.py']),
     ('inv.py',         ['inventario.json'],   ['mensual/*.csv']),
     ('pl.py',          ['pnl.json'],          ['mensual/*.csv','costes/margenes.tsv']),
     ('canal.py',       ['canal.json'],        ['mensual/*.csv','costes/nuevos.tsv']),
