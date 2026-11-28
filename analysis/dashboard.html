@@ -241,7 +241,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
     <div><span>Meses</span> <b id="hN">—</b></div>
     <div><span>Acumulado</span> <b id="hV">—</b></div>
     <div><span>Base</span> <b>neto de IVA</b></div>
-    <div><span>Generado</span> <b id="hBuild" title="Si esta fecha no es la de la ultima actualizacion, estas viendo una copia en cache: recarga con Ctrl+Shift+R">28-Nov-2026 11:52</b></div>
+    <div><span>Generado</span> <b id="hBuild" title="Si esta fecha no es la de la ultima actualizacion, estas viendo una copia en cache: recarga con Ctrl+Shift+R">28-Nov-2026 12:46</b></div>
   </div>
 </div></header>
 
@@ -1549,7 +1549,15 @@ if(D.asinYoY && D.asinYoY.length){
         };
         return `<tr>${cols.map(([k])=>cell(k)).join('')}</tr>`;
       }).join('') + `</tbody>`;
-    $('#ayoyCount').textContent = `${int(all.length)} de ${int(rowsOf().length)} ASINs`;
+    // Suma de lo filtrado. Esta aqui porque un mismo SKU puede vivir en dos ASIN
+    // hijo distintos (20265_ y 20265_fbm en uno, 20265_SC en otro), asi que el
+    // panel, que agrupa por ASIN, da una cifra menor que la que sale de contar
+    // el SKU en Seller Central. Buscando la raiz del SKU se ve el total.
+    const _su = all.reduce((a,r)=>a+(r.u1||0),0), _sv = all.reduce((a,r)=>a+(r.v1||0),0);
+    const _su0 = all.reduce((a,r)=>a+(r.u0||0),0);
+    $('#ayoyCount').textContent = `${int(all.length)} de ${int(rowsOf().length)} ASINs`
+      + (all.length && all.length < rowsOf().length
+          ? ` · suman ${int(_su)} uds (${int(_su0)} el año pasado) y ${eur(_sv)}` : '');
     $('#ayoyMore').hidden = all.length <= shown;
     $('#ayoyMore').textContent = `Ver ${int(Math.min(40, all.length-shown))} más`;
   }
@@ -1579,7 +1587,7 @@ if(D.asinYoY && D.asinYoY.length){
         <strong>${int(up.length)}</strong> ASINs suben (+${eur(up.reduce((s,r)=>s+r.d,0))}) y
         <strong>${int(dn.length)}</strong> bajan (${eur(dn.reduce((s,r)=>s+r.d,0))}).
         La causa dominante se calcula descomponiendo cada movimiento en tráfico × conversión × precio.`;
-      $('#ayoyNote').innerHTML = `Del crecimiento neto, <strong>${eur(
+      $('#ayoyNote').innerHTML = `Las filas son <strong>ASIN hijo</strong>, no SKU: un mismo código puede vivir en dos ASIN distintos (por ejemplo <code>20265_</code> y <code>20265_fbm</code> en uno, y <code>20265_SC</code> en otro), así que contar el SKU en Seller Central da más unidades que una fila sola. Busca por la raíz del SKU y el contador te suma las filas. Del crecimiento neto, <strong>${eur(
         ES_ROWS.reduce((s,r)=>s+r.et,0))}</strong> vienen de tráfico, <strong>${eur(
         ES_ROWS.reduce((s,r)=>s+r.ec,0))}</strong> de conversión y solo <strong>${eur(
         ES_ROWS.reduce((s,r)=>s+r.ep,0))}</strong> de precio. Creces vendiendo más, no cobrando más.`;
