@@ -540,6 +540,7 @@ td.mg{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;font-weight:
   <div class="bar">
     <div class="seg" id="ayoyPais" role="group" aria-label="Mercado"></div>
     <div class="seg" id="ayoyOrden" role="group" aria-label="Ordenar por"></div>
+    <div class="seg" id="ayoyVentana" role="group" aria-label="Ventana"></div>
   </div>
   <div class="tools">
     <input type="search" id="ayoyQ" placeholder="Buscar por producto o SKU…" aria-label="Buscar por producto o SKU">
@@ -641,9 +642,12 @@ const $ = s => document.querySelector(s);
 const SC = ['--s1','--s2','--s3','--s4','--s5'];
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const G = {maximumFractionDigits:0, useGrouping:'always'};
-const eur = n => n.toLocaleString('es-ES',G)+' €';
-const int = n => n.toLocaleString('es-ES',G);
-const dec = (n,d=2) => n.toLocaleString('es-ES',
+// Tolerantes a null: hay vistas donde una columna NO tiene dato (p.ej. el año
+// pasado cuando se mira "2026 hasta hoy", que no tiene ventana equivalente).
+// Ahi se pinta una raya, no un cero: un cero se lee como "vendio nada".
+const eur = n => n==null ? '—' : n.toLocaleString('es-ES',G)+' €';
+const int = n => n==null ? '—' : n.toLocaleString('es-ES',G);
+const dec = (n,d=2) => n==null ? '—' : n.toLocaleString('es-ES',
   {minimumFractionDigits:d, maximumFractionDigits:d, useGrouping:'always'});
 const MN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const lbl = m => MN[+m.slice(5,7)-1]+" '"+m.slice(2,4);
@@ -1472,6 +1476,22 @@ if(D.asinYoY && D.asinYoY.length){
     shown = 40; pintaOrden(); render();
   };
 
+  // Ventana: "comparable" se para en el ultimo corte con pareja del año anterior
+  // (regla 2); "hasta hoy" enseña el nivel de 2026 con todos los parciales
+  // cargados y SIN comparar, porque no hay contra que comparar.
+  let vhoy = false;
+  const META = D.asinYoyMeta || {};
+  const pintaVentana = () => $('#ayoyVentana').innerHTML = [
+      [false, 'Ventana comparable', META.ventana || ''],
+      [true,  '2026 hasta hoy',     META.ventana_hoy || '']
+    ].map(([k,n,t])=>`<button data-v="${k}" aria-pressed="${k===vhoy}" title="${t}">${n}</button>`).join('');
+  $('#ayoyVentana').onclick = e => {
+    const b = e.target.closest('button'); if(!b) return;
+    vhoy = b.dataset.v === 'true';
+    shown = 40; pintaVentana(); fill(); render();
+  };
+  pintaVentana();
+
   const rowsOf = () => pais==='ES' ? ES_ROWS : FR_ROWS;
   const fmtD  = v => pais==='ES' ? (v>=0?'+':'−')+eur(Math.abs(v))
                                  : (v>=0?'+':'−')+dec(Math.abs(v),1)+' p';
@@ -1514,9 +1534,29 @@ if(D.asinYoY && D.asinYoY.length){
   const ORDENES = [
     ['u1','Unidades 2026'],['u0','Unidades 2025'],['du','Δ unidades'],['d','Δ ventas'],['v1','Ventas 2026']];
 
+  // En modo "hasta hoy" las columnas de 2026 pasan a ser el acumulado con todos
+  // los parciales, y las del año pasado y la causa se vacian: no hay ventana
+  // equivalente contra la que compararlas, y rellenarlas seria mentir.
+  const vista = r => (!vhoy || r.uh==null) ? r : Object.assign({}, r, {
+      u1: r.uh, v1: r.vh, s1: r.sh, bb1: r.bbh, c1: r.ch_,
+      u0: null, v0: null, du: null, d: 0, causa: '—',
+      s0: null, bb0: null, c0: null, p0: null });
+  // El subtitulo depende de la ventana elegida, asi que se repinta en cada render
+  // y no solo al construir la pestaña.
+  function pintaSub(){
+    if(pais!=='ES') return;
+    if(vhoy){
+      $('#ayoySub').innerHTML = `<strong>${META.ventana_hoy}</strong> de 2026, nivel
+        <strong>sin comparación</strong>: no hay ventana equivalente de 2025 con el mismo día de
+        corte, así que las columnas del año pasado, las diferencias y la causa salen en blanco
+        en vez de rellenarse con una referencia que no toca.
+        Para comparar, vuelve a «Ventana comparable».`;
+    }
+  }
   function render(){
+    pintaSub();
     const cols = pais==='ES' ? COLS_ES : COLS_FR;
-    const all = filtered(), rs = all.slice(0, shown);
+    const all = filtered().map(vista), rs = all.slice(0, shown);
     const maxAbs = Math.max(1, ...all.map(r=>Math.abs(r.d)));
     const maxU   = Math.max(1, ...all.map(r=>r.u1||0));
     $('#ayoyTab').innerHTML =
@@ -1534,6 +1574,7 @@ if(D.asinYoY && D.asinYoY.length){
               style="left:0;width:${92*r.u1/maxU}%;background:var(--s1)"></div>
               <span><strong>${int(r.u1)}</strong></span></td>`;
           if(k==='u0') return `<td class="n">${int(r.u0)}</td>`;
+          if(vhoy && (k==='du'||k==='d'||k==='causa')) return `<td class="n">—</td>`;
           if(k==='du') return `<td class="n delta" style="color:${
               r.du>0?'var(--good)':r.du<0?'var(--bad)':'var(--ink-3)'}">${
               r.du>0?'+':r.du<0?'−':''}${int(Math.abs(r.du))}</td>`;
@@ -1554,10 +1595,10 @@ if(D.asinYoY && D.asinYoY.length){
     // panel, que agrupa por ASIN, da una cifra menor que la que sale de contar
     // el SKU en Seller Central. Buscando la raiz del SKU se ve el total.
     const _su = all.reduce((a,r)=>a+(r.u1||0),0), _sv = all.reduce((a,r)=>a+(r.v1||0),0);
-    const _su0 = all.reduce((a,r)=>a+(r.u0||0),0);
+    const _su0 = vhoy ? null : all.reduce((a,r)=>a+(r.u0||0),0);
     $('#ayoyCount').textContent = `${int(all.length)} de ${int(rowsOf().length)} ASINs`
       + (all.length && all.length < rowsOf().length
-          ? ` · suman ${int(_su)} uds (${int(_su0)} el año pasado) y ${eur(_sv)}` : '');
+          ? ` · suman ${int(_su)} uds${vhoy?'':` (${int(_su0)} el año pasado)`} y ${eur(_sv)}` : '');
     $('#ayoyMore').hidden = all.length <= shown;
     $('#ayoyMore').textContent = `Ver ${int(Math.min(40, all.length-shown))} más`;
   }

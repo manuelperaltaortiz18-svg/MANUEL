@@ -54,6 +54,21 @@ for d in range(31, 0, -1):
 A = window([f'2025-{m:02d}' for m in COMUNES], PAR25)
 B = window([f'2026-{m:02d}' for m in COMUNES], PAR26)
 VENTANA = (f'{MESES_ES[COMUNES[0]-1]}–{MESES_ES[COMUNES[-1]-1]}' if COMUNES else '') + PAR_TXT
+
+# --- 2026 hasta hoy, SIN comparacion ---
+# El dueño cuenta las unidades de un ASIN en Seller Central y le salen mas que
+# en el panel, con razon: la ventana comparable se para en el ultimo corte que
+# tiene pareja de 2025, y los dias posteriores quedan fuera. Eso no se arregla
+# recortando el rigor de la comparacion, se arregla pudiendo ver las dos cosas.
+# Aqui va el acumulado de 2026 con TODOS los parciales cargados. No se compara
+# contra nada, y la pestaña lo dice: es nivel, no interanual.
+PAR_HOY = sorted(glob.glob('parcial/2026-*.csv'))
+HOY_TXT = ''
+if PAR_HOY:
+    mm = re.search(r'2026-(\d{2})-(\d{2})', os.path.basename(PAR_HOY[-1]))
+    HOY_TXT = f' + 1-{int(mm.group(2))} de {MESES_ES[int(mm.group(1))-1]}'
+C = window([f'2026-{m:02d}' for m in COMUNES], PAR_HOY[-1] if PAR_HOY else None)
+VENTANA_HOY = (f'{MESES_ES[COMUNES[0]-1]}–{MESES_ES[COMUNES[-1]-1]}' if COMUNES else '') + HOY_TXT
 Z = dict(ses=0.0, uds=0.0, v=0.0, bb=0.0, conv=0.0, p=0.0, title='', brand='', n=0, skus=set())
 
 def descompon(a, b):
@@ -82,7 +97,10 @@ for ch in set(A) | set(B):
         s0=a['ses'], s1=b['ses'], bb0=a['bb'], bb1=b['bb'],
         c0=100*a['conv'], c1=100*b['conv'], p0=a['p'], p1=b['p'],
         et=et, ec=ec, ep=ep, causa=causa,
-        meses0=a['n'], meses1=b['n']))
+        meses0=a['n'], meses1=b['n'],
+        # nivel de 2026 hasta hoy: no se compara con 2025, solo informa
+        vh=C.get(ch, Z)['v'], uh=C.get(ch, Z)['uds'], sh=C.get(ch, Z)['ses'],
+        bbh=C.get(ch, Z)['bb'], ch_=C.get(ch, Z)['conv']*100))
 
 filas.sort(key=lambda f: f['d'])
 TOT_D = sum(f['d'] for f in filas)
@@ -169,8 +187,9 @@ json.dump(fr, open('asin_yoy_fr.json','w'), ensure_ascii=False)
 # La ventana se emite como dato, no se escribe a mano en la plantilla. El
 # subtitulo del panel decia "enero-agosto" mientras la tabla era enero-octubre
 # porque eran dos sitios distintos y solo se actualizaba uno.
-json.dump(dict(ventana=VENTANA, meses=COMUNES, parcial=PAR_TXT.strip(' +') or None,
-               n=len(filas)), open('asin_yoy_meta.json','w'), ensure_ascii=False)
+json.dump(dict(ventana=VENTANA, ventana_hoy=VENTANA_HOY, meses=COMUNES,
+               parcial=PAR_TXT.strip(' +') or None, n=len(filas)),
+          open('asin_yoy_meta.json','w'), ensure_ascii=False)
 print(f"ventana: {VENTANA}  ({len(filas)} ASIN)")
 
 print(f"\n\nFRANCIA — cuota de la venta del pais (2025 completo vs 2026 YTD), {len(fr)} ASINs")
